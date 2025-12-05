@@ -1,4 +1,4 @@
-# Aurora OS.js v0.5.2
+# Aurora OS.js v0.5.2 [![CI](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml)
 
 A modern, web-based desktop operating system interface built with React, Tailwind CSS, and Radix UI.
 
