@@ -45,9 +45,6 @@ A modern, web-based desktop operating system interface built with React, Tailwin
     npm run build
     ```
 
-    npm run build
-    ```
-
 ### Testing
 This project uses **Vitest** for unit & integration testing.
 ```bash
