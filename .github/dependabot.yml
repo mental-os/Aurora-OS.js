@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # User requested NO auto-updates, only security alerts.
+    # We achieve this by finding packages but setting the PR limit to 0.
+    # Security updates (triggered by GitHub Alerts) bypass this limit.
+    open-pull-requests-limit: 0
