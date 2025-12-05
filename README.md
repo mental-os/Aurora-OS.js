@@ -1,4 +1,4 @@
-# Aurora OS.js v0.5.2 [![Dependencies](https://github.com/mental-os/Aurora-OS.js/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/dependency-review.yml) [![Build](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml)
+# Aurora OS.js [![Version](https://img.shields.io/github/package-json/v/mental-os/Aurora-OS.js)](https://github.com/mental-os/Aurora-OS.js) [![Dependabot Updates](https://github.com/mental-os/Aurora-OS.js/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/dependabot/dependabot-updates) [![Build](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml)
 
 A modern, web-based desktop operating system interface built with React, Tailwind CSS, and Radix UI.
 
