@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useLayoutEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 interface Size {
     width: number;
@@ -24,10 +24,10 @@ export function useElementSize<T extends HTMLElement = HTMLDivElement>(): [
         });
     }, [ref]);
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         if (!ref) return;
 
-        handleSize();
+
 
         const observer = new ResizeObserver(() => {
             handleSize();
