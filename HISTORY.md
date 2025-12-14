@@ -1,3 +1,15 @@
+## v0.7.2-patch
+- **True Lock Screen**:
+    - **Overlay Architecture**: Lock Screen now overlays the running desktop instead of unmounting it, keeping apps (e.g., Music) active in the background.
+    - **UX Refinements**: "Switch Account" action with confirmation dialog prevents accidental session loss.
+    - **Differentiation**: Clear distinction between "Lock" (suspend access, keep session) and "Log Out" (end session).
+- **Session Persistence**:
+    - **Window State**: Open windows are now saved per-user and restored upon login.
+    - **Desktop Icons**: Icon positions are persisted per-user.
+- **Menu Bar**:
+    - **Refined Apple Menu**: Split "Lock Screen" and "Log Out" into distinct actions.
+    - **Logic Fixes**: Corrected "Lock Screen" to trigger overlay mode instead of logout.
+
 ## v0.7.2
 - **User Management**:
     - **Multi-User Structure**: Implemented robust `User` and `Group` system with `/etc/passwd` and `/etc/group` bidirectional syncing.

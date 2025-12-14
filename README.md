@@ -56,9 +56,10 @@ npm test
 
 ## Release Notes
 
-## v0.7.2
-- **User Management**: Added full multi-user support with UI management and `/etc/passwd` syncing.
-- **Permissions**: Implemented Advanced Linux Permissions (Sticky Bit, Directory Traversal) and Terminal redirection (`>`, `>>`).
+## v0.7.2-patch
+- **True Lock Screen**: Overlay architecture keeps apps running while locked. Unique "Switch Account" flow prevents accidental data loss.
+- **Session Persistence**: Windows and desktop icons are now saved and restored per-user.
+- **Security**: Strict differentiation between "Locking" (suspend) and "Logging Out" (terminate).
 
 [View full version history](HISTORY.md)
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 
 type ThemeMode = 'neutral' | 'shades' | 'contrast';
 
@@ -17,80 +17,191 @@ interface AppContextType {
   setDisableGradients: (enabled: boolean) => void;
   devMode: boolean;
   setDevMode: (enabled: boolean) => void;
+  exposeRoot: boolean;
+  setExposeRoot: (enabled: boolean) => void;
+
+  // Lock user session without logging out
+  isLocked: boolean;
+  setIsLocked: (locked: boolean) => void;
+
+  // User Context Switching
+  switchUser: (username: string) => void;
+  activeUser: string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const SETTINGS_STORAGE_KEY = 'aurora-os-settings';
+// Legacy Global Key for Migration
+const LEGACY_STORAGE_KEY = 'aurora-os-settings';
 
-interface StoredSettings {
+const SYSTEM_CONFIG_KEY = 'aurora-system-config';
+
+interface UserPreferences {
   accentColor: string;
   themeMode: ThemeMode;
   blurEnabled: boolean;
   reduceMotion: boolean;
   disableShadows: boolean;
   disableGradients: boolean;
-  devMode: boolean;
 }
 
-function loadSettings(): StoredSettings {
+interface SystemConfig {
+  devMode: boolean;
+  exposeRoot: boolean;
+}
+
+const DEFAULT_PREFERENCES: UserPreferences = {
+  accentColor: '#5755e4',
+  themeMode: 'neutral',
+  blurEnabled: true,
+  reduceMotion: false,
+  disableShadows: false,
+  disableGradients: false,
+};
+
+const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
+  devMode: false,
+  exposeRoot: false,
+};
+
+// Helper: Get key for specific user
+const getUserKey = (username: string) => `aurora-os-settings-${username}`;
+
+function loadUserPreferences(username: string): UserPreferences {
   try {
-    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    const key = getUserKey(username);
+    const stored = localStorage.getItem(key);
+
     if (stored) {
-      return JSON.parse(stored);
+      return { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) };
+    }
+
+    // Migration Check: If loading for 'root' (system default) and no root settings exist,
+    // check for legacy global settings to migrate them.
+    if (username === 'root') {
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy) {
+        console.log('Migrating legacy settings to root');
+        const legacyParsed = JSON.parse(legacy);
+
+        // Extract preferences
+        const migratedProps: Partial<UserPreferences> = {};
+        (Object.keys(DEFAULT_PREFERENCES) as Array<keyof UserPreferences>).forEach(k => {
+          if (k in legacyParsed) migratedProps[k] = legacyParsed[k];
+        });
+
+        const migrated = { ...DEFAULT_PREFERENCES, ...migratedProps };
+        // Save immediately to new key
+        localStorage.setItem(key, JSON.stringify(migrated));
+        return migrated;
+      }
     }
   } catch (e) {
-    console.warn('Failed to load settings:', e);
+    console.warn(`Failed to load settings for ${username}:`, e);
   }
-  // Default settings
-  return {
-    accentColor: '#5755e4',
-    themeMode: 'neutral',
-    blurEnabled: true,
-    reduceMotion: false,
-    disableShadows: false,
-    disableGradients: false,
-    devMode: false,
-  };
+  return DEFAULT_PREFERENCES;
 }
 
-function saveSettings(settings: StoredSettings) {
+function loadSystemConfig(): SystemConfig {
   try {
-    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    const stored = localStorage.getItem(SYSTEM_CONFIG_KEY);
+    if (stored) {
+      return { ...DEFAULT_SYSTEM_CONFIG, ...JSON.parse(stored) };
+    }
+
+    // Migration: Check legacy global storage for devMode stuff if not found in new key
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy) {
+      const legacyParsed = JSON.parse(legacy);
+
+      // Only migrate if they actually exist in legacy
+      const migrated: SystemConfig = { ...DEFAULT_SYSTEM_CONFIG };
+      let hasMigration = false;
+
+      if ('devMode' in legacyParsed) { migrated.devMode = legacyParsed.devMode; hasMigration = true; }
+      if ('exposeRoot' in legacyParsed) { migrated.exposeRoot = legacyParsed.exposeRoot; hasMigration = true; }
+
+      if (hasMigration) {
+        console.log('Migrated system config from legacy storage');
+        localStorage.setItem(SYSTEM_CONFIG_KEY, JSON.stringify(migrated));
+        return migrated;
+      }
+    }
+
   } catch (e) {
-    console.warn('Failed to save settings:', e);
+    console.warn('Failed to load system config:', e);
   }
+  return DEFAULT_SYSTEM_CONFIG;
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<StoredSettings>(() => loadSettings());
+  // activeUser determines which "slot" we are reading/writing to.
+  const [activeUser, setActiveUser] = useState('root');
+  // Lock state
+  const [isLocked, setIsLocked] = useState(false);
 
-  const { accentColor, themeMode, blurEnabled, reduceMotion, disableShadows, disableGradients, devMode } = settings;
+  // User Preferences (Per User)
+  const [preferences, setPreferences] = useState<UserPreferences>(() => loadUserPreferences('root'));
 
-  // Save settings whenever they change
+  // System Config (Global)
+  const [systemConfig, setSystemConfig] = useState<SystemConfig>(() => loadSystemConfig());
+
+  // Destructure for easy access
+  const { accentColor, themeMode, blurEnabled, reduceMotion, disableShadows, disableGradients } = preferences;
+  const { devMode, exposeRoot } = systemConfig;
+
+  // Function to switch context to a different user
+  const switchUser = useCallback((username: string) => {
+    setActiveUser(prev => {
+      if (prev === username) return prev;
+      const newPrefs = loadUserPreferences(username);
+      setPreferences(newPrefs);
+      return username;
+    });
+  }, []);
+
+  // Persistence: User Preferences
   useEffect(() => {
-    saveSettings(settings);
-  }, [settings]);
+    const key = getUserKey(activeUser);
+    try {
+      localStorage.setItem(key, JSON.stringify(preferences));
+    } catch (e) {
+      console.warn('Failed to save preferences:', e);
+    }
+  }, [preferences, activeUser]);
 
-  const setAccentColor = (color: string) => setSettings(s => ({ ...s, accentColor: color }));
-  const setThemeMode = (mode: ThemeMode) => setSettings(s => ({ ...s, themeMode: mode }));
-  const setBlurEnabled = (enabled: boolean) => setSettings(s => ({ ...s, blurEnabled: enabled }));
-  const setReduceMotion = (enabled: boolean) => setSettings(s => ({ ...s, reduceMotion: enabled }));
-  const setDisableShadows = (enabled: boolean) => setSettings(s => ({ ...s, disableShadows: enabled }));
-  const setDisableGradients = (enabled: boolean) => setSettings(s => ({ ...s, disableGradients: enabled }));
-  const setDevMode = (enabled: boolean) => setSettings(s => ({ ...s, devMode: enabled }));
+  // Persistence: System Config
+  useEffect(() => {
+    try {
+      localStorage.setItem(SYSTEM_CONFIG_KEY, JSON.stringify(systemConfig));
+    } catch (e) {
+      console.warn('Failed to save system config:', e);
+    }
+  }, [systemConfig]);
+
+  // Setters for Preferences
+  const setAccentColor = (color: string) => setPreferences(s => ({ ...s, accentColor: color }));
+  const setThemeMode = (mode: ThemeMode) => setPreferences(s => ({ ...s, themeMode: mode }));
+  const setBlurEnabled = (enabled: boolean) => setPreferences(s => ({ ...s, blurEnabled: enabled }));
+  const setReduceMotion = (enabled: boolean) => setPreferences(s => ({ ...s, reduceMotion: enabled }));
+  const setDisableShadows = (enabled: boolean) => setPreferences(s => ({ ...s, disableShadows: enabled }));
+  const setDisableGradients = (enabled: boolean) => setPreferences(s => ({ ...s, disableGradients: enabled }));
+
+  // Setters for System Config
+  const setDevMode = (enabled: boolean) => setSystemConfig(s => ({ ...s, devMode: enabled }));
+  const setExposeRoot = (enabled: boolean) => setSystemConfig(s => ({ ...s, exposeRoot: enabled }));
 
   // Sync accent color to CSS variable for global theming
   useEffect(() => {
     document.documentElement.style.setProperty('--accent-user', accentColor);
   }, [accentColor]);
 
-  // Sync blur state to CSS variable for opacity calculations
+  // Sync blur state to CSS variable
   useEffect(() => {
     document.documentElement.style.setProperty('--blur-enabled', blurEnabled ? '1' : '0');
   }, [blurEnabled]);
 
-  // Sync performance settings to data attributes for global CSS overrides
+  // Sync performance settings
   useEffect(() => {
     document.documentElement.dataset.reduceMotion = reduceMotion ? 'true' : 'false';
   }, [reduceMotion]);
@@ -102,6 +213,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.dataset.disableGradients = disableGradients ? 'true' : 'false';
   }, [disableGradients]);
+
+  // Sync dev mode for global styling/logic
+  useEffect(() => {
+    document.documentElement.dataset.devMode = devMode ? 'true' : 'false';
+    if (devMode) {
+      document.documentElement.style.setProperty('--dev-mode-enabled', '1');
+    } else {
+      document.documentElement.style.removeProperty('--dev-mode-enabled');
+    }
+  }, [devMode]);
 
   return (
     <AppContext.Provider value={{
@@ -118,7 +239,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       disableGradients,
       setDisableGradients,
       devMode,
-      setDevMode
+      setDevMode,
+      exposeRoot,
+      setExposeRoot,
+      switchUser,
+      activeUser,
+      isLocked,
+      setIsLocked,
     }}>
       {children}
     </AppContext.Provider>

@@ -3,9 +3,10 @@ import { Apple, Wifi, Battery } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { cn } from './ui/utils';
 import { useAppContext } from './AppContext';
+import { useFileSystem } from './FileSystemContext';
 import { AudioApplet } from './AudioApplet';
 import { NotificationCenter } from './NotificationCenter';
-import { hardReset, softReset } from '../utils/memory';
+import { hardReset } from '../utils/memory';
 import {
   Menubar,
   MenubarMenu,
@@ -42,7 +43,8 @@ const defaultMenus = { name: 'Finder', menus: ['File', 'Edit', 'View', 'Go', 'Wi
 
 function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
   const { menuBarBackground, blurStyle, getBackgroundColor } = useThemeColors();
-  const { devMode, disableShadows } = useAppContext();
+  const { devMode, disableShadows, setIsLocked } = useAppContext();
+  const { logout, currentUser } = useFileSystem();
   const [currentTime, setCurrentTime] = useState(() =>
     new Date().toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -175,6 +177,22 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
               </MenubarItem>
               <MenubarItem>App Store...</MenubarItem>
               <MenubarSeparator className="bg-white/10" />
+              <MenubarItem onClick={() => {
+                // Lock Screen -> Overlay LoginScreen but KEEP session
+                setIsLocked(true);
+              }}>
+                Lock Screen
+              </MenubarItem>
+              <MenubarItem onClick={() => {
+                // Log Out -> Clear windows session
+                if (currentUser) {
+                  localStorage.removeItem(`aurora-os-windows-${currentUser}`);
+                }
+                logout();
+              }}>
+                Log Out {currentUser ? currentUser : 'User'}...
+              </MenubarItem>
+              <MenubarSeparator className="bg-white/10" />
               <MenubarItem
                 onClick={() => {
                   // Hard Reset -> PANIC
@@ -185,21 +203,6 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
               >
                 PANIC <Badge variant="destructive" className="ml-auto text-[10px] h-5 px-1.5">Hard Reset</Badge>
               </MenubarItem>
-              <MenubarSeparator className="bg-white/10" />
-              <MenubarItem>Sleep</MenubarItem>
-              <MenubarItem>Restart</MenubarItem>
-              <MenubarItem onClick={() => {
-                // Soft Reset -> Restart
-                softReset();
-                window.location.reload();
-              }}
-                className="text-yellow-500 focus:text-yellow-500 focus:bg-yellow-500/10"
-              >
-                Shut Down <Badge variant="outline" className="ml-auto text-[10px] h-5 px-1.5 border-yellow-500/50 text-yellow-400 bg-yellow-500/10">Soft Reset</Badge>
-              </MenubarItem>
-              <MenubarSeparator className="bg-white/10" />
-              <MenubarItem>Lock Screen</MenubarItem>
-              <MenubarItem>Log Out User</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
 

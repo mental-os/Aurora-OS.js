@@ -21,7 +21,7 @@ export type { FileNode, User } from '../utils/fileSystemUtils';
 export interface FileSystemContextType {
   fileSystem: FileNode;
   currentPath: string;
-  currentUser: string;
+  currentUser: string | null;
   users: User[];
   homePath: string;
   setCurrentPath: (path: string) => void;
@@ -29,7 +29,7 @@ export interface FileSystemContextType {
   createFile: (path: string, name: string, content?: string) => boolean;
   createDirectory: (path: string, name: string) => boolean;
   deleteNode: (path: string) => boolean;
-  addUser: (username: string, fullName: string) => boolean;
+  addUser: (username: string, fullName: string, password?: string) => boolean;
   deleteUser: (username: string) => boolean;
   writeFile: (path: string, content: string) => boolean;
   readFile: (path: string) => string | null;
@@ -40,6 +40,8 @@ export interface FileSystemContextType {
   emptyTrash: () => void;
   resolvePath: (path: string) => string;
   resetFileSystem: () => void;
+  login: (username: string, password?: string) => boolean;
+  logout: () => void;
 }
 
 const STORAGE_KEY = 'aurora-filesystem';
@@ -70,9 +72,9 @@ function saveFileSystem(fs: FileNode): void {
 }
 
 const DEFAULT_USERS: User[] = [
-  { username: 'root', uid: 0, gid: 0, fullName: 'System Administrator', homeDir: '/root', shell: '/bin/bash' },
-  { username: 'user', uid: 1000, gid: 1000, fullName: 'User', homeDir: '/home/user', shell: '/bin/bash' },
-  { username: 'guest', uid: 1001, gid: 1001, fullName: 'Guest', homeDir: '/home/guest', shell: '/bin/bash' }
+  { username: 'root', password: 'admin', uid: 0, gid: 0, fullName: 'System Administrator', homeDir: '/root', shell: '/bin/bash', groups: ['root'] },
+  { username: 'user', password: '1234', uid: 1000, gid: 1000, fullName: 'User', homeDir: '/home/user', shell: '/bin/bash', groups: ['users', 'admin'] },
+  { username: 'guest', password: 'guest', uid: 1001, gid: 1001, fullName: 'Guest', homeDir: '/home/guest', shell: '/bin/bash', groups: ['users'] },
 ];
 
 // Load users from localStorage
@@ -95,7 +97,8 @@ function loadUsers(): User[] {
 }
 
 // Helper to get current user object
-const getCurrentUser = (username: string, users: User[]): User => {
+const getCurrentUser = (username: string | null, users: User[]): User => {
+  if (!username) return { username: 'nobody', uid: 65534, gid: 65534, fullName: 'Nobody', homeDir: '/', shell: '' };
   return users.find(u => u.username === username) || {
     username: 'nobody', uid: 65534, gid: 65534, fullName: 'Nobody', homeDir: '/', shell: ''
   };
@@ -106,15 +109,66 @@ const FileSystemContext = createContext<FileSystemContextType | undefined>(undef
 export function FileSystemProvider({ children }: { children: ReactNode }) {
   const [fileSystem, setFileSystem] = useState<FileNode>(() => loadFileSystem());
   const [users, setUsers] = useState<User[]>(() => loadUsers());
-  const [currentUser] = useState('user'); // Default user - could be extended for login system
-  const homePath = currentUser === 'root' ? '/root' : `/home/${currentUser}`;
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const homePath = currentUser === 'root' ? '/root' : currentUser ? `/home/${currentUser}` : '/';
   const [currentPath, setCurrentPath] = useState(homePath);
+
+  // Update currentPath when user logs in if currently at root or undefined
+  useEffect(() => {
+    if (currentUser) {
+      const newHome = currentUser === 'root' ? '/root' : `/home/${currentUser}`;
+      setCurrentPath(newHome);
+    }
+  }, [currentUser]);
 
   const userObj = getCurrentUser(currentUser, users);
 
+  const login = useCallback((username: string, password?: string) => {
+    // 1. File Authority: Try to read /etc/passwd from current filesystem
+    let targetUser: User | undefined;
+    const etc = fileSystem.children?.find(c => c.name === 'etc');
+    if (etc && etc.children) {
+      const passwdFile = etc.children.find(c => c.name === 'passwd');
+      if (passwdFile && passwdFile.content) {
+        try {
+          const fileUsers = parsePasswd(passwdFile.content);
+          targetUser = fileUsers.find(u => u.username === username);
+          // console.log('Auth: using /etc/passwd authority');
+        } catch (e) {
+          console.warn('Auth: /etc/passwd corrupted, falling back to memory');
+        }
+      }
+    }
+
+    // 2. Fallback: Memory
+    if (!targetUser) {
+      targetUser = users.find(u => u.username === username);
+      // console.log('Auth: using memory fallback');
+    }
+
+    if (targetUser) {
+      // Check password (if user has one set)
+      if (targetUser.password && targetUser.password !== password) {
+        notify.system('error', 'Auth', 'Incorrect password');
+        return false;
+      }
+      setCurrentUser(username);
+      notify.system('success', 'Auth', `Logged in as ${username}`);
+      return true;
+    } else {
+      notify.system('error', 'Auth', 'User not found');
+      return false;
+    }
+  }, [fileSystem, users]); // Depend on fileSystem to ensure fresh read
+
+  const logout = useCallback(() => {
+    setCurrentUser(null);
+    notify.system('success', 'Auth', 'Logged out');
+  }, []);
+
   // Persist users
   useEffect(() => {
-    console.log('Persisting users:', users);
+    // console.log('Persisting users:', users);
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
   }, [users]);
 
@@ -193,9 +247,9 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(USERS_STORAGE_KEY);
     setFileSystem(deepCloneFileSystem(initialFileSystem));
     setUsers(DEFAULT_USERS);
-    setCurrentPath(homePath);
+    setCurrentUser(null); // Return to login screen
     notify.system('success', 'System', 'System reset to factory defaults');
-  }, [homePath, setUsers]);
+  }, []);
 
   const getNodeAtPath = useCallback((path: string): FileNode | null => {
     const resolved = resolvePath(path);
@@ -542,7 +596,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       content,
       size: content.length,
       modified: new Date(),
-      owner: currentUser,
+      owner: currentUser || 'root',
       permissions: '-rw-r--r--',
     };
 
@@ -588,7 +642,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       type: 'directory',
       children: [],
       modified: new Date(),
-      owner: currentUser,
+      owner: currentUser || 'root',
       permissions: 'drwxr-xr-x',
     };
 
@@ -666,7 +720,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     return true;
   }, [resolvePath, users, getNodeAtPath, userObj]);
 
-  const addUser = useCallback((username: string, fullName: string): boolean => {
+  const addUser = useCallback((username: string, fullName: string, password?: string): boolean => {
     console.log('Adding user:', username);
     if (users.some(u => u.username === username)) return false;
 
@@ -675,7 +729,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
 
     const newUser: User = {
       username,
-      password: 'x',
+      password: password || 'x',
       uid: newUid,
       gid: newUid,
       fullName,
@@ -758,6 +812,8 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
         emptyTrash,
         resolvePath,
         resetFileSystem,
+        login,
+        logout
       }}
     >
       {children}

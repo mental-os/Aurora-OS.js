@@ -9,15 +9,54 @@
 // Storage key prefixes/names
 export const STORAGE_KEYS = {
     // Soft memory keys (preferences, safe to forget)
-    SETTINGS: 'aurora-os-settings',
+    SETTINGS: 'aurora-os-settings', // Prefix for user settings
     DESKTOP_ICONS: 'aurora-os-desktop-positions',
     SOUND: 'aurora-os-sound-settings',
     APP_PREFIX: 'aurora-os-app-', // Pattern for app-specific storage
+    WINDOWS_PREFIX: 'aurora-os-windows-', // Window sessions
+    SYSTEM_CONFIG: 'aurora-system-config', // Global system settings (Dev Mode, etc)
 
     // Hard memory keys (core data, dangerous to forget)
     FILESYSTEM: 'aurora-filesystem',
     USERS: 'aurora-users',
 } as const;
+
+const MEMORY_CONFIG = {
+    soft: {
+        exact: [
+            STORAGE_KEYS.DESKTOP_ICONS,
+            STORAGE_KEYS.SOUND,
+            STORAGE_KEYS.SYSTEM_CONFIG
+        ] as string[],
+        prefixes: [
+            STORAGE_KEYS.SETTINGS,
+            STORAGE_KEYS.APP_PREFIX,
+            STORAGE_KEYS.WINDOWS_PREFIX
+        ]
+    },
+    hard: {
+        exact: [
+            STORAGE_KEYS.FILESYSTEM,
+            STORAGE_KEYS.USERS
+        ] as string[],
+        prefixes: [] // Future proofing
+    }
+};
+
+/**
+ * Determines the type of memory a storage key belongs to via centralized config
+ */
+function getMemoryType(key: string): 'soft' | 'hard' | null {
+    // Check Hard Memory
+    if (MEMORY_CONFIG.hard.exact.includes(key)) return 'hard';
+    if (MEMORY_CONFIG.hard.prefixes.some(prefix => key.startsWith(prefix))) return 'hard';
+
+    // Check Soft Memory
+    if (MEMORY_CONFIG.soft.exact.includes(key)) return 'soft';
+    if (MEMORY_CONFIG.soft.prefixes.some(prefix => key.startsWith(prefix))) return 'soft';
+
+    return null;
+}
 
 /**
  * Soft Reset - Clears all preferences and app states
@@ -26,34 +65,14 @@ export const STORAGE_KEYS = {
 export function softReset(): void {
     const keysToRemove: string[] = [];
 
-    // Collect all soft memory keys
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key) {
-            // Settings, desktop icons, and sound
-            if (
-                key === STORAGE_KEYS.SETTINGS ||
-                key === STORAGE_KEYS.DESKTOP_ICONS ||
-                key === STORAGE_KEYS.SOUND
-            ) {
-                keysToRemove.push(key);
-            }
-            // App-specific storage
-            if (key.startsWith(STORAGE_KEYS.APP_PREFIX)) {
-                keysToRemove.push(key);
-            }
+        if (key && getMemoryType(key) === 'soft') {
+            keysToRemove.push(key);
         }
     }
 
-    // Remove collected keys
-    keysToRemove.forEach(key => {
-        try {
-            localStorage.removeItem(key);
-        } catch (e) {
-            console.warn(`Failed to remove ${key}:`, e);
-        }
-    });
-
+    keysToRemove.forEach(key => localStorage.removeItem(key));
     console.log(`Soft reset: Cleared ${keysToRemove.length} preference keys`);
 }
 
@@ -64,32 +83,17 @@ export function softReset(): void {
 export function hardReset(): void {
     const keysToRemove: string[] = [];
 
-    // Collect all Aurora OS keys (both soft and hard)
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key) {
-            if (
-                key === STORAGE_KEYS.SETTINGS ||
-                key === STORAGE_KEYS.DESKTOP_ICONS ||
-                key === STORAGE_KEYS.SOUND ||
-                key === STORAGE_KEYS.FILESYSTEM ||
-                key === STORAGE_KEYS.USERS ||
-                key.startsWith(STORAGE_KEYS.APP_PREFIX)
-            ) {
+            const type = getMemoryType(key);
+            if (type === 'soft' || type === 'hard') {
                 keysToRemove.push(key);
             }
         }
     }
 
-    // Remove collected keys
-    keysToRemove.forEach(key => {
-        try {
-            localStorage.removeItem(key);
-        } catch (e) {
-            console.warn(`Failed to remove ${key}:`, e);
-        }
-    });
-
+    keysToRemove.forEach(key => localStorage.removeItem(key));
     console.log(`Hard reset: Cleared ${keysToRemove.length} total keys (including filesystem)`);
 }
 
@@ -109,20 +113,19 @@ export function getStorageStats(): {
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key) {
-            const value = localStorage.getItem(key) || '';
-            const bytes = new Blob([key + value]).size;
+            const type = getMemoryType(key);
 
-            if (key === STORAGE_KEYS.FILESYSTEM || key === STORAGE_KEYS.USERS) {
-                hardKeys++;
-                hardBytes += bytes;
-            } else if (
-                key === STORAGE_KEYS.SETTINGS ||
-                key === STORAGE_KEYS.DESKTOP_ICONS ||
-                key === STORAGE_KEYS.SOUND ||
-                key.startsWith(STORAGE_KEYS.APP_PREFIX)
-            ) {
-                softKeys++;
-                softBytes += bytes;
+            if (type === 'soft' || type === 'hard') {
+                const value = localStorage.getItem(key) || '';
+                const bytes = new Blob([key + value]).size;
+
+                if (type === 'hard') {
+                    hardKeys++;
+                    hardBytes += bytes;
+                } else {
+                    softKeys++;
+                    softBytes += bytes;
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Desktop } from './components/Desktop';
+import { LoginScreen } from './components/LoginScreen';
 import { MenuBar } from './components/MenuBar';
 import { Dock } from './components/Dock';
 import { Window } from './components/Window';
@@ -13,15 +14,19 @@ import { Browser } from './components/apps/Browser';
 import { Terminal } from './components/apps/Terminal';
 import { DevCenter } from './components/apps/DevCenter';
 import { PlaceholderApp } from './components/apps/PlaceholderApp';
-import { AppProvider } from './components/AppContext';
+import { AppProvider, useAppContext } from './components/AppContext';
 import { FileSystemProvider, useFileSystem, type FileSystemContextType } from './components/FileSystemContext';
 import { Toaster } from './components/ui/sonner';
 import { getGridConfig, gridToPixel, pixelToGrid, findNextFreeCell, gridPosToKey, rearrangeGrid, type GridPosition } from './utils/gridSystem';
 import { notify } from './services/notifications';
 import { feedback } from './services/soundFeedback';
 
+const POSITIONS_STORAGE_KEY = 'aurora-os-desktop-positions';
+const WINDOWS_STORAGE_PREFIX = 'aurora-os-windows-';
+
 export interface WindowState {
   id: string;
+  type: string; // App ID (e.g. 'finder', 'settings')
   title: string;
   content: React.ReactNode;
   isMinimized: boolean;
@@ -29,6 +34,7 @@ export interface WindowState {
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;
+  data?: any; // Extra data like path for finder
 }
 
 export interface DesktopIcon {
@@ -39,7 +45,21 @@ export interface DesktopIcon {
   isEmpty?: boolean;
 }
 
-const POSITIONS_STORAGE_KEY = 'aurora-os-desktop-positions';
+interface WindowSession {
+  id: string;
+  type: string;
+  title: string;
+  isMinimized: boolean;
+  isMaximized: boolean;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  zIndex: number;
+  data?: any;
+}
+
+// ... existing code ...
+
+
 
 // Load icon positions (supports both pixel and grid formats with migration)
 function loadIconPositions(): Record<string, GridPosition> {
@@ -68,7 +88,9 @@ function loadIconPositions(): Record<string, GridPosition> {
 }
 
 function OS() {
+  const { activeUser } = useAppContext();
   const [windows, setWindows] = useState<WindowState[]>([]);
+  const [isRestoring, setIsRestoring] = useState(true);
 
   const topZIndexRef = useRef(100);
 
@@ -182,9 +204,8 @@ function OS() {
 
   const openWindowRef = useRef<(type: string, data?: { path?: string }) => void>(() => { });
 
-  const openWindow = useCallback((type: string, data?: { path?: string }) => {
-    feedback.windowOpen();
-    //notify.system('success', type, 'Application opened successfully');
+  // Helper to generate content
+  const getAppContent = useCallback((type: string, data?: any): { content: React.ReactNode, title: string } => {
     let content: React.ReactNode;
     let title: string;
 
@@ -215,6 +236,7 @@ function OS() {
         break;
       case 'terminal':
         title = 'Terminal';
+        // Need to forward the ref logic if terminal is special
         content = <Terminal onLaunchApp={(id, args) => openWindowRef.current(id, { path: args?.[0] })} />;
         break;
       case 'trash':
@@ -229,12 +251,82 @@ function OS() {
         title = type.charAt(0).toUpperCase() + type.slice(1);
         content = <PlaceholderApp title={title} />;
     }
+    return { content, title };
+  }, []); // Dependencies? openWindowRef is stable
+
+  // Load windows on mount / user change
+  useEffect(() => {
+    setIsRestoring(true);
+    const key = `${WINDOWS_STORAGE_PREFIX}${activeUser}`;
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const sessions: WindowSession[] = JSON.parse(stored);
+        const restoredWindows: WindowState[] = sessions.map(session => {
+          const { content } = getAppContent(session.type, session.data);
+          // Use stored title if available, else default (though session.title IS stored)
+          return {
+            ...session,
+            content,
+            // Ensure title is up to date
+          };
+        });
+
+        // Find max Z-Index to continue correctly
+        const maxZ = Math.max(100, ...restoredWindows.map(w => w.zIndex));
+        topZIndexRef.current = maxZ;
+
+        setWindows(restoredWindows);
+      } else {
+        setWindows([]);
+      }
+    } catch (e) {
+      console.warn('Failed to restore windows:', e);
+      setWindows([]);
+    } finally {
+      setIsRestoring(false);
+    }
+  }, [activeUser, getAppContent]);
+
+  // Persist windows on change (Debounced)
+  useEffect(() => {
+    if (isRestoring) return; // Don't save while restoring
+
+    const key = `${WINDOWS_STORAGE_PREFIX}${activeUser}`;
+
+    // Map to serializable format
+    const sessions: WindowSession[] = windows.map(w => ({
+      id: w.id,
+      type: w.type,
+      title: w.title,
+      isMinimized: w.isMinimized,
+      isMaximized: w.isMaximized,
+      position: w.position,
+      size: w.size,
+      zIndex: w.zIndex,
+      data: w.data
+    }));
+
+    try {
+      localStorage.setItem(key, JSON.stringify(sessions));
+    } catch (e) {
+      console.warn('Failed to save windows:', e);
+    }
+  }, [windows, activeUser, isRestoring]);
+
+  // ... rest of code
+
+  const openWindow = useCallback((type: string, data?: { path?: string }) => {
+    feedback.windowOpen();
+
+    const { content, title } = getAppContent(type, data);
 
     setWindows(prevWindows => {
       topZIndexRef.current += 1;
       const newZIndex = topZIndexRef.current;
       const newWindow: WindowState = {
         id: `${type}-${Date.now()}`,
+        type, // Store app type
         title,
         content,
         isMinimized: false,
@@ -242,10 +334,12 @@ function OS() {
         position: { x: 100 + prevWindows.length * 30, y: 80 + prevWindows.length * 30 },
         size: { width: 900, height: 600 },
         zIndex: newZIndex,
+        data, // Store args
       };
       return [...prevWindows, newWindow];
     });
-  }, []);
+  }, [getAppContent]);
+
 
   useEffect(() => {
     openWindowRef.current = openWindow;
@@ -436,11 +530,36 @@ function OS() {
   );
 }
 
+
+function AppContent() {
+  const { currentUser } = useFileSystem();
+  const { switchUser, isLocked } = useAppContext();
+
+  // Sync Global Settings with Current User (or root for login screen)
+  useEffect(() => {
+    switchUser(currentUser || 'root');
+  }, [currentUser, switchUser]);
+
+  return (
+    <>
+      {/* Render OS if user is logged in (even if locked) */}
+      {currentUser && <OS />}
+
+      {/* Render Login Overlay if logged out OR locked */}
+      {(!currentUser || isLocked) && (
+        <div className="absolute inset-0 z-[20000]">
+          <LoginScreen />
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function App() {
   return (
     <AppProvider>
       <FileSystemProvider>
-        <OS />
+        <AppContent />
       </FileSystemProvider>
     </AppProvider>
   );

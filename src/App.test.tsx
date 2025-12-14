@@ -64,18 +64,16 @@ describe('Aurora OS Integration', () => {
         vi.clearAllMocks();
     });
 
-    it('boots and renders the Dock', () => {
+    it('boots and renders the Login Screen', () => {
         render(<App />);
 
-        // Verify Dock buttons are present
-        const buttons = screen.getAllByRole('button');
-        expect(buttons.length).toBeGreaterThan(0);
+        // Verify Login Screen is present
+        expect(screen.getByText('Aurora OS')).toBeInTheDocument();
+        expect(screen.getByText('Select User')).toBeInTheDocument();
 
-        const finder = buttons.find(b => b.getAttribute('aria-label') === 'Finder');
-        expect(finder).toBeInTheDocument();
-
-        const trash = buttons.find(b => b.getAttribute('aria-label') === 'Trash');
-        expect(trash).toBeInTheDocument();
+        // Finder (Dock) should NOT be present yet
+        const finder = screen.queryByLabelText('Finder');
+        expect(finder).not.toBeInTheDocument();
     });
 
     it('loads persistence data on boot', () => {

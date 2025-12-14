@@ -27,12 +27,20 @@ describe('FileSystemContext', () => {
 
     it('resolves home path ~', () => {
         const { result } = renderHook(() => useFileSystem(), { wrapper });
+
+        // Must login to have a home path
+        act(() => {
+            result.current.login('user', '1234');
+        });
+
         expect(result.current.resolvePath('~')).toBe('/home/user');
         expect(result.current.resolvePath('~/Desktop')).toBe('/home/user/Desktop');
     });
 
     it('resolves absolute path aliases (/Desktop -> ~/Desktop)', () => {
         const { result } = renderHook(() => useFileSystem(), { wrapper });
+
+        act(() => { result.current.login('user', '1234'); });
 
         // Test the newly added aliases
         expect(result.current.resolvePath('/Desktop')).toBe('/home/user/Desktop');
@@ -52,6 +60,8 @@ describe('FileSystemContext', () => {
 
     it('handles relative paths', () => {
         const { result } = renderHook(() => useFileSystem(), { wrapper });
+        act(() => { result.current.login('user', '1234'); });
+
         // Default cwd is ~ (/home/user)
         expect(result.current.resolvePath('test.txt')).toBe('/home/user/test.txt');
 
@@ -64,6 +74,8 @@ describe('FileSystemContext', () => {
 
     it('enforces unique filenames', () => {
         const { result } = renderHook(() => useFileSystem(), { wrapper });
+        act(() => { result.current.login('user', '1234'); });
+
         const path = '/home/user/Desktop';
 
         // Create first file
@@ -83,6 +95,7 @@ describe('FileSystemContext', () => {
     describe('Trash Logic', () => {
         it('moves file to trash', () => {
             const { result } = renderHook(() => useFileSystem(), { wrapper });
+            act(() => { result.current.login('user', '1234'); });
             const desktop = '/home/user/Desktop';
 
             // Create file
@@ -101,6 +114,7 @@ describe('FileSystemContext', () => {
 
         it('handles trash collisions by renaming', () => {
             const { result } = renderHook(() => useFileSystem(), { wrapper });
+            act(() => { result.current.login('user', '1234'); });
             const desktop = '/home/user/Desktop';
 
             // Create two files
@@ -124,6 +138,7 @@ describe('FileSystemContext', () => {
 
         it('empties trash', () => {
             const { result } = renderHook(() => useFileSystem(), { wrapper });
+            act(() => { result.current.login('user', '1234'); });
             const desktop = '/home/user/Desktop';
 
             act(() => {

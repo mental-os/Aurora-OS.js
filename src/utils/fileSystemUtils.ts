@@ -143,12 +143,12 @@ export function findNodeAndParent(root: FileNode, targetId: string): { node: Fil
 }
 
 // Helper to create a user home directory structure (macOS-inspired)
-export function createUserHome(username: string): any {
+export function createUserHome(username: string, permissions: string = 'drwxr-x---'): any {
     return {
         name: username,
         type: 'directory',
         owner: username,
-        permissions: 'drwxr-x---',
+        permissions: permissions,
         children: [
             { name: 'Desktop', type: 'directory', children: [], owner: username, permissions: 'drwxr-xr-x' },
             { name: 'Documents', type: 'directory', children: [], owner: username, permissions: 'drwxr-xr-x' },
@@ -253,7 +253,7 @@ export const initialFileSystem: any = {
             permissions: 'drwxr-xr-x', // 755
             owner: 'root',
             children: [
-                { name: 'passwd', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: 'root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:User:/home/user:/bin/bash\nguest:x:1001:1001:Guest:/home/guest:/bin/bash' },
+                { name: 'passwd', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: 'root:admin:0:0:root:/root:/bin/bash\nuser:1234:1000:1000:User:/home/user:/bin/bash\nguest:guest:1001:1001:Guest:/home/guest:/bin/bash' },
                 { name: 'group', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: 'root:x:0:\nusers:x:100:user,guest\nadmin:x:10:user' },
                 { name: 'hostname', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: 'aurora' },
                 { name: 'hosts', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: '127.0.0.1\tlocalhost\n::1\t\tlocalhost' },
@@ -314,7 +314,7 @@ export const initialFileSystem: any = {
                         { name: '.Trash', type: 'directory', children: [], owner: 'user', permissions: 'drwx------' },
                     ],
                 },
-                createUserHome('guest'),
+                createUserHome('guest', 'drwxr-xr-x'),
             ],
         },
         // Essential shared libraries

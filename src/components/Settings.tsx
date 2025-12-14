@@ -85,12 +85,15 @@ export function Settings() {
     disableGradients,
     setDisableGradients,
     devMode,
-    setDevMode
+    setDevMode,
+    exposeRoot,
+    setExposeRoot
   } = useAppContext();
   const { users, addUser, deleteUser, currentUser } = useFileSystem();
   const [customColor, setCustomColor] = useState(accentColor);
   const [newUsername, setNewUsername] = useState('');
   const [newFullName, setNewFullName] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [isAddingUser, setIsAddingUser] = useState(false);
 
   // About section state
@@ -425,14 +428,21 @@ export function Settings() {
                       value={newFullName}
                       onChange={(e) => setNewFullName(e.target.value)}
                     />
+                    <GlassInput
+                      type="password"
+                      placeholder="Password (optional)"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
                   </div>
                   <div className="flex justify-end gap-2 mt-2">
                     <GlassButton
                       disabled={!newUsername || !newFullName}
                       onClick={() => {
-                        if (addUser(newUsername, newFullName)) {
+                        if (addUser(newUsername, newFullName, newPassword)) {
                           setNewUsername('');
                           setNewFullName('');
+                          setNewPassword('');
                           setIsAddingUser(false);
                         } else {
                           // alert? using custom notify handling from calling code usually, but here just inline check
@@ -545,6 +555,17 @@ export function Settings() {
                 <Checkbox
                   checked={devMode}
                   onCheckedChange={(checked) => setDevMode(checked === true)}
+                />
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-4">
+                <div>
+                  <span className="text-white block">Expose Root User</span>
+                  <span className="text-white/60 text-sm">Show root user on login screen</span>
+                </div>
+                <Checkbox
+                  checked={exposeRoot}
+                  onCheckedChange={(checked) => setExposeRoot(checked === true)}
                 />
               </div>
             </div>

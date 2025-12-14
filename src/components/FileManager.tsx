@@ -23,6 +23,7 @@ import { useAppContext } from './AppContext';
 import { AppTemplate } from './apps/AppTemplate';
 import { ResponsiveGrid } from './ui/ResponsiveGrid';
 import { useFileSystem, FileNode } from './FileSystemContext';
+import { checkPermissions } from '../utils/fileSystemUtils';
 import { useAppStorage } from '../hooks/useAppStorage';
 import { useElementSize } from '../hooks/useElementSize';
 import { FileIcon } from './ui/FileIcon';
@@ -91,7 +92,7 @@ export function FileManager({ initialPath }: { initialPath?: string }) {
   const { accentColor } = useAppContext();
   // Drag and Drop Logic
   const [dragTargetId, setDragTargetId] = useState<string | null>(null);
-  const { listDirectory, homePath, moveNodeById, getNodeAtPath, moveToTrash, resolvePath } = useFileSystem();
+  const { listDirectory, homePath, moveNodeById, getNodeAtPath, moveToTrash, resolvePath, users, currentUser } = useFileSystem();
 
   const [containerRef, { width }] = useElementSize();
   const isMobile = width < 450;
@@ -129,6 +130,43 @@ export function FileManager({ initialPath }: { initialPath?: string }) {
 
   // Navigate to a directory
   const navigateTo = useCallback((path: string) => {
+    // Check permissions before navigating
+    // 1. Resolve path
+    // We need to resolve to absolute path to check permissions properly
+    // But resolvePath dep is available.
+    // However, the node might not populate if we don't have traversal permissions on parents.
+    // getNodeAtPath handles traversal checks implicitly (returns null if blocked).
+
+    const node = getNodeAtPath(path);
+
+    if (node) {
+      // Find current user object to check specific read permission on the target
+      // We need 'read' to list contents in Finder
+      const userObj = users.find(u => u.username === currentUser);
+      if (userObj) {
+        if (!checkPermissions(node, userObj, 'read')) {
+          toast.error(`Permission denied: ${node.name}`);
+          return;
+        }
+        // Also check execute just in case (though usually if we can't execute parents we won't get the node)
+        // But for the target dir itself, we need execute to 'enter' it technically, but read to see it.
+        if (!checkPermissions(node, userObj, 'execute')) {
+          toast.error(`Permission denied: ${node.name}`);
+          return;
+        }
+      }
+    } else {
+      // Node not found OR traversal failed
+      // In strict mode we might block, but here let's allow it to fall through to empty?
+      // No, if node is null it means path doesn't exist or we can't reach it.
+      // But existing logic might allow creating new paths? No, its a file manager.
+      if (path !== '/') { // Root always exists
+        // Check if it's a valid navigation attempt (sometimes we navigate to new folders)
+        // For now, if getNodeAtPath fails, likely blocked or non-existent.
+        // navigateTo is usually called on existing items.
+      }
+    }
+
     // Add to history
     setHistory(prev => {
       const newHistory = prev.slice(0, historyIndex + 1);
@@ -138,7 +176,7 @@ export function FileManager({ initialPath }: { initialPath?: string }) {
     setHistoryIndex(prev => prev + 1);
     setCurrentPath(path);
     feedback.folder();
-  }, [historyIndex]);
+  }, [historyIndex, getNodeAtPath, users, currentUser]);
 
   // Handle item double-click
   const handleItemDoubleClick = useCallback((item: FileNode) => {

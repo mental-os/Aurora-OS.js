@@ -5,84 +5,240 @@ This document outlines the custom logic, classes, and utility functions implemen
 ## 1. System Utilities (`src/utils`)
 
 ### File System (`fileSystemUtils.ts`)
-The core of the virtual file system logic.
-- **`FileNode` Interface**: Recursive structure defining files and directories (name, id, content, children, permissions, owner).
-- **`initialFileSystem`**: Defines the "Factory Reset" state of the OS, mimicking a Linux directory structure (`/bin`, `/etc`, `/home`, `/root`).
-- **`checkPermissions(node, user, operation)`**: **[CRITICAL]** Implements Linux-style permission enforcement (rwx).
-    - Checks Owner, Group (primary + supplementary), and Others bits.
-    - **Sticky Bit (`t`)**: Enforced for deletion in directories like `/tmp`.
-    - **Directory Traversal**: Implies `execute` permission on directories.
-- **`createUserHome(username)`**: Generates a standard home directory structure (Desktop, Documents, .Config, etc.) with secure default permissions (750).
-- **`deepCloneFileSystem(root)`**: Utility for immutable state updates in React.
-- **`parsePasswd/formatPasswd`**: Logic to sync `User` objects with the textual content of `/etc/passwd`.
-- **`parseGroup/formatGroup`**: Parsing logic for `/etc/group` and supplementary group support.
+
+```typescript
+// Core Data Structures
+interface FileNode {
+  id: string;
+  name: string;
+  type: 'file' | 'directory';
+  content?: string;
+  children?: FileNode[];
+  permissions?: string; // 'rwxr-xr-x'
+  owner?: string;
+  size?: number;
+  modified?: Date;
+}
+
+interface User {
+  username: string;
+  password?: string;
+  uid: number;
+  gid: number;
+  fullName: string;
+  homeDir: string;
+  shell: string;
+}
+
+// Functions
+function checkPermissions(node: FileNode, user: User, operation: 'read' | 'write' | 'execute'): boolean
+/**
+ * Implements Linux-style permission enforcement (rwx). Checks Owner, Group, and Others bits.
+ */
+
+function createUserHome(username: string, permissions?: string): FileNode
+/**
+ * Generates a standard home directory structure (Desktop, Documents, .Config, etc.).
+ * Default permissions: 'drwxr-x---' (750)
+ */
+
+function deepCloneFileSystem(root: FileNode): FileNode
+/**
+ * Deep clones the filesystem tree and ensures all nodes have IDs.
+ * Used for immutable state updates in React.
+ */
+
+function parsePasswd(content: string): User[]
+function formatPasswd(users: User[]): string
+/**
+ * Logic to sync User objects with the textual content of /etc/passwd.
+ */
+
+function moveNodeById(id: string, destPath: string): boolean
+/**
+ * Securely moves a node to a new destination by ID.
+ * Enforces permissions and prevents cyclic directory moves.
+ */
+```
 
 ### Memory Management (`memory.ts`)
-Manages `localStorage` persistence with a tiered approach.
-- **`softReset()`**: Clears "Soft Memory" (Preferences, Desktop Icons, Sound Settings). Safe to run.
-- **`hardReset()`**: Clears "Hard Memory" (Filesystem, User Database) + Soft Memory. Equivalent to a factory wipe.
-- **`getStorageStats()`**: Calculates byte usage for soft/hard memory tiers.
+
+```typescript
+function softReset(): void
+/**
+ * Clears "Soft Memory" (Preferences, Desktop Icons, Sound Settings). Safe to run.
+ */
+
+function hardReset(): void
+/**
+ * Clears "Hard Memory" (Filesystem, User Database) + Soft Memory. Equivalent to a factory wipe.
+ */
+
+function getStorageStats(): { softMemory: Stats, hardMemory: Stats, total: Stats }
+/**
+ * Calculates byte usage for storage tiers.
+ */
+```
 
 ### Grid System (`gridSystem.ts`)
-Implements Windows 11-style desktop icon positioning.
-- **`snapToGrid(x, y, config)`**: Aligns pixel coordinates to nearest grid cell.
-- **`findNextFreeCell(occupied, config)`**: Column-major auto-arrangement logic (fills Top->Bottom, Right->Left).
-- **`rearrangeGrid(...)`**: Complex logic to handle icon insertion/displacement (shifting icons to make room) during drag-and-drop.
+
+```typescript
+interface GridConfig { cellWidth: number; cellHeight: number; startX: number; startY: number; ... }
+interface GridPosition { col: number; row: number; }
+
+function getGridConfig(windowWidth: number, windowHeight: number): GridConfig
+/**
+ * Calculates grid layout based on window dimensions.
+ */
+
+function snapToGrid(x: number, y: number, config: GridConfig): { x: number; y: number }
+/**
+ * Aligns pixel coordinates to nearest grid cell center.
+ */
+
+function findNextFreeCell(occupied: Set<string>, config: GridConfig, height: number): GridPosition
+/**
+ * Finds next empty slot filling Top->Bottom, Right->Left.
+ */
+
+function rearrangeGrid(
+  iconIds: string[], 
+  currentPos: Record<string, GridPosition>, 
+  draggedId: string, 
+  targetCell: GridPosition, ... 
+): Record<string, GridPosition>
+/**
+ * Complex logic to shift icons aside when dropping one in between others.
+ */
+```
 
 ### Colors (`colors.ts`)
-Utilities for theme generation.
-- **`lightenColor`/`darkenColor`**: Hex-based brightness manipulation.
-- **`mixColors(color1, color2, weight)`**: Blends two colors, used for generating theme tints.
-- **`getComplementaryColor(hex)`**: Used for the 'Contrast' theme mode.
+
+```typescript
+function lightenColor(hex: string, percent: number): string
+function darkenColor(hex: string, percent: number): string
+
+function mixColors(color1: string, color2: string, weight: number): string
+/**
+ * Blends two colors together. Weight 0-1.
+ */
+
+function getComplementaryColor(hex: string): string
+/**
+ * Returns the opposite color on the color wheel. Used for 'Contrast' theme.
+ */
+
+function hexToRgb(hex: string): { r: number; g: number; b: number }
+function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number }
+```
 
 ## 2. Global State & Contexts (`src/components`)
 
 ### FileSystemContext (`FileSystemContext.tsx`)
-The "Kernel" of the OS.
-- **`users` State**: The user database, persisted to `aurora-users` and synced bi-directionally with `/etc/passwd`.
-- **`moveNodeById(id, destPath)`**: **[SECURE]** Drag-and-drop handler with permission enforcement. Prevents moving system files or moving folders into themselves.
-- **`createFile/createDirectory`**: Enforces Write permissions on parent folders.
-- **`listDirectory/readFile`**: Enforces Read permissions on target nodes.
-- **`resetFileSystem()`**: Trigger for the `hardReset` logic.
+
+Core OS state provider.
+
+```typescript
+interface FileSystemContextType {
+  // State
+  fileSystem: FileNode;
+  users: User[];
+  currentUser: string | null;
+  currentPath: string;
+
+  // Actions
+  login(username: string, password?: string): boolean
+  logout(): void
+  
+  addUser(username: string, fullName: string, password?: string): boolean
+  deleteUser(username: string): boolean
+
+  writeFile(path: string, content: string): boolean
+  readFile(path: string): string | null
+  createFile(path: string, name: string, content?: string): boolean
+  createDirectory(path: string, name: string): boolean
+  
+  moveNode(fromPath: string, toPath: string): boolean
+  deleteNode(path: string): boolean
+  
+  resetFileSystem(): void
+}
+```
 
 ### AppContext (`AppContext.tsx`)
 Global configuration state.
-- **`useAppContext()`**: Accessor for `accentColor`, `themeMode` (neutral/shades/contrast), and performance flags (`blurEnabled`, `reduceMotion`).
+- **`useAppContext()`**: Accessor for global UI state and System Configuration.
+    - **`isLocked`**: Global boolean state triggering the `LoginScreen` overlay.
+    - **`switchUser(username)`**: Helper to load user-specific preferences (theme, background, windows).
 - **CSS Variable Sync**: Automatically writes state updates to CSS variables (`--accent-user`, `--blur-enabled`) for global styling.
 
-## 3. Custom Hooks (`src/hooks`)
+### App Structure (`App.tsx`)
+
+- **`AppContent`**:
+    - **Overlay Architecture**: Renders `<OS />` for the active user *behind* the `<LoginScreen />` when `isLocked` is true.
+    - **Session Recovery**: Uses `useEffect` hooks to hydrate `WindowState` and `IconPositions` from `localStorage` keyed by `activeUser`.
+
+## 3. Applications (`src/components/apps` & `FileManager.tsx`)
+
+### Finder (`FileManager.tsx`)
+The primary file explorer.
+- **`navigateTo(path)`**: **[SECURE]** Pre-checks `read` and `execute` permissions before entering a directory. Prevents access to restricted folders (e.g., `/root`).
+- **Sidebar & Breadcrumbs**: Dynamic navigation components that respect the current browsing context.
+
+## 4. Custom Hooks (`src/hooks`)
 
 ### `useThemeColors()`
-Dynamic color generation engine.
-- Generates a semantic color palette (`windowBackground`, `titleBarBackground`, etc.) based on the user's `accentColor`.
-- Handles `blurEnabled` logic (disabling transparency/backdrop-filter if blur is off).
-- Implements theme modes:
-    - **Neutral**: Pure dark gray (`#171717`).
-    - **Shades**: Tinted dark gray (mixed with accent).
-    - **Contrast**: Tinted with complementary color.
+
+```typescript
+function useThemeColors(): {
+  accentColor: string;
+  themeMode: 'neutral' | 'shades' | 'contrast';
+  blurEnabled: boolean;
+  
+  // Use this for generic backgrounds
+  getBackgroundColor(opacity?: number): string; 
+
+  // Pre-defined hierarchy (use these preferentially)
+  windowBackground: string;      // Content layers
+  sidebarBackground: string;     // Sidebars
+  titleBarBackground: string;    // Headers
+  dockBackground: string;        // Dock
+  
+  blurStyle: React.CSSProperties; // { backdropFilter: ... }
+}
+```
 
 ### `useAppStorage(appId, initial)`
 Namespaced persistence hook.
 - Wraps `localStorage` but prefixes keys with `aurora-os-app-${appId}`.
 - Allows apps (Finder, Terminal) to save state without colliding or needing to manage raw storage keys.
 
-## 4. Services (`src/services`)
+## 5. Services (`src/services`)
 
 ### SoundManager (`sound.ts`)
-Singleton audio controller.
-- **Channel System**: Separates 'Master', 'System', 'UI', and 'Feedback' volume channels.
-- **`play(type)`**: Plays preloaded sounds based on semantic names ('click', 'error') adjusting for channel volume.
+
+```typescript
+type SoundType = 'success' | 'warning' | 'error' | 'click' | 'hover' | 'folder' | 'window-open' | 'window-close';
+type SoundCategory = 'master' | 'system' | 'ui' | 'feedback';
+
+class SoundManager {
+  static getInstance(): SoundManager
+  
+  play(type: SoundType): void
+  setVolume(category: SoundCategory, value: number): void
+  setMute(muted: boolean): void
+}
+
+export const soundManager: SoundManager;
+```
 
 ### NotificationService (`notifications.tsx`)
-- **`notify.system(type, source, message)`**: Standardized system toaster that handles both the UI (Sonner toast) and Audio feedback (Success/Error sounds) simultaneously.
 
-## 5. Applications (`src/components/apps`)
-
-### Terminal (`Terminal.tsx`)
-A fully functional shell emulator using React state.
-- **Command Parsing**: Custom parser supporting arguments, flags, and quoting.
-- **Redirection**: Supports `>` (overwrite) and `>>` (append) standard shell operators.
-- **Globbing**: Basic `*` wildcard expansion.
-- **Built-in Commands**: `cd` (with permission checks), `ls` (long format support), `cat`, `rm`, `echo`, etc.
-- **Scripting**: Basic hashbang (`#!app`) support to launch other OS apps.
-
+```typescript
+export const notify = {
+  system: (type: 'success'|'warning'|'error', source: string, message: string) => void
+}
+/**
+ * Triggers a system toast + corresponding audio feedback.
+ */
+```
