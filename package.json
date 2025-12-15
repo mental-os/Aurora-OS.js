@@ -1,6 +1,6 @@
 {
       "name": "aurora-os-js",
-      "version": "0.7.2-patch2",
+      "version": "0.7.2-patch3",
       "private": true,
       "type": "module",
       "dependencies": {

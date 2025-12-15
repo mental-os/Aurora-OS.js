@@ -24,6 +24,7 @@ import { chmod } from './commands/chmod';
 import { chown } from './commands/chown';
 import { su } from './commands/su';
 import { sudo } from './commands/sudo';
+import { exit } from './commands/exit';
 
 export const commands: Record<string, TerminalCommand> = {
     pwd,
@@ -51,6 +52,7 @@ export const commands: Record<string, TerminalCommand> = {
     chown,
     su,
     sudo,
+    exit,
 };
 
 export function getCommand(name: string): TerminalCommand | undefined {

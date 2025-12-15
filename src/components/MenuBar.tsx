@@ -6,7 +6,7 @@ import { useAppContext } from './AppContext';
 import { useFileSystem } from './FileSystemContext';
 import { AudioApplet } from './AudioApplet';
 import { NotificationCenter } from './NotificationCenter';
-import { hardReset } from '../utils/memory';
+import { hardReset, clearSession } from '../utils/memory';
 import {
   Menubar,
   MenubarMenu,
@@ -17,6 +17,7 @@ import {
   MenubarShortcut,
 } from './ui/menubar';
 import { Badge } from './ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface MenuBarProps {
   focusedApp?: string | null;
@@ -169,28 +170,60 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                 window.dispatchEvent(new CustomEvent('aurora-open-settings-section', { detail: 'about' }));
                 onOpenApp?.('settings');
               }}>
-                About This Computer...
+                <Tooltip>
+                  <TooltipTrigger className="w-full text-left">About This Computer...</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={10}>
+                    <p>View system information</p>
+                  </TooltipContent>
+                </Tooltip>
+                {/* <MenubarShortcut>⌘M</MenubarShortcut> */}
               </MenubarItem>
               <MenubarSeparator className="bg-white/10" />
               <MenubarItem onClick={() => onOpenApp?.('settings')}>
-                System Settings...
+                <Tooltip>
+                  <TooltipTrigger className="w-full text-left">System Settings...</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={10}>
+                    <p>View system settings</p>
+                  </TooltipContent>
+                </Tooltip>
               </MenubarItem>
-              <MenubarItem>App Store...</MenubarItem>
+              <MenubarItem>App Store...<MenubarShortcut>Soon</MenubarShortcut></MenubarItem>
               <MenubarSeparator className="bg-white/10" />
               <MenubarItem onClick={() => {
                 // Lock Screen -> Overlay LoginScreen but KEEP session
                 setIsLocked(true);
               }}>
-                Lock Screen
+                <Tooltip>
+                  <TooltipTrigger className="w-full text-left">Lock Screen</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={10}>
+                    <p>Return to login screen while <b>keeping session</b></p>
+                  </TooltipContent>
+                </Tooltip>
+              </MenubarItem>
+              <MenubarItem onClick={() => {
+                // Switch User -> Logout to suspend, keep storage
+                logout();
+              }}>
+                <Tooltip>
+                  <TooltipTrigger className="w-full text-left">Switch User...</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={10}>
+                    <p>Return to user selection screen while <b>keeping session</b></p>
+                  </TooltipContent>
+                </Tooltip>
               </MenubarItem>
               <MenubarItem onClick={() => {
                 // Log Out -> Clear windows session
                 if (currentUser) {
-                  localStorage.removeItem(`aurora-os-windows-${currentUser}`);
+                  clearSession(currentUser);
                 }
                 logout();
               }}>
-                Log Out {currentUser ? currentUser : 'User'}...
+                <Tooltip>
+                  <TooltipTrigger className="w-full text-left">Log Out {currentUser ? currentUser : 'User'}...</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={10}>
+                    <p>Return to user selection screen while <b>clearing session</b></p>
+                  </TooltipContent>
+                </Tooltip>
               </MenubarItem>
               <MenubarSeparator className="bg-white/10" />
               <MenubarItem
@@ -201,7 +234,13 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                 }}
                 className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
               >
-                PANIC <Badge variant="destructive" className="ml-auto text-[10px] h-5 px-1.5">Hard Reset</Badge>
+                <Tooltip>
+                  <TooltipTrigger className="w-full text-left">PANIC</TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={10}>
+                    <p><b>Warning:</b> This will reset AuroraOS to factory defaults. Good as a panic button if something goes wrong, too.</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Badge variant="destructive" className="ml-auto text-[10px] h-5 px-1.5">Hard Reset</Badge>
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
@@ -266,7 +305,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
           <span>{currentTime}</span>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

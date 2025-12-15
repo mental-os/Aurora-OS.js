@@ -69,12 +69,7 @@ function formatGroup(groups: Group[]): string
  * Logic to sync Group objects with the textual content of /etc/group.
  */
 
-function moveNodeById(id: string, destPath: string): boolean
-/**
- * Securely moves a node to a new destination by ID.
- * Enforces permissions and prevents cyclic directory moves.
- */
-```
+
 
 ### Memory Management (`memory.ts`)
 
@@ -92,6 +87,16 @@ function hardReset(): void
 function getStorageStats(): { softMemory: Stats, hardMemory: Stats, total: Stats }
 /**
  * Calculates byte usage for storage tiers.
+ */
+
+function hasSavedSession(username: string): boolean
+/**
+ * Checks if a user has active window state in memory.
+ */
+
+function clearSession(username: string): void
+/**
+ * Clears the suspended session data for a specific user.
  */
 ```
 
@@ -201,7 +206,7 @@ Global configuration state.
 
 - **`AppContent`**:
     - **Overlay Architecture**: Renders `<OS />` for the active user *behind* the `<LoginScreen />` when `isLocked` is true.
-    - **Session Recovery**: Uses `useEffect` hooks to hydrate `WindowState` and `IconPositions` from `localStorage` keyed by `activeUser`.
+    - **State Management**: Uses `useWindowManager` to handle window lifecycle and persistence, keeping the main component clean.
 
 ## 3. Applications (`src/components/apps` & `FileManager.tsx`)
 
@@ -228,9 +233,32 @@ interface TerminalCommand {
 - **Output Redirection**: Parses `>` and `>>` to write command output to files (supports overwriting and appending).
 - **User Switching**: `su` and `sudo` commands allow switching the active simulation user.
 - **Registry**: Commands are registered in `registry.ts` for O(1) lookup.
+- **Session Isolation**:
+    - **Session Stack**: A generic stack (`activeTerminalUser[]`) manages nested sessions (e.g. `user` -> `root`). `exit` pops the stack.
+    - **Scoped FileSystem**: `createScopedFileSystem(asUser)` wraps the `FileSystemContext` to enforce permissions based on the active terminal user, not the global desktop user.
+    - **Command Context**: Commands receive `terminalUser`, `spawnSession`, and `closeSession` to manage their own lifecycle.
 
 
 ## 4. Custom Hooks (`src/hooks`)
+
+### `useWindowManager(activeUser, contentFactory)`
+
+```typescript
+function useWindowManager(): {
+  windows: WindowState[];
+  openWindow(type: string, data?: any): void;
+  closeWindow(id: string): void;
+  minimizeWindow(id: string): void;
+  maximizeWindow(id: string): void;
+  focusWindow(id: string): void;
+}
+/**
+ * Encapsulates all window management logic:
+ * - Maintenance of Z-Index stacking order.
+ * - Persistent storage of open windows to Memory.
+ * - Minimization/Maximization state toggling.
+ */
+```
 
 ### `useThemeColors()`
 
@@ -287,3 +315,18 @@ export const notify = {
  * Triggers a system toast + corresponding audio feedback.
  */
 ```
+
+## 6. System Migrations (`src/utils/migrations.ts`)
+
+To ensure backward compatibility for users on GitHub Pages (who persist data via `localStorage`), Aurora OS implements an automated migration strategy.
+
+### Mechanism
+Implements a "Smart Merge" strategy that prioritizes user customizations while delivering new system features.
+
+1.  **Version Tracking**: Checks `package.json` vs `localStorage`.
+2.  **Detection**: If version mismatch:
+    -   **New Features**: Adds *new* files/directories found in the update (e.g., adding `/bin/netcat`).
+    -   **Respect Modifications**: If a file exists in the user's storage (e.g., custom `/sys/kernel`), it is **preserved**.
+    -   **Critical Updates**: Only overwrites files if they are flagged as functionally incompatible with the new engine (rare).
+    -   **Schema Healing**: Auto-fixes data structure issues (e.g., missing IDs, outdated user objects).
+3.  **Result**: Users get new features without losing their "hacks" or custom configs.

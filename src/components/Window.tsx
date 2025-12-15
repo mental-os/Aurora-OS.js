@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Maximize2 } from 'lucide-react';
 import { Rnd } from 'react-rnd';
-import type { WindowState } from '../App';
+import type { WindowState } from '../hooks/useWindowManager';
 import { useAppContext } from './AppContext';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { cn } from './ui/utils';

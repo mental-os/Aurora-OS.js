@@ -11,6 +11,9 @@ export interface CommandContext {
     // So we pass the local resolver.
     resolvePath: (path: string) => string;
     allCommands: TerminalCommand[];
+    terminalUser: string;
+    spawnSession: (username: string) => void;
+    closeSession: () => void;
 }
 
 export interface CommandResult {

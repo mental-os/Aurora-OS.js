@@ -147,3 +147,21 @@ export function formatBytes(bytes: number): string {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
+
+/**
+ * Check if a user has a saved window session
+ */
+export function hasSavedSession(username: string): boolean {
+    const key = `${STORAGE_KEYS.WINDOWS_PREFIX}${username}`;
+    return !!localStorage.getItem(key);
+}
+
+/**
+ * Clear a user's saved window session
+ */
+export function clearSession(username: string): void {
+    const key = `${STORAGE_KEYS.WINDOWS_PREFIX}${username}`;
+    localStorage.removeItem(key);
+    console.log(`Cleared session for user: ${username}`);
+}
+

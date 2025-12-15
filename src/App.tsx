@@ -18,24 +18,10 @@ import { AppProvider, useAppContext } from './components/AppContext';
 import { FileSystemProvider, useFileSystem, type FileSystemContextType } from './components/FileSystemContext';
 import { Toaster } from './components/ui/sonner';
 import { getGridConfig, gridToPixel, pixelToGrid, findNextFreeCell, gridPosToKey, rearrangeGrid, type GridPosition } from './utils/gridSystem';
-import { notify } from './services/notifications';
 import { feedback } from './services/soundFeedback';
 
-const POSITIONS_STORAGE_KEY = 'aurora-os-desktop-positions';
-const WINDOWS_STORAGE_PREFIX = 'aurora-os-windows-';
-
-export interface WindowState {
-  id: string;
-  type: string; // App ID (e.g. 'finder', 'settings')
-  title: string;
-  content: React.ReactNode;
-  isMinimized: boolean;
-  isMaximized: boolean;
-  position: { x: number; y: number };
-  size: { width: number; height: number };
-  zIndex: number;
-  data?: any; // Extra data like path for finder
-}
+import { STORAGE_KEYS } from './utils/memory';
+import { useWindowManager } from './hooks/useWindowManager';
 
 export interface DesktopIcon {
   id: string;
@@ -45,18 +31,6 @@ export interface DesktopIcon {
   isEmpty?: boolean;
 }
 
-interface WindowSession {
-  id: string;
-  type: string;
-  title: string;
-  isMinimized: boolean;
-  isMaximized: boolean;
-  position: { x: number; y: number };
-  size: { width: number; height: number };
-  zIndex: number;
-  data?: any;
-}
-
 // ... existing code ...
 
 
@@ -64,7 +38,7 @@ interface WindowSession {
 // Load icon positions (supports both pixel and grid formats with migration)
 function loadIconPositions(): Record<string, GridPosition> {
   try {
-    const stored = localStorage.getItem(POSITIONS_STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.DESKTOP_ICONS);
     if (stored) {
       const data = JSON.parse(stored);
       const firstKey = Object.keys(data)[0];
@@ -89,10 +63,6 @@ function loadIconPositions(): Record<string, GridPosition> {
 
 function OS() {
   const { activeUser } = useAppContext();
-  const [windows, setWindows] = useState<WindowState[]>([]);
-  const [isRestoring, setIsRestoring] = useState(true);
-
-  const topZIndexRef = useRef(100);
 
   // Track window size for responsive icon positioning
   const [windowSize, setWindowSize] = useState({
@@ -125,7 +95,7 @@ function OS() {
 
   // Save grid positions when they change
   useEffect(() => {
-    localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(iconGridPositions));
+    localStorage.setItem(STORAGE_KEYS.DESKTOP_ICONS, JSON.stringify(iconGridPositions));
   }, [iconGridPositions]);
 
   // Derive desktop icons from filesystem + grid positions
@@ -254,150 +224,25 @@ function OS() {
     return { content, title };
   }, []); // Dependencies? openWindowRef is stable
 
-  // Load windows on mount / user change
-  useEffect(() => {
-    setIsRestoring(true);
-    const key = `${WINDOWS_STORAGE_PREFIX}${activeUser}`;
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const sessions: WindowSession[] = JSON.parse(stored);
-        const restoredWindows: WindowState[] = sessions.map(session => {
-          const { content } = getAppContent(session.type, session.data);
-          // Use stored title if available, else default (though session.title IS stored)
-          return {
-            ...session,
-            content,
-            // Ensure title is up to date
-          };
-        });
-
-        // Find max Z-Index to continue correctly
-        const maxZ = Math.max(100, ...restoredWindows.map(w => w.zIndex));
-        topZIndexRef.current = maxZ;
-
-        setWindows(restoredWindows);
-      } else {
-        setWindows([]);
-      }
-    } catch (e) {
-      console.warn('Failed to restore windows:', e);
-      setWindows([]);
-    } finally {
-      setIsRestoring(false);
-    }
-  }, [activeUser, getAppContent]);
-
-  // Persist windows on change (Debounced)
-  useEffect(() => {
-    if (isRestoring) return; // Don't save while restoring
-
-    const key = `${WINDOWS_STORAGE_PREFIX}${activeUser}`;
-
-    // Map to serializable format
-    const sessions: WindowSession[] = windows.map(w => ({
-      id: w.id,
-      type: w.type,
-      title: w.title,
-      isMinimized: w.isMinimized,
-      isMaximized: w.isMaximized,
-      position: w.position,
-      size: w.size,
-      zIndex: w.zIndex,
-      data: w.data
-    }));
-
-    try {
-      localStorage.setItem(key, JSON.stringify(sessions));
-    } catch (e) {
-      console.warn('Failed to save windows:', e);
-    }
-  }, [windows, activeUser, isRestoring]);
-
-  // ... rest of code
-
-  const openWindow = useCallback((type: string, data?: { path?: string }) => {
-    feedback.windowOpen();
-
-    const { content, title } = getAppContent(type, data);
-
-    setWindows(prevWindows => {
-      topZIndexRef.current += 1;
-      const newZIndex = topZIndexRef.current;
-      const newWindow: WindowState = {
-        id: `${type}-${Date.now()}`,
-        type, // Store app type
-        title,
-        content,
-        isMinimized: false,
-        isMaximized: false,
-        position: { x: 100 + prevWindows.length * 30, y: 80 + prevWindows.length * 30 },
-        size: { width: 900, height: 600 },
-        zIndex: newZIndex,
-        data, // Store args
-      };
-      return [...prevWindows, newWindow];
-    });
-  }, [getAppContent]);
-
+  // Use Window Manager Hook
+  const {
+    windows,
+    openWindow,
+    closeWindow,
+    minimizeWindow,
+    maximizeWindow,
+    focusWindow,
+    updateWindowState
+  } = useWindowManager(activeUser, getAppContent);
 
   useEffect(() => {
     openWindowRef.current = openWindow;
   }, [openWindow]);
 
-  const closeWindow = useCallback((id: string) => {
-    feedback.windowClose();
-    //notify.system('success', id, 'Application closed successfully');
-    setWindows(prevWindows => prevWindows.filter(w => w.id !== id));
-  }, []);
-
-  const minimizeWindow = useCallback((id: string) => {
-    //feedback.click();
-    notify.system('success', id, 'Application minimized successfully');
-    setWindows(prevWindows => {
-      const updated = prevWindows.map(w =>
-        w.id === id ? { ...w, isMinimized: true } : w
-      );
-
-      const visibleWindows = updated.filter(w => !w.isMinimized);
-      if (visibleWindows.length > 0) {
-        const topWindow = visibleWindows.reduce((max, w) =>
-          w.zIndex > max.zIndex ? w : max, visibleWindows[0]
-        );
-        topZIndexRef.current += 1;
-        const newZIndex = topZIndexRef.current;
-        return updated.map(w =>
-          w.id === topWindow.id ? { ...w, zIndex: newZIndex } : w
-        );
-      }
-
-      return updated;
-    });
-  }, []);
-
-  const maximizeWindow = useCallback((id: string) => {
-    //feedback.click();
-    notify.system('success', id, 'Application maximized successfully');
-    setWindows(prevWindows => prevWindows.map(w =>
-      w.id === id ? { ...w, isMaximized: !w.isMaximized } : w
-    ));
-  }, []);
-
-  const focusWindow = useCallback((id: string) => {
-    setWindows(prevWindows => {
-      topZIndexRef.current += 1;
-      const newZIndex = topZIndexRef.current;
-      return prevWindows.map(w =>
-        w.id === id ? { ...w, zIndex: newZIndex, isMinimized: false } : w
-      );
-    });
-  }, []);
-
-  const updateWindowState = useCallback((id: string, updates: Partial<WindowState>) => {
-    setWindows(prevWindows => prevWindows.map(w =>
-      w.id === id ? { ...w, ...updates } : w
-    ));
-  }, []);
+  /* 
+   * Window interaction handlers are now managed by useWindowManager
+   * Persistence logic is also encapsulated there.
+   */
 
   const updateIconPosition = useCallback((id: string, position: { x: number; y: number }) => {
     const config = getGridConfig(window.innerWidth, window.innerHeight);

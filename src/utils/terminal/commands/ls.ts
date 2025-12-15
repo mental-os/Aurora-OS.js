@@ -13,7 +13,8 @@ export const ls: TerminalCommand = {
     description: 'List directory contents',
     usage: 'ls [path]',
     execute: ({ args, fileSystem, resolvePath, currentPath }) => {
-        const pathsToList = args.length > 0 ? args.filter(a => !a.startsWith('-')) : [''];
+        let pathsToList = args.filter(a => !a.startsWith('-'));
+        if (pathsToList.length === 0) pathsToList = [''];
         const longFormat = args.includes('-l') || args.includes('-la') || args.includes('-al') || args.includes('-ll');
 
         const allOutputs: (string | ReactNode)[] = [];

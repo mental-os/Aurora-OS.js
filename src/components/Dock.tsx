@@ -1,7 +1,7 @@
 import { FolderOpen, Settings, Mail, Calendar, Image, Music, Video, Terminal, Globe, MessageSquare, Trash, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect, useMemo, memo } from 'react';
-import type { WindowState } from '../App';
+import type { WindowState } from '../hooks/useWindowManager';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useAppContext } from './AppContext';
 import { useFileSystem } from './FileSystemContext';

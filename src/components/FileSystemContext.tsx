@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { notify } from '../services/notifications';
 
+import { hardReset } from '../utils/memory';
 import {
   FileNode,
   deepCloneFileNode,
@@ -15,10 +16,18 @@ import {
   createUserHome,
   checkPermissions,
   octalToPermissions,
-  Group,
+  type Group,
   parseGroup,
   formatGroup
 } from '../utils/fileSystemUtils';
+
+import {
+  checkMigrationNeeded,
+  migrateFileSystem,
+  migrateUsers,
+  migrateGroups,
+  updateStoredVersion
+} from '../utils/migrations';
 
 export type { FileNode, User, Group } from '../utils/fileSystemUtils';
 
@@ -29,25 +38,25 @@ export interface FileSystemContextType {
   users: User[];
   homePath: string;
   setCurrentPath: (path: string) => void;
-  getNodeAtPath: (path: string) => FileNode | null;
-  createFile: (path: string, name: string, content?: string) => boolean;
-  createDirectory: (path: string, name: string) => boolean;
-  deleteNode: (path: string) => boolean;
+  getNodeAtPath: (path: string, asUser?: string) => FileNode | null;
+  createFile: (path: string, name: string, content?: string, asUser?: string) => boolean;
+  createDirectory: (path: string, name: string, asUser?: string) => boolean;
+  deleteNode: (path: string, asUser?: string) => boolean;
   addUser: (username: string, fullName: string, password?: string) => boolean;
   deleteUser: (username: string) => boolean;
-  writeFile: (path: string, content: string) => boolean;
-  readFile: (path: string) => string | null;
-  listDirectory: (path: string) => FileNode[] | null;
-  moveNode: (fromPath: string, toPath: string) => boolean;
+  writeFile: (path: string, content: string, asUser?: string) => boolean;
+  readFile: (path: string, asUser?: string) => string | null;
+  listDirectory: (path: string, asUser?: string) => FileNode[] | null;
+  moveNode: (fromPath: string, toPath: string, asUser?: string) => boolean;
   moveNodeById: (id: string, destParentPath: string) => boolean;
-  moveToTrash: (path: string) => boolean;
+  moveToTrash: (path: string, asUser?: string) => boolean;
   emptyTrash: () => void;
   resolvePath: (path: string) => string;
   resetFileSystem: () => void;
   login: (username: string, password?: string) => boolean;
   logout: () => void;
-  chmod: (path: string, mode: string) => boolean;
-  chown: (path: string, owner: string, group?: string) => boolean;
+  chmod: (path: string, mode: string, asUser?: string) => boolean;
+  chown: (path: string, owner: string, group?: string, asUser?: string) => boolean;
   groups: Group[];
   addGroup: (groupName: string, members?: string[]) => boolean;
   deleteGroup: (groupName: string) => boolean;
@@ -61,8 +70,14 @@ function loadFileSystem(): FileNode {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
-      // Ensure IDs exist on stored data (migration)
+      let parsed = JSON.parse(stored);
+
+      // Perform Migration if needed
+      if (checkMigrationNeeded()) {
+        parsed = migrateFileSystem(parsed, initialFileSystem);
+      }
+
+      // Ensure IDs exist on stored data
       return ensureIds(parsed);
     }
   } catch (e) {
@@ -91,26 +106,17 @@ function loadUsers(): User[] {
   try {
     const stored = localStorage.getItem(USERS_STORAGE_KEY);
     if (stored) {
-      console.log('Loaded users from storage:', JSON.parse(stored));
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(u => u.username && typeof u.uid === 'number')) {
-        // Heal/Migrate users: If standard users are missing passwords (legacy data), restore defaults
-        return parsed.map(u => {
-          const defaultUser = DEFAULT_USERS.find(du => du.username === u.username);
-          // If it's a default user identity but has no password (or 'x'), restore default password
-          if (defaultUser && (!u.password || u.password === 'x')) {
-            console.log(`Restoring default password for user: ${u.username}`);
-            return { ...u, password: defaultUser.password };
-          }
-          return u;
-        });
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        if (checkMigrationNeeded()) {
+          return migrateUsers(parsed, DEFAULT_USERS);
+        }
+        return parsed;
       }
-      console.warn('Stored users data corrupted or empty, reverting to defaults');
     }
   } catch (e) {
     console.warn('Failed to load users:', e);
   }
-  console.log('Using default users');
   return DEFAULT_USERS;
 }
 
@@ -126,7 +132,11 @@ function loadGroups(): Group[] {
   try {
     const stored = localStorage.getItem(GROUPS_STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (checkMigrationNeeded()) {
+        return migrateGroups(parsed, DEFAULT_GROUPS);
+      }
+      return parsed;
     }
   } catch (e) {
     console.warn('Failed to load groups:', e);
@@ -298,9 +308,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
 
   // Reset filesystem to initial state
   const resetFileSystem = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(USERS_STORAGE_KEY);
-    localStorage.removeItem(GROUPS_STORAGE_KEY);
+    hardReset();
     setFileSystem(deepCloneFileSystem(initialFileSystem));
     setUsers(DEFAULT_USERS);
     setGroups(DEFAULT_GROUPS);
@@ -308,50 +316,62 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     notify.system('success', 'System', 'System reset to factory defaults');
   }, []);
 
-  const getNodeAtPath = useCallback((path: string): FileNode | null => {
+  const getNodeAtPath = useCallback((path: string, asUser?: string): FileNode | null => {
     const resolved = resolvePath(path);
     if (resolved === '/') return fileSystem;
     const parts = resolved.split('/').filter(p => p);
     let current: FileNode | null = fileSystem;
+
+    // Resolve acting user
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
     for (const part of parts) {
       if (!current || current.type !== 'directory' || !current.children) return null;
-      if (!checkPermissions(current, userObj, 'execute')) return null;
+      if (!checkPermissions(current, actingUser, 'execute')) return null;
       current = current.children.find(child => child.name === part) || null;
     }
     return current;
-  }, [fileSystem, resolvePath, userObj]);
+  }, [fileSystem, resolvePath, userObj, users]);
 
-  const listDirectory = useCallback((path: string): FileNode[] | null => {
-    const node = getNodeAtPath(path);
+  const listDirectory = useCallback((path: string, asUser?: string): FileNode[] | null => {
+    const node = getNodeAtPath(path, asUser);
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
     if (!node || node.type !== 'directory') return null;
-    if (!checkPermissions(node, userObj, 'read')) {
-      notify.system('error', 'Permission Denied', `Cannot open directory ${node.name}: Permission denied`);
+    if (!checkPermissions(node, actingUser, 'read')) {
+      // notify.system('error', 'Permission Denied', `Cannot open directory ${node.name}: Permission denied`); 
+      // Sudo might want to handle error silently or differently? Keeping notify for now.
       return null;
     }
     return node.children || [];
-  }, [getNodeAtPath, userObj]);
+  }, [getNodeAtPath, userObj, users]);
 
-  const readFile = useCallback((path: string): string | null => {
-    const node = getNodeAtPath(path);
+  const readFile = useCallback((path: string, asUser?: string): string | null => {
+    const node = getNodeAtPath(path, asUser);
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
     if (!node || node.type !== 'file') return null;
-    if (!checkPermissions(node, userObj, 'read')) {
-      notify.system('error', 'Permission Denied', `Cannot read file ${node.name}: Permission denied`);
+    if (!checkPermissions(node, actingUser, 'read')) {
+      // notify.system('error', 'Permission Denied', `Cannot read file ${node.name}: Permission denied`);
       return null;
     }
     return node.content || '';
-  }, [getNodeAtPath, userObj]);
+  }, [getNodeAtPath, userObj, users]);
 
-  const deleteNode = useCallback((path: string): boolean => {
+  const deleteNode = useCallback((path: string, asUser?: string): boolean => {
     const resolved = resolvePath(path);
     if (resolved === '/') return false;
     const parts = resolved.split('/').filter(p => p);
     const name = parts.pop();
     if (!name) return false;
     const parentPath = resolved.substring(0, resolved.lastIndexOf('/')) || '/';
-    const parentNode = getNodeAtPath(parentPath);
+    const parentNode = getNodeAtPath(parentPath, asUser);
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+    const effectiveUsername = actingUser.username;
+
     if (!parentNode) return false;
-    if (!checkPermissions(parentNode, userObj, 'write')) {
-      notify.system('error', 'Permission Denied', `Cannot delete ${name}: Permission denied`);
+    if (!checkPermissions(parentNode, actingUser, 'write')) {
+      // notify.system('error', 'Permission Denied', `Cannot delete ${name}: Permission denied`);
       return false;
     }
     const targetNode = parentNode.children?.find(c => c.name === name);
@@ -359,9 +379,9 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     const perms = parentNode.permissions || '';
     const isSticky = perms.endsWith('t') || perms.endsWith('T');
     if (isSticky) {
-      const isOwnerOfFile = targetNode.owner === currentUser;
-      const isOwnerOfParent = parentNode.owner === currentUser;
-      if (!isOwnerOfFile && !isOwnerOfParent && currentUser !== 'root') {
+      const isOwnerOfFile = targetNode.owner === effectiveUsername;
+      const isOwnerOfParent = parentNode.owner === effectiveUsername;
+      if (!isOwnerOfFile && !isOwnerOfParent && effectiveUsername !== 'root') {
         notify.system('error', 'Permission Denied', `Sticky bit constraint: You can only delete your own files in ${parentNode.name}`);
         return false;
       }
@@ -376,17 +396,21 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       return newFS;
     });
     return true;
-  }, [resolvePath, getNodeAtPath, userObj, currentUser]);
+  }, [resolvePath, getNodeAtPath, userObj, currentUser, users]);
 
-  const moveNode = useCallback((fromPath: string, toPath: string): boolean => {
+  const moveNode = useCallback((fromPath: string, toPath: string, asUser?: string): boolean => {
     const resolvedFrom = resolvePath(fromPath);
     const resolvedTo = resolvePath(toPath);
-    const node = getNodeAtPath(resolvedFrom);
+
+    // Resolve acting user
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
+    const node = getNodeAtPath(resolvedFrom, asUser);
     if (!node) return false;
     const sourceParentPath = resolvedFrom.substring(0, resolvedFrom.lastIndexOf('/')) || '/';
-    const sourceParent = getNodeAtPath(sourceParentPath);
-    if (!sourceParent || !checkPermissions(sourceParent, userObj, 'write')) {
-      notify.system('error', 'Permission Denied', `Cannot move from ${sourceParentPath}`);
+    const sourceParent = getNodeAtPath(sourceParentPath, asUser);
+    if (!sourceParent || !checkPermissions(sourceParent, actingUser, 'write')) {
+      // notify.system('error', 'Permission Denied', `Cannot move from ${sourceParentPath}`);
       return false;
     }
     const nodeToMove = deepCloneFileNode(node);
@@ -394,14 +418,14 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     const newName = toParts.pop();
     const parentPath = '/' + toParts.join('/');
     if (!newName) return false;
-    const destParent = getNodeAtPath(parentPath);
+    const destParent = getNodeAtPath(parentPath, asUser);
     if (!destParent || destParent.type !== 'directory' || !destParent.children) return false;
-    if (!checkPermissions(destParent, userObj, 'write')) {
-      notify.system('error', 'Permission Denied', `Cannot move to ${parentPath}`);
+    if (!checkPermissions(destParent, actingUser, 'write')) {
+      // notify.system('error', 'Permission Denied', `Cannot move to ${parentPath}`);
       return false;
     }
     if (destParent.children.some(child => child.name === newName)) return false;
-    const deleteSuccess = deleteNode(resolvedFrom);
+    const deleteSuccess = deleteNode(resolvedFrom, asUser);
     if (!deleteSuccess) return false;
     nodeToMove.name = newName;
     setFileSystem(prevFS => {
@@ -415,7 +439,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       return newFS;
     });
     return true;
-  }, [getNodeAtPath, deleteNode, resolvePath, userObj]);
+  }, [getNodeAtPath, deleteNode, resolvePath, userObj, users]);
 
   const moveNodeById = useCallback((id: string, destParentPath: string): boolean => {
     const result = findNodeAndParent(fileSystem, id);
@@ -469,15 +493,17 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     return true;
   }, [fileSystem, resolvePath, getNodeAtPath, userObj]);
 
-  const moveToTrash = useCallback((path: string): boolean => {
+  const moveToTrash = useCallback((path: string, asUser?: string): boolean => {
     const resolved = resolvePath(path);
     const trashPath = resolvePath('~/.Trash');
-    if (resolved.startsWith(trashPath)) return deleteNode(path);
+    if (resolved.startsWith(trashPath)) return deleteNode(path, asUser);
     const fileName = resolved.split('/').pop();
     if (!fileName) return false;
     let destPath = `${trashPath}/${fileName}`;
     let counter = 1;
-    while (getNodeAtPath(destPath)) {
+    // Check destination existence (needs getNodeAtPath permission? No, writing to Trash needs write perm)
+    // Here we just checking name collision
+    while (getNodeAtPath(destPath, asUser)) {
       const extIndex = fileName.lastIndexOf('.');
       if (extIndex > 0) {
         const name = fileName.substring(0, extIndex);
@@ -488,7 +514,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       }
       counter++;
     }
-    return moveNode(path, destPath);
+    return moveNode(path, destPath, asUser);
   }, [resolvePath, getNodeAtPath, moveNode, deleteNode]);
 
   const emptyTrash = useCallback(() => {
@@ -509,12 +535,14 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     });
   }, [resolvePath]);
 
-  const createFile = useCallback((path: string, name: string, content: string = ''): boolean => {
+  const createFile = useCallback((path: string, name: string, content: string = '', asUser?: string): boolean => {
     const resolved = resolvePath(path);
-    const node = getNodeAtPath(resolved);
+    const node = getNodeAtPath(resolved, asUser);
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
     if (!node || node.type !== 'directory' || !node.children) return false;
-    if (!checkPermissions(node, userObj, 'write')) {
-      notify.system('error', 'Permission Denied', `Cannot create file in ${resolved}`);
+    if (!checkPermissions(node, actingUser, 'write')) {
+      // notify.system('error', 'Permission Denied', `Cannot create file in ${resolved}`);
       return false;
     }
     if (node.children.some(child => child.name === name)) return false;
@@ -525,7 +553,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       content,
       size: content.length,
       modified: new Date(),
-      owner: currentUser || 'root',
+      owner: actingUser.username,
       permissions: '-rw-r--r--',
     };
     setFileSystem(prevFS => {
@@ -539,14 +567,16 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       return newFS;
     });
     return true;
-  }, [getNodeAtPath, resolvePath, currentUser, userObj]);
+  }, [getNodeAtPath, resolvePath, currentUser, userObj, users]);
 
-  const createDirectory = useCallback((path: string, name: string): boolean => {
+  const createDirectory = useCallback((path: string, name: string, asUser?: string): boolean => {
     const resolved = resolvePath(path);
-    const node = getNodeAtPath(resolved);
+    const node = getNodeAtPath(resolved, asUser);
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
     if (!node || node.type !== 'directory' || !node.children) return false;
-    if (!checkPermissions(node, userObj, 'write')) {
-      notify.system('error', 'Permission Denied', `Cannot create directory in ${resolved}`);
+    if (!checkPermissions(node, actingUser, 'write')) {
+      // notify.system('error', 'Permission Denied', `Cannot create directory in ${resolved}`);
       return false;
     }
     if (node.children.some(child => child.name === name)) return false;
@@ -556,7 +586,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       type: 'directory',
       children: [],
       modified: new Date(),
-      owner: currentUser || 'root',
+      owner: actingUser.username,
       permissions: 'drwxr-xr-x',
     };
     setFileSystem(prevFS => {
@@ -570,14 +600,16 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       return newFS;
     });
     return true;
-  }, [getNodeAtPath, resolvePath, currentUser, userObj]);
+  }, [getNodeAtPath, resolvePath, currentUser, userObj, users]);
 
-  const writeFile = useCallback((path: string, content: string): boolean => {
+  const writeFile = useCallback((path: string, content: string, asUser?: string): boolean => {
     const resolved = resolvePath(path);
-    const node = getNodeAtPath(resolved);
+    const node = getNodeAtPath(resolved, asUser); // Pass asUser to respect permissions traversing path
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
     if (node) {
-      if (!checkPermissions(node, userObj, 'write')) {
-        notify.system('error', 'Permission Denied', `Cannot write to ${resolved}`);
+      if (!checkPermissions(node, actingUser, 'write')) {
+        // notify.system('error', 'Permission Denied', `Cannot write to ${resolved}`);
         return false;
       }
     }
@@ -685,14 +717,16 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     return true;
   }, [groups]);
 
-  const chmod = useCallback((path: string, mode: string): boolean => {
+  const chmod = useCallback((path: string, mode: string, asUser?: string): boolean => {
     const resolved = resolvePath(path);
-    const node = getNodeAtPath(resolved);
+    const node = getNodeAtPath(resolved, asUser);
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
     if (!node) return false;
 
     // Only owner or root can chmod
-    if (currentUser !== 'root' && node.owner !== currentUser) {
-      notify.system('error', 'Permission Denied', 'Operation not permitted');
+    if (actingUser.username !== 'root' && node.owner !== actingUser.username) {
+      // notify.system('error', 'Permission Denied', 'Operation not permitted');
       return false;
     }
 
@@ -719,16 +753,18 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     });
 
     return true;
-  }, [resolvePath, getNodeAtPath, currentUser]);
+  }, [resolvePath, getNodeAtPath, userObj, currentUser, users]);
 
-  const chown = useCallback((path: string, owner: string, group?: string): boolean => {
+  const chown = useCallback((path: string, owner: string, group?: string, asUser?: string): boolean => {
     const resolved = resolvePath(path);
-    const node = getNodeAtPath(resolved);
+    const node = getNodeAtPath(resolved, asUser);
+    const actingUser = asUser ? users.find(u => u.username === asUser) || userObj : userObj;
+
     if (!node) return false;
 
     // Only root can chown (strict)
-    if (currentUser !== 'root') {
-      notify.system('error', 'Permission Denied', 'Operation not permitted');
+    if (actingUser.username !== 'root') {
+      // notify.system('error', 'Permission Denied', 'Operation not permitted');
       return false;
     }
 
@@ -746,7 +782,14 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
       return newFS;
     });
     return true;
-  }, [resolvePath, getNodeAtPath, currentUser]);
+  }, [resolvePath, getNodeAtPath, userObj, currentUser, users]);
+
+  // Update stored version after migration
+  useEffect(() => {
+    if (checkMigrationNeeded()) {
+      updateStoredVersion();
+    }
+  }, []);
 
   return (
     <FileSystemContext.Provider
