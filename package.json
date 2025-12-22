@@ -112,7 +112,7 @@
             "tailwindcss": "^4.1.17",
             "tailwindcss-animate": "^1.0.7",
             "typescript": "^5.9.3",
-            "typescript-eslint": "^8.50.0",
+            "typescript-eslint": "^8.50.1",
             "vite": "^7.3.0",
             "vitest": "^4.0.15",
             "wait-on": "^9.0.3"
