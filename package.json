@@ -82,7 +82,7 @@
             "react": "^19.2.1",
             "react-day-picker": "^9.13.0",
             "react-dom": "^19.2.1",
-            "react-hook-form": "^7.68.0",
+            "react-hook-form": "^7.69.0",
             "react-markdown": "^10.1.0",
             "react-resizable-panels": "^4.0.16",
             "react-rnd": "^10.5.2",
