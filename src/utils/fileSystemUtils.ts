@@ -1,6 +1,7 @@
 import pkg from '../../package.json';
 import startupSound from '../assets/sounds/Runway Electric.mp3';
 import startupSound2 from '../assets/sounds/Lo-Fi Girl.mp3';
+import { getCoreApps } from '../config/appRegistry';
 
 export interface FileNode {
     id: string;
@@ -233,6 +234,104 @@ export function octalToPermissions(mode: string, type: 'file' | 'directory'): st
     return (type === 'directory' ? 'd' : '-') + map[u] + map[g] + map[o];
 }
 
+export function parseSymbolicMode(currentPerms: string, mode: string): string | null {
+    // Regex for symbolic mode: [ugoa]*[+-=][rwx]*
+    // e.g. +x, u+rw, go-w, a=rwx
+    const match = mode.match(/^([ugoa]*)([+-=])([rwx]*)$/);
+    if (!match) return null;
+
+    const [, who, op, perms] = match;
+    const users = who || 'a'; // Default to all if not specified
+
+    // Convert current permissions to mutable array
+    // current: drwxr-xr-x (10 chars)
+    const newPerms = currentPerms.split('');
+
+    // Indices in the permission string (0 is type)
+    // u: 1,2,3
+    // g: 4,5,6
+    // o: 7,8,9
+
+    const targets: number[] = [];
+    if (users.includes('a') || users.includes('u')) targets.push(1, 2, 3);
+    if (users.includes('a') || users.includes('g')) targets.push(4, 5, 6);
+    if (users.includes('a') || users.includes('o')) targets.push(7, 8, 9);
+
+    // Helper to check if index corresponds to r, w, or x
+    const getPermChar = (idx: number) => {
+        const type = (idx - 1) % 3;
+        return type === 0 ? 'r' : type === 1 ? 'w' : 'x';
+    };
+
+    targets.forEach(idx => {
+        const charType = getPermChar(idx); // r, w, or x
+        const isTargetPerm = perms.includes(charType);
+
+        // If the permission char (e.g. 'x') is NOT in the requested perms (e.g. mode is '+w'), 
+        // we shouldn't touch 'x' unless op is '='
+
+        if (op === '=') {
+            // Set: Only enable if it's in perms, otherwise disable
+            if (isTargetPerm) {
+                newPerms[idx] = charType;
+            } else {
+                // But wait, if mode is 'u=rw', do we touch 'x'? Yes, 'u=rw' implies 'u=rw-'.
+                // Check if this index matches the char type we are looking for.
+                // Actually we iterate over indices 1..9.
+                // If index 3 is 'x', and perms is 'rw', then we set index 3 to '-'.
+                // BUT we only affect indices that MATCH the chars in 'perms'? No.
+                // The 'perms' string in command contains the bits to SET.
+                // Correct logic for '=':
+                // Loop through the relevant BLOCK (u, g, or o).
+                // For each position (r, w, x), if that char is in `perms`, set it. Else unset it.
+                // My loop iterates targets which are flat.
+
+                // If the char at this index (r/w/x) is present in `perms` string, set it.
+                // Else, set to '-'.
+                const typeC = (idx - 1) % 3; // 0=r, 1=w, 2=x
+                const expectedChar = typeC === 0 ? 'r' : typeC === 1 ? 'w' : 'x';
+
+                // We only change the specific bit if the user ASKED to change it?
+                // No, '=' sets EXACT permissions. `chmod u=r file` -> u becomes r--.
+                if (perms.includes(expectedChar)) {
+                    newPerms[idx] = expectedChar;
+                } else {
+                    newPerms[idx] = '-';
+                }
+            }
+        } else if (op === '+') {
+            // Add: Only enable if it's in perms
+            if (isTargetPerm) {
+                // If checking for 'x' and current index is indeed the 'x' slot
+                if (getPermChar(idx) === charType) { // This check is redundant but safe
+                    newPerms[idx] = charType;
+                }
+            }
+            // Correction: My loop iterates ALL target indices (r,w,x for u,g,o).
+            // If I do `chmod +x`, perms is `x`.
+            // Iteration:
+            // idx=1 (u-r): charType='r'. perms has 'x'. no match.
+            // idx=3 (u-x): charType='x'. perms has 'x'. match! Set newPerms[3] = 'x'.
+
+            // Re-eval logic inside loop:
+            const typeC = (idx - 1) % 3;
+            const expectedChar = typeC === 0 ? 'r' : typeC === 1 ? 'w' : 'x';
+            if (perms.includes(expectedChar)) {
+                newPerms[idx] = expectedChar;
+            }
+        } else if (op === '-') {
+            // Remove
+            const typeC = (idx - 1) % 3;
+            const expectedChar = typeC === 0 ? 'r' : typeC === 1 ? 'w' : 'x';
+            if (perms.includes(expectedChar)) {
+                newPerms[idx] = '-';
+            }
+        }
+    });
+
+    return newPerms.join('');
+}
+
 // Normalized Initial File System
 export const initialFileSystem: any = {
     name: '/',
@@ -247,18 +346,29 @@ export const initialFileSystem: any = {
             permissions: 'drwxr-xr-x', // 755
             owner: 'root',
             children: [
-                { name: 'ls', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# list directory contents' },
-                { name: 'cat', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# concatenate files' },
-                { name: 'cd', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# change directory' },
-                { name: 'pwd', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# print working directory' },
-                { name: 'mkdir', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# make directories' },
-                { name: 'rm', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# remove files or directories' },
-                { name: 'cp', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# copy files' },
-                { name: 'mv', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# move files' },
-                { name: 'touch', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# create empty file' },
-                { name: 'echo', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# display a line of text' },
-                { name: 'clear', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# clear terminal screen' },
-                { name: 'whoami', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# print effective userid' },
+                { name: 'ls', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command ls\n# list directory contents' },
+                { name: 'cat', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command cat\n# concatenate files' },
+                { name: 'cd', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command cd\n# change directory' },
+                { name: 'pwd', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command pwd\n# print working directory' },
+                { name: 'mkdir', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command mkdir\n# make directories' },
+                { name: 'rm', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command rm\n# remove files or directories' },
+                { name: 'cp', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command cp\n# copy files' },
+                { name: 'mv', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command mv\n# move files' },
+                { name: 'touch', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command touch\n# create empty file' },
+                { name: 'echo', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command echo\n# display a line of text' },
+                { name: 'clear', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command clear\n# clear terminal screen' },
+                { name: 'whoami', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command whoami\n# print effective userid' },
+                { name: 'grep', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command grep\n# search text patterns' },
+                { name: 'find', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command find\n# search for files' },
+                { name: 'date', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command date\n# print date' },
+                { name: 'uptime', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command uptime\n# show system uptime' },
+                { name: 'hostname', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command hostname\n# show hostname' },
+                { name: 'who', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command who\n# show logged in users' },
+                { name: 'chmod', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command chmod\n# change permissions' },
+                { name: 'chown', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command chown\n# change owner' },
+                { name: 'su', type: 'file', permissions: '-rwsr-xr-x', owner: 'root', content: '#!/bin/bash\n#command su\n# switch user' },
+                { name: 'sudo', type: 'file', permissions: '-rwsr-xr-x', owner: 'root', content: '#!/bin/bash\n#command sudo\n# execute as superuser' },
+                { name: 'reset', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command reset\n# reset system' },
             ],
         },
         // Boot loader files
@@ -419,18 +529,14 @@ export const initialFileSystem: any = {
                     permissions: 'drwxr-xr-x',
                     owner: 'root',
                     children: [
-                        { name: 'nano', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# text editor' },
-                        { name: 'vim', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# vi improved' },
-                        { name: 'grep', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# search text patterns' },
-                        { name: 'Finder', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!app finder' },
-                        { name: 'Browser', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!app browser' },
-                        { name: 'Mail', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!app messages' },
-                        { name: 'Music', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!app music' },
-                        { name: 'Photos', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!app photos' },
-                        { name: 'Settings', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!app settings' },
-                        { name: 'Terminal', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!app terminal' },
-                        { name: 'Notepad', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!app notepad' },
-                        { name: 'find', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n# search for files' },
+                        // App binaries only - dynamically generated from core apps
+                        ...getCoreApps().map((app) => ({
+                            name: app.id,
+                            type: 'file' as const,
+                            permissions: '-rwxr-xr-x',
+                            owner: 'root',
+                            content: `#!app ${app.id}`
+                        })),
                     ],
                 },
                 {

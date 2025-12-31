@@ -28,6 +28,7 @@ export interface CommandResult {
     output: (string | ReactNode)[];
     error?: boolean;
     shouldClear?: boolean; // Special flag for 'clear' command
+    newCwd?: string; // New current working directory (e.g. from 'cd')
 }
 
 export interface TerminalCommand {

@@ -18,6 +18,8 @@ import { useAuth } from '../hooks/fileSystem/useAuth';
 import { useFileSystemQueries } from '../hooks/fileSystem/useFileSystemQueries';
 import { useFileSystemMutations } from '../hooks/fileSystem/useFileSystemMutations';
 import { notify } from '../services/notifications';
+import { getCoreApps } from '../config/appRegistry';
+import { STORAGE_KEYS } from '../utils/memory';
 
 export interface FileSystemContextType {
   fileSystem: FileNode;
@@ -50,6 +52,10 @@ export interface FileSystemContextType {
   groups: Group[];
   addGroup: (groupName: string, members?: string[]) => boolean;
   deleteGroup: (groupName: string) => boolean;
+  installedApps: Set<string>;
+  installApp: (appId: string) => boolean;
+  uninstallApp: (appId: string) => boolean;
+  isAppInstalled: (appId: string) => boolean;
 }
 
 const FileSystemContext = createContext<FileSystemContextType | undefined>(undefined);
@@ -109,6 +115,26 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     currentUser
   );
 
+  // Installed Apps State
+  const [installedApps, setInstalledApps] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.INSTALLED_APPS);
+      if (stored) {
+        return new Set(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load installed apps:', e);
+    }
+    // Default to only core apps (mimicking Linux behavior)
+    // Optional apps must be installed via App Store
+    return new Set(getCoreApps().map(app => app.id));
+  });
+
+  // Persist installed apps
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.INSTALLED_APPS, JSON.stringify(Array.from(installedApps)));
+  }, [installedApps]);
+
   // 5. Mutations (Write)
   const {
     deleteNode,
@@ -134,11 +160,68 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     getNodeAtPath
   });
 
-  // 6. Reset Logic (Unified)
+  // Install app function
+  const installApp = useCallback((appId: string): boolean => {
+    if (installedApps.has(appId)) {
+      return false; // Already installed
+    }
+
+    setInstalledApps(prev => new Set([...prev, appId]));
+
+    // Create app binary in /usr/bin with shebang format for Terminal
+    // Must use 'root' since /usr/bin is root-owned and requires root permissions
+    const binaryContent = `#!app ${appId}`;
+    const success = createFile('/usr/bin', appId, binaryContent, 'root');
+    if (success) {
+      notify.system('success', 'App Store', `${appId} installed successfully`);
+    }
+    return success;
+  }, [installedApps, createFile]);
+
+  // Uninstall app function
+  const uninstallApp = useCallback((appId: string): boolean => {
+    // Check if app is core (cannot uninstall)
+    const coreAppIds = getCoreApps().map(app => app.id);
+    if (coreAppIds.includes(appId)) {
+      notify.system('error', 'App Store', `Cannot uninstall ${appId}: Core app`);
+      return false;
+    }
+
+    if (!installedApps.has(appId)) {
+      return false; // Not installed
+    }
+
+    setInstalledApps(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(appId);
+      return newSet;
+    });
+
+    // Delete app binary from /usr/bin
+    // Must use 'root' since /usr/bin is root-owned and requires root permissions
+    const success = deleteNode(`/usr/bin/${appId}`, 'root');
+    if (success) {
+      notify.system('success', 'App Store', `${appId} uninstalled successfully`);
+    }
+    return success;
+  }, [installedApps, deleteNode]);
+
+  // Check if app is installed
+  const isAppInstalled = useCallback((appId: string): boolean => {
+    return installedApps.has(appId);
+  }, [installedApps]);
+
   // 6. Reset Logic (Unified)
   const resetFileSystem = useCallback(() => {
+    // Reset installed apps to core apps only
+    const coreAppIds = getCoreApps().map(app => app.id);
+    setInstalledApps(new Set(coreAppIds));
+    localStorage.removeItem('aurora-installed-apps');
+
+    // Reset filesystem and auth
     resetFileSystemState();
     resetAuthState();
+
     notify.system('success', 'System', 'System reset to factory defaults');
   }, [resetFileSystemState, resetAuthState]);
 
@@ -220,7 +303,11 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     verifyPassword: verifyUserPassword,
     groups,
     addGroup,
-    deleteGroup
+    deleteGroup,
+    installedApps,
+    installApp,
+    uninstallApp,
+    isAppInstalled
   };
 
   return (

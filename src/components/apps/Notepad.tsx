@@ -13,6 +13,7 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-markup'; // HTML
+import 'prismjs/components/prism-bash'; // Bash/Shell
 import 'prismjs/themes/prism-tomorrow.css'; // Dark theme
 
 import {
@@ -89,6 +90,7 @@ const extensionToLanguage = (ext: string): string => {
         case 'tsx': return 'tsx';
         case 'css': return 'css';
         case 'html': case 'htm': return 'markup';
+        case 'sh': return 'bash';
         default: return 'txt';
     }
 };
@@ -102,6 +104,7 @@ const getDisplayName = (context: string): string => {
         case 'json': return 'JSON';
         case 'css': return 'CSS';
         case 'markup': return 'HTML';
+        case 'bash': return 'Bash';
         case 'txt': return 'Plain Text';
         default: return context.charAt(0).toUpperCase() + context.slice(1);
     }
@@ -115,6 +118,7 @@ const SUPPORTED_LANGUAGES = [
     { value: 'json', label: 'JSON' },
     { value: 'css', label: 'CSS' },
     { value: 'markup', label: 'HTML' },
+    { value: 'bash', label: 'Bash' },
     { value: 'txt', label: 'Plain Text' },
 ];
 

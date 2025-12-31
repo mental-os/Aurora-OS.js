@@ -10,7 +10,8 @@ import {
     User,
     Group,
     parsePasswd,
-    parseGroup
+    parseGroup,
+    parseSymbolicMode
 } from '../../utils/fileSystemUtils';
 import { notify } from '../../services/notifications';
 
@@ -350,7 +351,13 @@ export function useFileSystemMutations({
         } else if (mode.length === 10) {
             newPerms = mode;
         } else {
-            return false;
+            // Try symbolic
+            const symbolic = parseSymbolicMode(newPerms, mode);
+            if (symbolic) {
+                newPerms = symbolic;
+            } else {
+                return false;
+            }
         }
 
         setFileSystem(prevFS => {

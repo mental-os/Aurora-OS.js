@@ -93,7 +93,7 @@ function BreadcrumbPill({ name, isLast, accentColor, onClick, onDrop }: Breadcru
 export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: string; onOpenApp?: (id: string, args?: any, owner?: string) => void, owner?: string }) {
   const { accentColor, activeUser: desktopUser } = useAppContext();
   const activeUser = owner || desktopUser;
-  const { playFile } = useMusic();
+  useMusic();
   // Drag and Drop Logic
   const [dragTargetId, setDragTargetId] = useState<string | null>(null);
   const { listDirectory, homePath, moveNodeById, getNodeAtPath, moveToTrash, resolvePath, users } = useFileSystem();
@@ -201,18 +201,32 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
     } else if (item.type === 'file') {
 
       const isMusic = /\.(mp3|wav|flac|ogg|m4a)$/i.test(item.name);
-      const isText = /\.(txt|md|json|js|ts|tsx|css|html)$/i.test(item.name);
+      const isText = /\.(txt|md|json|js|ts|tsx|css|html|sh)$/i.test(item.name);
 
       if (isMusic) {
-        const fullPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
-        playFile(fullPath);
-        if (onOpenApp) onOpenApp('music', undefined, activeUser);
+        // Check if music app is installed by checking /usr/bin
+        const musicBinary = getNodeAtPath('/usr/bin/music', activeUser);
+        if (musicBinary) {
+          const rawPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
+          const fullPath = resolvePath(rawPath, activeUser);
+          // Delegate playback to App via initialPath/data (gated by local logic)
+          if (onOpenApp) onOpenApp('music', { path: fullPath, timestamp: Date.now() }, activeUser);
+        } else {
+          toast.error('Music app is not installed. Install it from the App Store.');
+        }
       } else if (isText) {
-        const fullPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
-        if (onOpenApp) onOpenApp('notepad', { path: fullPath }, activeUser);
+        // Check if notepad app is installed by checking /usr/bin
+        const notepadBinary = getNodeAtPath('/usr/bin/notepad', activeUser);
+        if (notepadBinary) {
+          const rawPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
+          const fullPath = resolvePath(rawPath, activeUser);
+          if (onOpenApp) onOpenApp('notepad', { path: fullPath }, activeUser);
+        } else {
+          toast.error('Notepad is not installed. Install it from the App Store.');
+        }
       }
     }
-  }, [currentPath, navigateTo, playFile, onOpenApp, activeUser]);
+  }, [currentPath, navigateTo, onOpenApp, activeUser, getNodeAtPath, resolvePath]);
 
   // Go back in history
   const goBack = useCallback(() => {

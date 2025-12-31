@@ -13,10 +13,11 @@ import { Terminal } from './apps/Terminal';
 import { DevCenter } from './apps/DevCenter';
 import { Notepad } from './apps/Notepad';
 import { PlaceholderApp } from './apps/PlaceholderApp';
+import { AppStore } from './apps/AppStore';
 import { useAppContext } from './AppContext';
 import { useFileSystem, type FileSystemContextType } from './FileSystemContext';
-import { useMusic, MusicProvider } from './MusicContext';
 import { Toaster } from './ui/sonner';
+import { toast } from 'sonner';
 import { getGridConfig, gridToPixel, pixelToGrid, findNextFreeCell, gridPosToKey, rearrangeGrid, type GridPosition } from '../utils/gridSystem';
 import { feedback } from '../services/soundFeedback';
 import { STORAGE_KEYS } from '../utils/memory';
@@ -50,7 +51,6 @@ function loadIconPositions(): Record<string, GridPosition> {
 
 export default function OS() {
     const { activeUser } = useAppContext();
-    const { playFile } = useMusic();
 
     // Track window size for responsive icon positioning
     const [windowSize, setWindowSize] = useState({
@@ -160,7 +160,7 @@ export default function OS() {
         }
     }, [desktopIcons, iconGridPositions]);
 
-    const openWindowRef = useRef<(type: string, data?: { path?: string }, owner?: string) => void>(() => { });
+    const openWindowRef = useRef<(type: string, data?: { path?: string; timestamp?: number }, owner?: string) => void>(() => { });
 
     // Helper to generate content
     const getAppContent = useCallback((type: string, data?: any, owner?: string): { content: React.ReactNode, title: string } => {
@@ -183,9 +183,7 @@ export default function OS() {
             case 'music':
                 title = 'Music';
                 content = (
-                    <MusicProvider owner={owner}>
-                        <Music owner={owner} initialPath={data?.path} />
-                    </MusicProvider>
+                    <Music owner={owner} initialPath={data?.path} />
                 );
                 break;
             case 'messages':
@@ -199,7 +197,7 @@ export default function OS() {
             case 'terminal':
                 title = 'Terminal';
                 // Need to forward the ref logic if terminal is special
-                content = <Terminal onLaunchApp={(id, args, owner) => openWindowRef.current(id, { path: args?.[0] }, owner)} />;
+                content = <Terminal onLaunchApp={(id, args, owner) => openWindowRef.current(id, { path: args?.[0] }, owner)} owner={owner} />;
                 break;
             case 'trash':
                 title = 'Trash';
@@ -212,6 +210,10 @@ export default function OS() {
             case 'notepad':
                 title = 'Notepad';
                 content = <Notepad owner={owner} initialPath={data?.path} />;
+                break;
+            case 'appstore':
+                title = 'App Store';
+                content = <AppStore owner={owner} />;
                 break;
             default:
                 title = type.charAt(0).toUpperCase() + type.slice(1);
@@ -315,20 +317,31 @@ export default function OS() {
         if (node?.type === 'directory') {
             openWindow('finder', { path });
         } else if (node?.type === 'file') {
-
+            // Check file extension to determine which app to use
             const isMusic = /\.(mp3|wav|flac|ogg|m4a)$/i.test(icon.name);
-            const isText = /\.(txt|md|json|js|ts|tsx|css|html)$/i.test(icon.name);
+            const isText = /\.(txt|md|json|js|ts|tsx|css|html|sh)$/i.test(icon.name);
 
             if (isMusic) {
-                playFile(path);
-                // openWindowRef is stable and calls useWindowManager's openWindow which now handles focus
-                openWindowRef.current('music');
+                // Check if music app is installed by checking /usr/bin
+                const musicBinary = getNodeAtPath('/usr/bin/music');
+                if (musicBinary) {
+                    // Inject timestamp to force update and allow Music app to handle playback on mount/update
+                    openWindowRef.current('music', { path, timestamp: Date.now() });
+                } else {
+                    toast.error('Music app is not installed. Install it from the App Store.');
+                }
             } else if (isText) {
-                openWindow('notepad', { path });
+                // Check if notepad app is installed by checking /usr/bin
+                const notepadBinary = getNodeAtPath('/usr/bin/notepad');
+                if (notepadBinary) {
+                    openWindow('notepad', { path });
+                } else {
+                    toast.error('Notepad is not installed. Install it from the App Store.');
+                }
             }
         }
 
-    }, [desktopIcons, resolvePath, getNodeAtPath, openWindow, playFile]);
+    }, [desktopIcons, resolvePath, getNodeAtPath, openWindow]);
 
     const focusedWindowId = useMemo(() => {
         if (windows.length === 0) return null;

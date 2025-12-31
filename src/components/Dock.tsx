@@ -1,4 +1,4 @@
-import { FolderOpen, Settings, Mail, Calendar, Image, Music, Video, Terminal, Globe, MessageSquare, Trash, Trash2, FileText } from 'lucide-react';
+import { Trash, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect, useMemo, memo } from 'react';
 import type { WindowState } from '../hooks/useWindowManager';
@@ -6,6 +6,7 @@ import { useThemeColors } from '../hooks/useThemeColors';
 import { useAppContext } from './AppContext';
 import { useFileSystem } from './FileSystemContext';
 import { cn } from './ui/utils';
+import { getDockApps } from '../config/appRegistry';
 
 interface DockProps {
   onOpenApp: (appType: string, data?: any) => void;
@@ -14,25 +15,10 @@ interface DockProps {
   windows: WindowState[];
 }
 
-const dockApps = [
-  { id: 'finder', icon: FolderOpen, label: 'Finder', color: 'from-blue-500 to-blue-600', solid: '#3b82f6' },
-  { id: 'notepad', icon: FileText, label: 'Notepad', color: 'from-yellow-400 to-yellow-500', solid: '#eab308' },
-  { id: 'mail', icon: Mail, label: 'Mail', color: 'from-blue-400 to-blue-500', solid: '#60a5fa' },
-  { id: 'messages', icon: MessageSquare, label: 'Messages', color: 'from-green-500 to-green-600', solid: '#22c55e' },
-  { id: 'calendar', icon: Calendar, label: 'Calendar', color: 'from-red-500 to-red-600', solid: '#ef4444' },
-  { id: 'photos', icon: Image, label: 'Photos', color: 'from-pink-500 to-rose-600', solid: '#ec4899' },
-  { id: 'music', icon: Music, label: 'Music', color: 'from-purple-500 to-purple-600', solid: '#a855f7' },
-  { id: 'videos', icon: Video, label: 'Videos', color: 'from-orange-500 to-orange-600', solid: '#f97316' },
-  { id: 'browser', icon: Globe, label: 'Browser', color: 'from-cyan-500 to-blue-600', solid: '#06b6d4' },
-  { id: 'terminal', icon: Terminal, label: 'Terminal', color: 'from-gray-700 to-gray-900', solid: '#374151' },
-  { id: 'settings', icon: Settings, label: 'Settings', color: 'from-gray-500 to-gray-600', solid: '#6b7280' },
-  // Trash is handled separately
-];
-
 function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: DockProps) {
   const { dockBackground, blurStyle } = useThemeColors();
   const { reduceMotion, disableShadows, disableGradients, accentColor, devMode } = useAppContext();
-  const { getNodeAtPath, homePath } = useFileSystem();
+  const { getNodeAtPath, homePath, installedApps } = useFileSystem();
 
   const trashNode = getNodeAtPath(`${homePath}/.Trash`);
   const isTrashEmpty = !trashNode?.children || trashNode.children.length === 0;
@@ -40,17 +26,17 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [shouldHide, setShouldHide] = useState(false);
 
-  // Filter apps based on settings
+  // Get visible apps based on installed apps
   const visibleApps = useMemo(() => {
-    const apps = [...dockApps];
-    if (devMode) {
-      // Insert DevCenter before Settings
-      apps.splice(apps.length - 1, 0, {
-        id: 'dev-center', icon: Terminal, label: 'DevCenter', color: 'from-purple-500 to-purple-600', solid: '#9333ea'
-      });
+    const apps = getDockApps(installedApps);
+
+    // Add DevCenter if in dev mode and it's installed
+    if (devMode && installedApps.has('dev-center')) {
+      // DevCenter is already in the registry, just verify it's included
     }
+
     return apps;
-  }, [devMode]);
+  }, [installedApps, devMode]);
 
   // Group windows by app type
   const windowsByApp = useMemo(() => {
@@ -170,10 +156,10 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
             // Use inline style for solid color to guarantee rendering
             const bgClass = disableGradients
               ? ''
-              : `bg-gradient-to-br ${app.color}`;
+              : `bg-gradient-to-br ${app.iconColor}`;
 
             const style = disableGradients
-              ? { backgroundColor: app.solid }
+              ? { backgroundColor: app.iconSolid }
               : {};
 
             const IconComponent = app.icon;
@@ -186,7 +172,7 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
                 )}
 
                 <motion.button
-                  aria-label={app.label}
+                  aria-label={app.name}
                   className={cn(
                     "relative w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all",
                     bgClass,
@@ -232,7 +218,7 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0 }}
                     >
-                      {app.label}
+                      {app.name}
                       {hasWindows && ` (${windowCount})`}
                     </motion.div>
                   )}

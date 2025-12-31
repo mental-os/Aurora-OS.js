@@ -1,4 +1,4 @@
-# Aurora OS.js [![Version](https://img.shields.io/badge/Version-v0.7.4-blue)](https://github.com/mental-os/Aurora-OS.js) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml) [![Dependabot](https://github.com/mental-os/Aurora-OS.js/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/dependabot/dependabot-updates) [![Build](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml)
+# Aurora OS.js [![Version](https://img.shields.io/badge/Version-v0.7.5-blue)](https://github.com/mental-os/Aurora-OS.js) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml) [![Dependabot](https://github.com/mental-os/Aurora-OS.js/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/dependabot/dependabot-updates) [![Build](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml)
 
 A modern, web-based desktop operating system interface built with React, Tailwind CSS, and Radix UI.
 
@@ -60,27 +60,25 @@ npm test
 
 ## Release Notes
  
-### v0.7.4
+### v0.7.5
 
-#### UI/UX Enhancements
-- **Root User Visual Indicator**: Windows owned by `root` now display a distinctive accent-colored border (full opacity when focused, 80% when unfocused)
+#### App Store Infrastructure & Binary Simulation
+- **Virtual Binary System**: Apps are now treated as "installed binaries" located in `/usr/bin` (e.g., `/usr/bin/music`, `/usr/bin/notepad`).
+- **Launch Guards**: The OS and Finder now verify the existence of the app binary before attempting to launch it, simulating a real file system dependency.
+- **App Store Foundation**: Laid the groundwork for a future App Store by decoupling app logic from system availability—apps can now be "uninstalled" (binary removed) or "installed" dynamically.
 
-#### Notepad Major Improvements
-- **Expanded File Format Support**: Added support for 8 file types (`txt`, `md`, `json`, `js`, `ts`, `tsx`, `css`, `html`) with automatic syntax highlighting using Prism.js
-- **Smart Language Selector**: Replaced simple toggle with searchable combobox featuring glassmorphism effects, accent colors, and smooth transitions
-- **HTML Preview Mode**: Added live HTML preview for `.html` files with sandboxed iframe rendering
+#### Music App Restoration & Fixes
+- **Restored "Real-Life" App Behavior**: Music playback is now strictly gated by the application window. Double-clicking a file opens the app, which then initiates playback. This prevents "headless" background audio and resolves infinite restart loops.
+- **Context Switching Fixed**: Resolved an issue where switching between songs with the same index (e.g., in different playlists) would fail to update the audio. The engine now uses unique Song IDs for reliable tracking.
 
-#### Music App Enhancements
-- **Extended Audio Format Support**: Verified compatibility with `mp3`, `wav`, `flac`, `ogg`, `m4a` and updated FileIcon component for visual consistency
+#### Notepad & Shell Integration
+- **Shell Script Support**: Added native support for `.sh` files.
+- **Bash Syntax Highlighting**: Integrated `prism-bash` for accurate syntax coloring of shell scripts.
+- **File Association**: `.sh` files now automatically open in Notepad from Desktop and Finder.
 
-#### Terminal Command Updates
-- **Permission Handling**: Updated `cd` to use `terminalUser` parameter; enhanced `rm` with explicit parent directory permission checks
-- **Code Audit**: Systematically reviewed all 26 terminal commands for consistency and best practices
+#### System Improvements
+- **Window Management Logic**: Fixed a bug where opening a file in an already-open app would update the data but not refresh the window content. Existing windows now correctly re-mount with new file data.
 
-#### Technical Improvements
-- Enhanced owner-aware permission handling across applications
-- Improved terminal user context propagation
-- Better error handling in file system operations
 
 [View to-do list](TO-DO.md)
 

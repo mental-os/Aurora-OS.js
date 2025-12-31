@@ -5,9 +5,10 @@ import { useTerminalLogic } from '../../hooks/useTerminalLogic';
 
 export interface TerminalProps {
   onLaunchApp?: (appId: string, args: string[], owner?: string) => void;
+  owner?: string;
 }
 
-export function Terminal({ onLaunchApp }: TerminalProps) {
+export function Terminal({ onLaunchApp, owner }: TerminalProps) {
   const {
     input,
     setInput,
@@ -21,7 +22,7 @@ export function Terminal({ onLaunchApp }: TerminalProps) {
     isCommandValid,
     homePath,
     promptState
-  } = useTerminalLogic(onLaunchApp);
+  } = useTerminalLogic(onLaunchApp, owner);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);

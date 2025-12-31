@@ -21,6 +21,7 @@ export const STORAGE_KEYS = {
     FILESYSTEM: 'aurora-filesystem',
     USERS: 'aurora-users',
     VERSION: 'aurora-version',
+    INSTALLED_APPS: 'aurora-installed-apps', // App Store installed apps
 } as const;
 
 const MEMORY_CONFIG = {
@@ -41,7 +42,8 @@ const MEMORY_CONFIG = {
         exact: [
             STORAGE_KEYS.FILESYSTEM,
             STORAGE_KEYS.USERS,
-            STORAGE_KEYS.VERSION
+            STORAGE_KEYS.VERSION,
+            STORAGE_KEYS.INSTALLED_APPS
         ] as string[],
         prefixes: [] // Future proofing
     }

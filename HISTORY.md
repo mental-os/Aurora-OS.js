@@ -1,4 +1,23 @@
-### v0.7.4 (December 30, 2024)
+### v0.7.5
+
+#### App Store Infrastructure & Binary Simulation
+- **Virtual Binary System**: Apps are now treated as "installed binaries" located in `/usr/bin` (e.g., `/usr/bin/music`, `/usr/bin/notepad`).
+- **Launch Guards**: The OS and Finder now verify the existence of the app binary before attempting to launch it, simulating a real file system dependency.
+- **App Store Foundation**: Laid the groundwork for a future App Store by decoupling app logic from system availability—apps can now be "uninstalled" (binary removed) or "installed" dynamically.
+
+#### Music App Restoration & Fixes
+- **Restored "Real-Life" App Behavior**: Music playback is now strictly gated by the application window. Double-clicking a file opens the app, which then initiates playback. This prevents "headless" background audio and resolves infinite restart loops.
+- **Context Switching Fixed**: Resolved an issue where switching between songs with the same index (e.g., in different playlists) would fail to update the audio. The engine now uses unique Song IDs for reliable tracking.
+
+#### Notepad & Shell Integration
+- **Shell Script Support**: Added native support for `.sh` files.
+- **Bash Syntax Highlighting**: Integrated `prism-bash` for accurate syntax coloring of shell scripts.
+- **File Association**: `.sh` files now automatically open in Notepad from Desktop and Finder.
+
+#### System Improvements
+- **Window Management Logic**: Fixed a bug where opening a file in an already-open app would update the data but not refresh the window content. Existing windows now correctly re-mount with new file data.
+
+### v0.7.4
 
 #### UI/UX Enhancements
 - **Root User Visual Indicator**: Windows owned by `root` now display a distinctive accent-colored border (full opacity when focused, 80% when unfocused)

@@ -2,7 +2,9 @@ import { useState, useRef, useEffect, useCallback, ReactNode } from 'react';
 import { validateIntegrity } from '../utils/integrity';
 import { useFileSystem } from '../components/FileSystemContext';
 import { useAppContext } from '../components/AppContext';
+import { checkPermissions } from '../utils/fileSystemUtils';
 import { getCommand, commands, getAllCommands } from '../utils/terminal/registry';
+import { TerminalCommand } from '../utils/terminal/types';
 import { getColorShades } from '../utils/colors';
 
 export interface CommandHistory {
@@ -83,7 +85,7 @@ const parseCommandInput = (input: string): { command: string; args: string[]; re
     };
 };
 
-export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], owner?: string) => void) {
+export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], owner?: string) => void, initialUser?: string) {
     const { accentColor } = useAppContext();
     const [history, setHistory] = useState<CommandHistory[]>([]);
     const [input, setInput] = useState('');
@@ -122,12 +124,16 @@ export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], o
         verifyPassword
     } = useFileSystem();
 
-    // Initialize session with current global user
+    // Initialize session with current global user or specific initial owner
     useEffect(() => {
-        if (sessionStack.length === 0 && currentUser) {
-            setSessionStack([currentUser]);
+        if (sessionStack.length === 0) {
+            if (initialUser) {
+                setSessionStack([initialUser]);
+            } else if (currentUser) {
+                setSessionStack([currentUser]);
+            }
         }
-    }, [currentUser, sessionStack.length]);
+    }, [currentUser, sessionStack.length, initialUser]);
 
     const activeTerminalUser = sessionStack.length > 0 ? sessionStack[sessionStack.length - 1] : (currentUser || 'guest');
 
@@ -137,6 +143,63 @@ export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], o
     const pushSession = useCallback((username: string) => {
         setSessionStack(prev => [...prev, username]);
     }, []);
+
+    // Filter available commands for help/autocompletion (Defined early for usage in execute)
+    const getAvailableCommands = useCallback((): TerminalCommand[] => {
+        const allCmds = getAllCommands();
+        const available: TerminalCommand[] = [];
+        const seen = new Set<string>();
+
+        const BUILTINS = ['cd', 'exit', 'logout', 'help', 'dev-unlock']; // Ensure BUILTINS is available or move it here
+
+        // 1. Add built-ins
+        BUILTINS.forEach(name => {
+            const cmd = getCommand(name);
+            if (cmd) {
+                available.push(cmd);
+                seen.add(name);
+            }
+        });
+
+        // 2. Scan PATH for binaries
+        for (const dir of PATH) {
+            const files = listDirectory(dir, activeTerminalUser);
+            if (files) {
+                files.forEach(f => {
+                    if (f.type === 'file' && f.content) {
+                        // If it's a mapped command
+                        const match = f.content.match(/#command\s+([a-zA-Z0-9_-]+)/);
+                        if (match) {
+                            const cmdName = match[1];
+                            const cmd = allCmds.find(c => c.name === cmdName);
+                            if (cmd && !seen.has(cmdName)) {
+                                available.push(cmd);
+                                seen.add(cmdName);
+                            }
+                        } else if (f.content.startsWith('#!app ')) {
+                            // It's an app - create a functional command entry
+                            const appId = f.content.replace('#!app ', '').trim();
+                            if (!seen.has(appId)) {
+                                available.push({
+                                    name: appId,
+                                    description: 'Application',
+                                    execute: async (ctx) => {
+                                        if (ctx.onLaunchApp) {
+                                            ctx.onLaunchApp(appId, ctx.args, ctx.terminalUser);
+                                            return { output: [`Launched ${appId} as ${ctx.terminalUser}`] };
+                                        }
+                                        return { output: [`Cannot launch ${appId}`], error: true };
+                                    }
+                                });
+                                seen.add(appId);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        return available.sort((a, b) => a.name.localeCompare(b.name));
+    }, [activeTerminalUser, listDirectory]);
 
     const closeSession = useCallback(() => {
         setSessionStack(prev => {
@@ -184,9 +247,11 @@ export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], o
     const getAutocompleteCandidates = useCallback((partial: string, isCommand: boolean): string[] => {
         const candidates: string[] = [];
         if (isCommand) {
-            candidates.push(...Object.values(commands)
-                .filter(c => !c.hidden && c.name.startsWith(partial))
-                .map(c => c.name));
+            // 1. Built-ins
+            const BUILTINS = ['cd', 'exit', 'logout', 'help', 'dev-unlock'];
+            candidates.push(...BUILTINS.filter(c => c.startsWith(partial)));
+
+            // 2. Filesystem commands
 
             for (const pathDir of PATH) {
                 const files = listDirectory(pathDir, activeTerminalUser);
@@ -194,6 +259,10 @@ export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], o
                     files.forEach(f => {
                         if (f.name.startsWith(partial) && f.type === 'file') {
                             candidates.push(f.name);
+                        } else if (f.type === 'file' && f.content && f.content.startsWith('#!app ')) {
+                            // Also check app IDs if they match partial, even if filename differs (though typically they are same)
+                            const appId = f.content.replace('#!app ', '').trim();
+                            if (appId.startsWith(partial)) candidates.push(appId);
                         }
                     });
                 }
@@ -366,7 +435,25 @@ export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], o
         setInput('');
         setHistoryIndex(-1);
 
-        const { command, args: rawArgs, redirectOp, redirectPath } = parseCommandInput(trimmed);
+
+        // Variable Expansion (Interactive)
+        // Mimic the script engine's expansion for consistency
+        const interactiveEnv: Record<string, string> = {
+            USER: activeTerminalUser,
+            HOME: homePath,
+            PWD: currentPath,
+            TERM: 'xterm-256color'
+        };
+
+        // Naive expansion that respects basic quoting is hard without a full parser.
+        // For now, we'll use a simple regex but try to avoid touching '$VAR' if possible? 
+        // Actually, the script engine uses naive replacement. We should match that for now.
+        // If the user wants to escape, they can use backslash which we don't fully handle yet everywhere.
+        const expandedInput = trimmed.replace(/\$([a-zA-Z0-9_]+)/g, (_, key) => {
+            return interactiveEnv[key] !== undefined ? interactiveEnv[key] : '';
+        });
+
+        const { command, args: rawArgs, redirectOp, redirectPath } = parseCommandInput(expandedInput);
         const args: string[] = [];
         rawArgs.forEach(arg => {
             if (arg.includes('*')) {
@@ -402,79 +489,254 @@ export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], o
                 as: (user: string) => createScopedFileSystem(user)
             });
 
-            const terminalCommand = getCommand(command);
-            if (terminalCommand) {
-                const result = await terminalCommand.execute({
-                    args: args,
-                    fileSystem: createScopedFileSystem(activeTerminalUser) as any,
-                    currentPath: currentPath,
-                    setCurrentPath: setCurrentPath,
-                    resolvePath: resolvePath,
-                    allCommands: getAllCommands(),
-                    terminalUser: activeTerminalUser,
-                    spawnSession: pushSession,
-                    closeSession: closeSession,
-                    onLaunchApp: onLaunchApp,
-                    getNodeAtPath: getNodeAtPath,
-                    readFile: readFile,
-                    prompt: (m, t) => prompt(m, t, historyId),
-                    print: (content: string | ReactNode) => {
-                        setHistory(prev => {
-                            const newHistory = [...prev];
-                            const idx = newHistory.findIndex(h => h.id === historyId);
-                            if (idx !== -1) {
-                                newHistory[idx] = {
-                                    ...newHistory[idx],
-                                    output: [...newHistory[idx].output, content]
-                                };
-                            }
-                            return newHistory;
-                        });
-                    },
-                    isSudoAuthorized: isSudoAuthorized,
-                    setIsSudoAuthorized: setIsSudoAuthorized,
-                    verifyPassword: verifyPassword
-                });
+            // Shell built-ins that don't depend on filesystem
+            const BUILTINS = ['cd', 'exit', 'logout', 'help', 'dev-unlock'];
+            let targetCommandName = '';
+            let isAppLaunch = false;
+            let launchAppId = '';
 
-                cmdOutput = result.output;
-                cmdError = !!result.error;
-                if (result.shouldClear) {
-                    shouldClear = true;
-                }
+            if (BUILTINS.includes(command)) {
+                targetCommandName = command;
             } else {
+                // Search filesystem for binary
                 let foundPath: string | null = null;
+                let foundContent: string | null = null;
+
                 if (command.includes('/')) {
                     const resolved = resolvePath(command);
                     const node = getNodeAtPath(resolved, activeTerminalUser);
-                    if (node && node.type === 'file') foundPath = resolved;
+                    // In a real OS we'd check execute permissions here
+                    if (node && node.type === 'file') {
+                        // Strict Execution Bit Check
+                        const actingUserObj = users.find(u => u.username === activeTerminalUser);
+                        if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
+                            foundPath = resolved;
+                            foundContent = readFile(resolved, activeTerminalUser);
+                        } else {
+                            // Found but permission denied
+                            cmdOutput = [`${command}: Permission denied`];
+                            cmdError = true;
+                            // Return early or flag? If we don't set foundPath, it falls through to "command not found" 
+                            // which is wrong. We should handle this.
+                            // But wait, the loop below might find another binary in PATH?
+                            // Standard shell behavior: if found in PATH but not executable, keep searching? 
+                            // Actually bash stops and says permission denied if it's the specific path provided.
+                            // If it's a search in PATH, it might skip?
+                            // For explicit path (contains /): fail immediately.
+                            return { output: [`${command}: Permission denied`], error: true };
+                        }
+                    }
                 } else {
                     for (const dir of PATH) {
                         const checkPath = (dir === '/' ? '' : dir) + '/' + command;
                         const node = getNodeAtPath(checkPath, activeTerminalUser);
                         if (node && node.type === 'file') {
-                            foundPath = checkPath;
-                            break;
+                            // PATH Search: Check permissions
+                            const actingUserObj = users.find(u => u.username === activeTerminalUser);
+                            if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
+                                foundPath = checkPath;
+                                foundContent = readFile(checkPath, activeTerminalUser);
+                                break;
+                            } else {
+                                // Found binary but not executable.
+                                // In bash, if we find a match but can't execute, we might continue searching PATH?
+                                // Or we stop and say permission denied?
+                                // "If the name is found but is not an executable utility, the search shall continue."
+                                // So we continue.
+                            }
                         }
                     }
                 }
 
-                if (foundPath) {
-                    const content = readFile(foundPath, activeTerminalUser);
-                    if (content && content.startsWith('#!app ')) {
-                        const appId = content.replace('#!app ', '').trim();
-                        if (onLaunchApp) {
-                            onLaunchApp(appId, args, activeTerminalUser);
-                            cmdOutput = [`Launched ${appId} as ${activeTerminalUser}`];
-                        } else {
-                            cmdOutput = [`Cannot launch ${appId}`];
-                            cmdError = true;
-                        }
+                if (foundPath && foundContent) {
+                    if (foundContent.startsWith('#!app ')) {
+                        isAppLaunch = true;
+                        launchAppId = foundContent.replace('#!app ', '').trim();
                     } else {
-                        cmdOutput = [`${command}: command not found (binary execution not fully simmed)`];
-                        cmdError = true;
+                        // Check for mapped command
+                        const match = foundContent.match(/#command\s+([a-zA-Z0-9_-]+)/);
+                        if (match) {
+                            targetCommandName = match[1];
+                        } else {
+                            // Shell Script Execution Support (Enhanced)
+                            // Features:
+                            // 1. Variable expansion ($VAR) and assignment (VAR=val)
+                            // 2. Directory persistence (cd works) in subshell scope
+
+                            const lines = foundContent.split('\n');
+                            const scriptOutput: ReactNode[] = [];
+                            let scriptError = false;
+
+                            // State for the script execution context
+                            let localCurrentPath = currentPath;
+                            const env: Record<string, string> = {
+                                USER: activeTerminalUser,
+                                HOME: homePath,
+                                PATH: PATH.join(':'),
+                                PWD: localCurrentPath,
+                                TERM: 'xterm-256color'
+                            };
+
+                            // Helper: Expand variables in a string
+                            const expandVariables = (str: string) => {
+                                return str.replace(/\$([a-zA-Z0-9_]+)/g, (_, key) => env[key] || '');
+                            };
+
+                            // Helper: Resolve path using LOCAL current path
+                            const resolveLocalPath = (path: string) => {
+                                if (path.startsWith('/')) return path;
+                                if (path.startsWith('~')) return path.replace('~', homePath);
+                                // Simple relative path resolution
+                                if (path === '..') {
+                                    const parts = localCurrentPath.split('/');
+                                    parts.pop();
+                                    return parts.join('/') || '/';
+                                }
+                                if (path === '.') return localCurrentPath;
+
+                                return localCurrentPath === '/'
+                                    ? `/${path}`
+                                    : `${localCurrentPath === '/' ? '' : localCurrentPath}/${path}`;
+                            };
+
+                            const availableCmds = getAvailableCommands();
+
+                            for (const rawLine of lines) {
+                                let line = rawLine.trim();
+                                if (!line || line.startsWith('#')) continue;
+
+                                // 1. Variable Expansion
+                                line = expandVariables(line);
+
+                                // 2. Variable Assignment (VAR=val)
+                                if (/^[a-zA-Z0-9_]+=/.test(line)) {
+                                    const [key, ...valParts] = line.split('=');
+                                    const val = valParts.join('=');
+                                    env[key] = val.replace(/^["']|["']$/g, '');
+                                    continue;
+                                }
+
+                                // 3. Parse Command
+                                const parts = line.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g) || [];
+                                const cmdArgs = parts.map(p => {
+                                    let arg = p;
+                                    if (arg.startsWith('"') && arg.endsWith('"')) arg = arg.slice(1, -1);
+                                    else if (arg.startsWith("'") && arg.endsWith("'")) arg = arg.slice(1, -1);
+                                    return arg;
+                                });
+
+                                if (cmdArgs.length === 0) continue;
+                                const cmdName = cmdArgs[0];
+                                const args = cmdArgs.slice(1);
+
+                                const cmd = getCommand(cmdName) || availableCmds.find(c => c.name === cmdName);
+
+                                if (cmd) {
+                                    try {
+                                        // Execute with LOCAL context
+                                        const result = await cmd.execute({
+                                            args,
+                                            fileSystem: createScopedFileSystem(activeTerminalUser) as any,
+                                            currentPath: localCurrentPath,
+                                            setCurrentPath: () => {
+                                                // No-op here, we rely on result.newCwd
+                                            },
+                                            resolvePath: resolveLocalPath,
+                                            allCommands: availableCmds,
+                                            terminalUser: activeTerminalUser,
+                                            spawnSession: pushSession,
+                                            closeSession: closeSession,
+                                            onLaunchApp,
+                                            getNodeAtPath,
+                                            readFile,
+                                            prompt: () => Promise.resolve(''),
+                                            print: (c) => scriptOutput.push(c),
+                                            isSudoAuthorized,
+                                            setIsSudoAuthorized,
+                                            verifyPassword
+                                        });
+
+                                        if (result.output) scriptOutput.push(...result.output);
+                                        if (result.error) scriptError = true;
+
+                                        // Update state if command changed directory
+                                        if (result.newCwd) {
+                                            localCurrentPath = result.newCwd;
+                                            env['PWD'] = localCurrentPath;
+                                        }
+
+                                    } catch (e) {
+                                        scriptOutput.push(`Error executing ${cmdName}: ${e}`);
+                                    }
+                                } else {
+                                    scriptOutput.push(`${cmdName}: command not found`);
+                                    scriptError = true;
+                                }
+                            }
+
+                            cmdOutput = scriptOutput;
+                            cmdError = scriptError;
+
+                        }
                     }
                 } else {
                     cmdOutput = [`${command}: command not found`];
+                    cmdError = true;
+                }
+            }
+
+
+            if (isAppLaunch) {
+                if (onLaunchApp) {
+                    onLaunchApp(launchAppId, args, activeTerminalUser);
+                    cmdOutput = [`Launched ${launchAppId} as ${activeTerminalUser}`];
+                } else {
+                    cmdOutput = [`Cannot launch ${launchAppId}`];
+                    cmdError = true;
+                }
+            } else if (targetCommandName && !cmdError) {
+                const terminalCommand = getCommand(targetCommandName);
+                if (terminalCommand) {
+                    const availableCmds = getAvailableCommands();
+                    const result = await terminalCommand.execute({
+                        args: args,
+                        fileSystem: createScopedFileSystem(activeTerminalUser) as any,
+                        currentPath: currentPath,
+                        setCurrentPath: setCurrentPath,
+                        resolvePath: resolvePath,
+                        allCommands: availableCmds,
+                        terminalUser: activeTerminalUser,
+                        spawnSession: pushSession,
+                        closeSession: closeSession,
+                        onLaunchApp: onLaunchApp,
+                        getNodeAtPath: getNodeAtPath,
+                        readFile: readFile,
+                        prompt: (m, t) => prompt(m, t, historyId),
+                        print: (content: string | ReactNode) => {
+                            setHistory(prev => {
+                                const newHistory = [...prev];
+                                const idx = newHistory.findIndex(h => h.id === historyId);
+                                if (idx !== -1) {
+                                    newHistory[idx] = {
+                                        ...newHistory[idx],
+                                        output: [...newHistory[idx].output, content]
+                                    };
+                                }
+                                return newHistory;
+                            });
+                        },
+                        isSudoAuthorized: isSudoAuthorized,
+                        setIsSudoAuthorized: setIsSudoAuthorized,
+                        verifyPassword: verifyPassword
+                    });
+
+                    cmdOutput = result.output;
+                    cmdError = !!result.error;
+                    if (result.shouldClear) {
+                        shouldClear = true;
+                    }
+                } else {
+                    cmdOutput = [`${command}: Broken binary reference (maps to '${targetCommandName}' which is missing implementation)`];
                     cmdError = true;
                 }
             }

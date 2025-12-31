@@ -110,9 +110,12 @@ export function useWindowManager(
                         topZIndexRef.current += 1;
                         const newZIndex = topZIndexRef.current;
 
+                        // Regenerate content with new data to ensure props update
+                        const { content } = getAppContent(type, data, windowOwner || undefined);
+
                         return prevWindows.map(w =>
                             w.id === existing.id
-                                ? { ...w, zIndex: newZIndex, isMinimized: false, data }
+                                ? { ...w, zIndex: newZIndex, isMinimized: false, data, content }
                                 : w
                         );
                     }

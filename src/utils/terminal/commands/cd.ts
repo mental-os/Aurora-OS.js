@@ -14,7 +14,7 @@ export const cd: TerminalCommand = {
 
         if (args.length === 0 || args[0] === '~') {
             setCurrentPath(homePath);
-            return { output: [] };
+            return { output: [], newCwd: homePath };
         }
 
         const newPath = resolvePath(args[0]);
@@ -26,7 +26,7 @@ export const cd: TerminalCommand = {
                 return { output: [`cd: ${args[0]}: Permission denied`], error: true };
             }
             setCurrentPath(newPath);
-            return { output: [] };
+            return { output: [], newCwd: newPath };
         }
 
         return { output: [`cd: ${args[0]}: No such directory`], error: true };

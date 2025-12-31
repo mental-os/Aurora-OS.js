@@ -142,23 +142,11 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
     const setPlaylist: React.Dispatch<React.SetStateAction<Song[]>> = useCallback((value) => {
         setPlaylistInternal(prev => {
             const newPlaylist = typeof value === 'function' ? value(prev) : value;
-            // Immediate sync attempt (best effort during render phase or queued state update)
-            if (currentIndex !== -1 && prev[currentIndex]) {
-                const currentId = prev[currentIndex].id;
-                const newIndex = newPlaylist.findIndex(s => s.id === currentId);
-                // We cannot call setCurrentIndex directly here if it triggers a re-render loop,
-                // but since this is called from an event handler usually, it's fine.
-                // However, updated state access inside setter is tricky.
-                // If newIndex differs, we queue the update.
-                if (newIndex !== -1 && newIndex !== currentIndex) {
-                    setTimeout(() => setCurrentIndex(newIndex), 0);
-                } else if (newIndex === -1 && isPlaying) {
-                    setTimeout(() => setCurrentIndex(-1), 0);
-                }
-            }
+            // Removed automatic index sync logic as it interferes with atomic updates from playSong
+            // playSong handles index updates explicitly.
             return newPlaylist;
         });
-    }, [currentIndex, isPlaying]);
+    }, []);
 
     // Validation removed to preserve history of ad-hoc/offline files.
     // Handles invalid files gracefully at playback time.
@@ -269,7 +257,9 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
             onstop: () => setIsPlaying(false),
             onend: () => handleNext()
         });
+
         soundRef.current = sound;
+
         if (autoPlay) sound.play();
     }, [handleNext, setPlaylist, setRecent]);
 
@@ -282,30 +272,27 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
         if (!song.path.startsWith('~/Music/')) {
             const node = getNodeAtPath(song.path, activeUser);
             if (!node) {
-                // File is GONE (Zombie)
-                // Remove from Recent and stop
                 setRecent(prev => prev.filter(s => s.id !== song.id));
-                // Optionally toast here if we had access to toast
                 console.warn(`Zombie track removed: ${song.path}`);
                 return;
             }
         }
 
-        // Strict Mode: Only add to Recent if it's an ad-hoc file (NOT in ~/Music)
+        // Strict Mode: Only add to Recent if it's an ad-hoc file
         if (!song.path.startsWith('~/Music/')) {
             setRecent(prev => {
-                // Remove any existing instance of this ID to prevent duplicates
                 const filtered = prev.filter(s => s.id !== song.id);
                 return [song, ...filtered].slice(0, 50);
             });
         }
 
-        const targetPlaylist = newPlaylist || playlist;
+        // Use Ref for playlist to keep function stable
+        const currentPlaylist = stateRef.current.playlist;
+        const targetPlaylist = newPlaylist || currentPlaylist;
+
+        // Handle explicit playlist update
         if (newPlaylist) {
             setPlaylist(newPlaylist);
-            // We must manually update current index because setPlaylist async update won't happen
-            // in time for the logic below if we were to rely on `playlist` state.
-            // But we can just use `targetPlaylist` for index calculation.
         }
 
         const idx = targetPlaylist.findIndex(s => s.id === song.id);
@@ -331,7 +318,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
                 playSoundImplementation(targetPlaylist[idx], true);
             }
         }
-    }, [playlist, currentSong, isPlaying, setPlaylist, getNodeAtPath, playSoundImplementation, activeUser]);
+    }, [playlist, currentSong, isPlaying, setPlaylist, getNodeAtPath, playSoundImplementation, activeUser, setRecent]);
 
     const playFile = useCallback((path: string) => {
         const node = getNodeAtPath(path, activeUser);

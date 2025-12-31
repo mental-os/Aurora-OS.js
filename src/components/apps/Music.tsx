@@ -72,6 +72,7 @@ export function Music({ owner, initialPath }: MusicProps) {
 
   const { fileSystem, resolvePath, listDirectory, getNodeAtPath, readFile } = useFileSystem();
   const { accentColor, activeUser: desktopUser } = useAppContext();
+  const windowContext = useWindow();
   const activeUser = owner || desktopUser;
   const { getBackgroundColor, blurStyle } = useThemeColors();
 
@@ -95,7 +96,7 @@ export function Music({ owner, initialPath }: MusicProps) {
     setActiveCategory
   } = useMusic();
 
-  const windowContext = useWindow();
+
 
   // Pause music when the window (component) closes to save session state
   useEffect(() => {
@@ -106,28 +107,48 @@ export function Music({ owner, initialPath }: MusicProps) {
     };
   }, [pause, setMusicOpen]);
 
+  // Track processed path to avoid re-triggering on state changes
+  const processedPathRef = useRef<string | null>(null);
+  const processedTimestampRef = useRef<number | null>(null);
+
+  // Handle Initial Path updates (just for UI synchronization if needed, but not playback)
+  // In "window-gated" mode, we watch for timestamps to trigger playback.This component just watches currentSong via useMusic.
+
   // Handle Initial Path and Dynamic Path updates from CLI/Finder
   useEffect(() => {
     const path = initialPath || windowContext?.data?.path;
-    if (path) {
+    const timestamp = windowContext?.data?.timestamp;
+
+    // Logic: Only play if we have a NEW timestamp (explicit user intent) 
+    // OR if it's the very first mount with a path (fresh open) and we haven't processed this path yet.
+
+    const isNewTimestamp = timestamp && timestamp !== processedTimestampRef.current;
+    // For initial mount without timestamp (legacy/fresh open), we check path diff, 
+    // but practically OS always sends timestamp now. We'll support both.
+    const isNewPath = path && path !== processedPathRef.current;
+
+    if (path && (isNewTimestamp || (isNewPath && !timestamp))) {
+      processedPathRef.current = path;
+      if (timestamp) processedTimestampRef.current = timestamp;
+
       const node = getNodeAtPath(path, activeUser);
       if (node && node.type === 'file') {
         const content = readFile(path, activeUser);
-        const meta = parseMetadata(node.name);
+        const meta = parseMetadata(node.name); // Ensure parseMetadata is imported or available
         const song: Song = {
           id: node.id,
           path: path,
           url: content || '',
-          title: meta.title,
-          artist: meta.artist,
-          album: meta.album,
+          title: meta.title || 'Unknown Title',
+          artist: meta.artist || 'Unknown Artist',
+          album: meta.album || 'Unknown Album',
           duration: '--:--'
         };
         playSong(song);
         setActiveCategory('recent');
       }
     }
-  }, [initialPath, windowContext?.data?.path, activeUser, getNodeAtPath, readFile, playSong, setActiveCategory]);
+  }, [initialPath, windowContext?.data?.path, windowContext?.data?.timestamp, activeUser, getNodeAtPath, readFile, playSong, setActiveCategory]);
 
   // Derived state for view
   // We filter library songs for the badge size and the main view
