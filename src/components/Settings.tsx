@@ -112,6 +112,7 @@ export function Settings({ owner }: { owner?: string }) {
   const [newUsername, setNewUsername] = useState('');
   const [newFullName, setNewFullName] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [newPasswordHint, setNewPasswordHint] = useState('');
   const [isAddingUser, setIsAddingUser] = useState(false);
 
   // About section state
@@ -154,7 +155,7 @@ export function Settings({ owner }: { owner?: string }) {
                     key={wp.id}
                     onClick={() => setWallpaper(wp.id)}
                     className={cn(
-                      "group relative aspect-[16/9] rounded-lg overflow-hidden border-2 transition-all",
+                      "group relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
                       wallpaper === wp.id
                         ? "border-white ring-2 ring-white/20 ring-offset-2 ring-offset-black/50"
                         : "border-transparent hover:border-white/50"
@@ -178,7 +179,7 @@ export function Settings({ owner }: { owner?: string }) {
                         <span className="text-xs font-bold text-white uppercase tracking-wider translate-y-2 group-hover:translate-y-0 transition-transform">Use</span>
                       )}
                     </div>
-                    <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                    <div className="absolute bottom-0 inset-x-0 p-2 bg-linear-to-t from-black/80 to-transparent">
                       <span className="text-bg text-white/90 text-xs font-medium">{wp.name}</span>
                     </div>
                   </button>
@@ -259,13 +260,13 @@ export function Settings({ owner }: { owner?: string }) {
                 <label className="text-sm text-white/80 mb-3 block">Preview</label>
                 <div className="flex gap-3">
                   <button
-                    className="px-4 py-2 rounded-lg text-white transition-all w-1/2 aspect-[3/1] flex items-center justify-center"
+                    className="px-4 py-2 rounded-lg text-white transition-all w-1/2 aspect-3/1 flex items-center justify-center"
                     style={{ backgroundColor: accentColor }}
                   >
                     Primary
                   </button>
                   <button
-                    className="px-4 py-2 rounded-lg transition-all border-2 w-1/2 aspect-[3/1] flex items-center justify-center"
+                    className="px-4 py-2 rounded-lg transition-all border-2 w-1/2 aspect-3/1 flex items-center justify-center"
                     style={{ borderColor: accentColor, color: accentColor }}
                   >
                     Outlined
@@ -341,14 +342,14 @@ export function Settings({ owner }: { owner?: string }) {
               <div className={cn("grid gap-4", isNarrow ? "grid-cols-1" : "grid-cols-2")}>
                 <button className="p-4 rounded-lg bg-gray-900/50 border-2 border-white/20 hover:border-white/40 transition-all text-left group flex flex-col h-full">
                   <div
-                    className="w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded mb-3 shrink-0"
+                    className="w-full bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded mb-3 shrink-0"
                     style={{ aspectRatio: '16/9' }}
                   />
                   <span className="text-white text-sm">Dark</span>
                 </button>
                 <button className="p-4 rounded-lg bg-black/20 border border-white/10 hover:border-white/20 transition-all opacity-50 cursor-not-allowed text-left flex flex-col h-full">
                   <div
-                    className="w-full bg-gradient-to-br from-gray-100 to-gray-300 rounded mb-3 shrink-0"
+                    className="w-full bg-linear-to-br from-gray-100 to-gray-300 rounded mb-3 shrink-0"
                     style={{ aspectRatio: '16/9' }}
                   />
                   <span className="text-white/60 text-sm">Light (Coming Soon)</span>
@@ -513,15 +514,22 @@ export function Settings({ owner }: { owner?: string }) {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                     />
+                    <GlassInput
+                      type="text"
+                      placeholder="Password Hint (optional)"
+                      value={newPasswordHint}
+                      onChange={(e) => setNewPasswordHint(e.target.value)}
+                    />
                   </div>
                   <div className="flex justify-end gap-2 mt-2">
                     <GlassButton
                       disabled={!newUsername || !newFullName}
                       onClick={() => {
-                        if (addUser(newUsername, newFullName, newPassword, activeUser)) {
+                        if (addUser(newUsername, newFullName, newPassword, newPasswordHint, activeUser)) {
                           setNewUsername('');
                           setNewFullName('');
                           setNewPassword('');
+                          setNewPasswordHint('');
                           setIsAddingUser(false);
                         } else {
                           // alert? using custom notify handling from calling code usually, but here just inline check
@@ -540,7 +548,7 @@ export function Settings({ owner }: { owner?: string }) {
                 {users.map((user) => (
                   <div key={user.username} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 group">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-white font-bold text-lg">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-gray-700 to-gray-600 flex items-center justify-center text-white font-bold text-lg">
                         {user.fullName.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -675,13 +683,13 @@ export function Settings({ owner }: { owner?: string }) {
             {/* Danger Zone Accordion */}
             <Accordion type="single" collapsible className="bg-black/20 rounded-xl border border-red-500/30 overflow-hidden">
               <AccordionItem value="danger-zone" className="border-none">
-                <AccordionTrigger className="w-full !px-6 py-4 text-red-400 hover:no-underline hover:text-red-300">
+                <AccordionTrigger className="w-full px-6! py-4 text-red-400 hover:no-underline hover:text-red-300">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5" />
                     <span className="text-lg font-medium">Danger Zone</span>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="!px-6 pb-6">
+                <AccordionContent className="px-6! pb-6">
                   <div className="space-y-6">
                     {/* Soft Reset */}
                     <div className="bg-black/30 rounded-lg p-4 border border-white/10">

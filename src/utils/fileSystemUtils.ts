@@ -19,6 +19,7 @@ export interface FileNode {
 export interface User {
     username: string;
     password?: string;
+    passwordHint?: string;
     uid: number;
     gid: number;
     fullName: string;

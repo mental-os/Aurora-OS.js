@@ -174,7 +174,7 @@ export default function OS() {
                 break;
             case 'settings':
                 title = 'System Settings';
-                content = <Settings />;
+                content = <Settings owner={owner} />;
                 break;
             case 'photos':
                 title = 'Photos';
@@ -354,7 +354,7 @@ export default function OS() {
     }, [focusedWindowId]);
 
     return (
-        <div className="dark h-screen w-screen overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative">
+        <div className="dark h-screen w-screen overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 relative">
             <div className="window-drag-boundary absolute top-7 left-0 right-0 bottom-0 pointer-events-none z-0" />
             <Desktop
                 onDoubleClick={() => { }}

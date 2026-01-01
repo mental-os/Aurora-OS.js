@@ -157,7 +157,7 @@ export function LoginScreen() {
                                         "text-left"
                                     )}
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform relative">
+                                    <div className="w-12 h-12 rounded-full bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform relative">
                                         <span className="text-xl font-bold text-white uppercase">{user.fullName.charAt(0)}</span>
                                         {(currentUser === user.username || hasSavedSession(user.username)) && (
                                             <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full p-1 shadow-lg border-2 border-slate-800" title="Session Active">
@@ -189,7 +189,7 @@ export function LoginScreen() {
                     /* Password / Login Stage */
                     <div className="w-full flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
                         <div className="relative mb-6">
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center shadow-2xl border-4 border-white/10">
+                            <div className="w-24 h-24 rounded-full bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center shadow-2xl border-4 border-white/10">
                                 <span className="text-4xl font-bold text-white uppercase">{selectedUser.fullName.charAt(0)}</span>
                             </div>
                         </div>
@@ -223,7 +223,7 @@ export function LoginScreen() {
                             />
                             {error && (
                                 <p className="absolute -bottom-6 left-0 right-0 text-center text-red-300 text-xs animate-in fade-in slide-in-from-top-1">
-                                    Incorrect password. Hint: {selectedUser.username === 'root' ? 'admin' : selectedUser.username === 'user' ? '1234' : 'guest'}
+                                    Incorrect password. Hint: {selectedUser.passwordHint || (selectedUser.username === 'root' ? 'admin' : selectedUser.username === 'user' ? '1234' : 'guest')}
                                 </p>
                             )}
                         </div>
@@ -237,7 +237,7 @@ export function LoginScreen() {
                                             setSelectedUser(null);
                                         }
                                     }}
-                                    className="flex-[1] py-3 px-2 rounded-xl font-medium text-sm transition-all border-2 flex items-center justify-center hover:bg-white/10 active:scale-95"
+                                    className="flex-1 py-3 px-2 rounded-xl font-medium text-sm transition-all border-2 flex items-center justify-center hover:bg-white/10 active:scale-95"
                                     style={{ borderColor: accentColor, color: accentColor }}
                                 >
                                     Log Out
@@ -248,7 +248,7 @@ export function LoginScreen() {
                                     }}
                                     disabled={!password || isLoggingIn}
                                     className={cn(
-                                        "flex-[3] py-3 px-6 rounded-xl font-medium text-white shadow-lg transition-all",
+                                        "flex-3 py-3 px-6 rounded-xl font-medium text-white shadow-lg transition-all",
                                         "active:scale-95 disabled:opacity-50 disabled:active:scale-100",
                                         "flex items-center justify-center gap-2"
                                     )}

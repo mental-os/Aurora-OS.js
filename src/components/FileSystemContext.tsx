@@ -49,6 +49,7 @@ export interface FileSystemContextType {
     username: string,
     fullName: string,
     password?: string,
+    passwordHint?: string,
     asUser?: string
   ) => boolean;
   deleteUser: (username: string, asUser?: string) => boolean;
