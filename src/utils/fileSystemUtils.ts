@@ -235,9 +235,9 @@ export function octalToPermissions(mode: string, type: 'file' | 'directory'): st
 }
 
 export function parseSymbolicMode(currentPerms: string, mode: string): string | null {
-    // Regex for symbolic mode: [ugoa]*[+-=][rwx]*
+    // Regex for symbolic mode: [ugoa]*[+\-=][rwx]*
     // e.g. +x, u+rw, go-w, a=rwx
-    const match = mode.match(/^([ugoa]*)([+-=])([rwx]*)$/);
+    const match = mode.match(/^([ugoa]*)([-+=])([rwx]*)$/);
     if (!match) return null;
 
     const [, who, op, perms] = match;

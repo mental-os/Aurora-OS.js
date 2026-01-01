@@ -15,6 +15,7 @@ Aurora OS is built on the shoulders of giants. We gratefully acknowledge the fol
 |:--------|:-------:|:------------|
 | [Radix UI](https://www.radix-ui.com/) | MIT | Unstyled, accessible components for building high-quality design systems and web apps. |
 | [Lucide](https://lucide.dev/) | ISC | Beautiful & consistent icon toolkit made by the community. |
+| [shadcn/ui](https://ui.shadcn.com/) | MIT | A collection of ready-to-use components built with Radix UI and Tailwind CSS. |
 | [Recharts](https://recharts.org/) | MIT | A composable charting library built on React components. |
 | [Sonner](https://sonner.emilkowal.ski/) | MIT | An opinionated toast component for React. |
 | [Vaul](https://vaul.emilkowal.ski/) | MIT | Drawer component for React. |

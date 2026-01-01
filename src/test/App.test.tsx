@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import App from './App';
+import App from '../App';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -59,7 +59,7 @@ vi.mock('motion/react', () => ({
 }));
 
 // Mock GameRoot to bypass intro/menu/boot sequence
-vi.mock('./components/Game/GameRoot', () => ({
+vi.mock('../components/Game/GameRoot', () => ({
     GameRoot: ({ children }: any) => <>{children}</>,
 }));
 

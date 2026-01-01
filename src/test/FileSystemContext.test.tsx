@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { FileSystemProvider, useFileSystem } from './FileSystemContext';
+import { FileSystemProvider, useFileSystem } from '../components/FileSystemContext';
 
 // Mock localStorage
 const localStorageMock = (() => {

@@ -66,6 +66,8 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
+    minify: 'terser',
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     port: 3000,

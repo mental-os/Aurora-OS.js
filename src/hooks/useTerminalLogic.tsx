@@ -235,7 +235,8 @@ export function useTerminalLogic(onLaunchApp?: (appId: string, args: string[], o
         const files = listDirectory(resolvedPath, activeTerminalUser);
         if (!files) return [pattern];
 
-        const regex = new RegExp('^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '.*') + '$');
+        const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp('^' + escapedPattern.replace(/\\\*/g, '.*') + '$');
         const matches = files
             .filter(f => regex.test(f.name))
             .map(f => f.name);

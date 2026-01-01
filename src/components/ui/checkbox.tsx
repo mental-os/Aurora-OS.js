@@ -33,8 +33,8 @@ const Checkbox = React.forwardRef<
       <style dangerouslySetInnerHTML={{
         __html: `
         button[data-state=checked].peer {
-          background-color: ${accentColor};
-          border-color: ${accentColor};
+          background-color: var(--accent-color);
+          border-color: var(--accent-color);
         }
       `}} />
       <CheckboxPrimitive.Indicator
