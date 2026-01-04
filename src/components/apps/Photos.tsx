@@ -4,29 +4,7 @@ import { ResponsiveGrid } from '../ui/ResponsiveGrid';
 import { useAppStorage } from '../../hooks/useAppStorage';
 import { useSessionStorage } from '../../hooks/useSessionStorage';
 import { cn } from '../ui/utils';
-
-const photosSidebar = {
-  sections: [
-    {
-      title: 'Library',
-      items: [
-        { id: 'all', label: 'All Photos', icon: Image, badge: '1,234' },
-        { id: 'favorites', label: 'Favorites', icon: Heart, badge: '42' },
-        { id: 'recent', label: 'Recent', icon: Clock },
-        { id: 'people', label: 'People', icon: User },
-        { id: 'places', label: 'Places', icon: MapPin },
-      ],
-    },
-    {
-      title: 'Albums',
-      items: [
-        { id: 'album1', label: 'Vacation 2024', icon: Folder, badge: '156' },
-        { id: 'album2', label: 'Family', icon: Folder, badge: '89' },
-        { id: 'album3', label: 'Nature', icon: Folder, badge: '203' },
-      ],
-    },
-  ],
-};
+import { useI18n } from '../../i18n';
 
 const mockPhotos = Array.from({ length: 24 }, (_, i) => ({
   id: i + 1,
@@ -34,15 +12,62 @@ const mockPhotos = Array.from({ length: 24 }, (_, i) => ({
 }));
 
 export function Photos({ owner }: { owner?: string }) {
+  const { t } = useI18n();
+
   // Persisted state
   const [activeCategory, setActiveCategory] = useSessionStorage('photos-active-category', 'all', owner);
   const [appState, setAppState] = useAppStorage('photos', {
     viewMode: 'grid',
   }, owner);
 
+  const photosSidebar = {
+    sections: [
+      {
+        title: t('photos.sidebar.libraryTitle'),
+        items: [
+          { id: 'all', label: t('photos.library.allPhotos'), icon: Image, badge: '1,234' },
+          { id: 'favorites', label: t('photos.library.favorites'), icon: Heart, badge: '42' },
+          { id: 'recent', label: t('photos.library.recent'), icon: Clock },
+          { id: 'people', label: t('photos.library.people'), icon: User },
+          { id: 'places', label: t('photos.library.places'), icon: MapPin },
+        ],
+      },
+      {
+        title: t('photos.sidebar.albumsTitle'),
+        items: [
+          { id: 'album1', label: t('photos.albums.vacation2024'), icon: Folder, badge: '156' },
+          { id: 'album2', label: t('photos.albums.family'), icon: Folder, badge: '89' },
+          { id: 'album3', label: t('photos.albums.nature'), icon: Folder, badge: '203' },
+        ],
+      },
+    ],
+  };
+
+  const toolbarTitle = (() => {
+    switch (activeCategory) {
+      case 'favorites':
+        return t('photos.library.favorites');
+      case 'recent':
+        return t('photos.library.recent');
+      case 'people':
+        return t('photos.library.people');
+      case 'places':
+        return t('photos.library.places');
+      case 'album1':
+        return t('photos.albums.vacation2024');
+      case 'album2':
+        return t('photos.albums.family');
+      case 'album3':
+        return t('photos.albums.nature');
+      case 'all':
+      default:
+        return t('photos.library.allPhotos');
+    }
+  })();
+
   const toolbar = (
     <div className="flex items-center justify-between w-full">
-      <h2 className="text-white/90">All Photos</h2>
+      <h2 className="text-white/90">{toolbarTitle}</h2>
       <div className="flex items-center gap-2">
         <button
           onClick={() => setAppState(s => ({ ...s, viewMode: 'grid' }))}
@@ -98,10 +123,10 @@ export const photosMenuConfig: AppMenuConfig = {
   menus: ['File', 'Edit', 'Image', 'View', 'Window', 'Help'],
   items: {
     'Image': [
-      { label: 'Slideshow', action: 'slideshow' },
+      { label: 'Slideshow', labelKey: 'photos.menu.slideshow', action: 'slideshow' },
       { type: 'separator' },
-      { label: 'Rotate Clockwise', shortcut: '⌘R', action: 'rotate-cw' },
-      { label: 'Rotate Counter Clockwise', shortcut: '⇧⌘R', action: 'rotate-ccw' }
+      { label: 'Rotate Clockwise', labelKey: 'photos.menu.rotateClockwise', shortcut: '⌘R', action: 'rotate-cw' },
+      { label: 'Rotate Counter Clockwise', labelKey: 'photos.menu.rotateCounterClockwise', shortcut: '⇧⌘R', action: 'rotate-ccw' }
     ]
   }
 };

@@ -3,11 +3,7 @@ import { ChevronLeft, ChevronRight, RotateCw, Home, Star, Lock, X } from 'lucide
 import { AppTemplate } from './AppTemplate';
 import { useAppStorage } from '../../hooks/useAppStorage';
 import { cn } from '../ui/utils';
-
-const mockTabs = [
-  { id: 1, title: 'Welcome to Browser', url: 'browser://welcome', active: true },
-  { id: 2, title: 'New Tab', url: 'browser://newtab', active: false },
-];
+import { useI18n } from '../../i18n';
 
 const quickLinks = [
   { id: 1, name: 'GitHub', color: 'bg-gray-900' },
@@ -19,13 +15,18 @@ const quickLinks = [
 ];
 
 export function Browser({ owner }: { owner?: string }) {
+  const { t } = useI18n();
+
   // Persisted state
   const [appState, setAppState] = useAppStorage('browser', {
     url: 'browser://welcome',
     bookmarks: [] as string[],
   }, owner);
 
-  const [tabs] = useState(mockTabs);
+  const [tabs] = useState([
+    { id: 1, title: t('browser.tabs.welcome'), url: 'browser://welcome', active: true },
+    { id: 2, title: t('browser.tabs.newTab'), url: 'browser://newtab', active: false },
+  ]);
 
   const tabBar = (
     <div className="flex items-center w-full gap-1">
@@ -84,8 +85,8 @@ export function Browser({ owner }: { owner?: string }) {
       {/* Page Content */}
       <div className="flex-1 p-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl text-white mb-2 font-light">Welcome</h1>
-          <p className="text-white/60 mb-8">Your favorite sites</p>
+          <h1 className="text-3xl text-white mb-2 font-light">{t('browser.welcome.title')}</h1>
+          <p className="text-white/60 mb-8">{t('browser.welcome.subtitle')}</p>
 
           <div className="grid grid-cols-3 gap-4">
             {quickLinks.map((link) => (
@@ -101,7 +102,7 @@ export function Browser({ owner }: { owner?: string }) {
 
           {/* Recent Activity */}
           <div className="mt-12">
-            <h2 className="text-xl text-white mb-4 font-light">Recent Activity</h2>
+            <h2 className="text-xl text-white mb-4 font-light">{t('browser.recentActivity')}</h2>
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
                 <div
@@ -109,7 +110,7 @@ export function Browser({ owner }: { owner?: string }) {
                   className="p-4 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/10 transition-colors cursor-pointer flex items-center justify-between"
                 >
                   <div>
-                    <div className="text-white text-sm mb-1">Example Website {i}</div>
+                    <div className="text-white text-sm mb-1">{t('browser.exampleWebsite', { index: i })}</div>
                     <div className="text-white/40 text-xs">https://example{i}.com</div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-white/20" />
@@ -131,23 +132,23 @@ export const browserMenuConfig: AppMenuConfig = {
   menus: ['File', 'Edit', 'View', 'History', 'Bookmarks', 'Window', 'Help'],
   items: {
     'File': [
-      { label: 'New Tab', shortcut: '⌘T', action: 'new-tab' },
-      { label: 'New Window', shortcut: '⌘N', action: 'new-window' },
+      { label: 'New Tab', labelKey: 'browser.menu.newTab', shortcut: '⌘T', action: 'new-tab' },
+      { label: 'New Window', labelKey: 'menubar.items.newWindow', shortcut: '⌘N', action: 'new-window' },
       { type: 'separator' },
-      { label: 'Close Tab', shortcut: '⌘W', action: 'close-tab' }
+      { label: 'Close Tab', labelKey: 'browser.menu.closeTab', shortcut: '⌘W', action: 'close-tab' }
     ],
     'View': [
-      { label: 'Reload', shortcut: '⌘R', action: 'reload' },
-      { label: 'Stop', shortcut: 'Esc', action: 'stop' },
+      { label: 'Reload', labelKey: 'menubar.items.reload', shortcut: '⌘R', action: 'reload' },
+      { label: 'Stop', labelKey: 'browser.menu.stop', shortcut: 'Esc', action: 'stop' },
       { type: 'separator' },
-      { label: 'Zoom In', shortcut: '⌘+', action: 'zoom-in' },
-      { label: 'Zoom Out', shortcut: '⌘-', action: 'zoom-out' }
+      { label: 'Zoom In', labelKey: 'browser.menu.zoomIn', shortcut: '⌘+', action: 'zoom-in' },
+      { label: 'Zoom Out', labelKey: 'browser.menu.zoomOut', shortcut: '⌘-', action: 'zoom-out' }
     ],
     'History': [
-      { label: 'Back', shortcut: '⌘[', action: 'back' },
-      { label: 'Forward', shortcut: '⌘]', action: 'forward' },
+      { label: 'Back', labelKey: 'menubar.items.back', shortcut: '⌘[', action: 'back' },
+      { label: 'Forward', labelKey: 'menubar.items.forward', shortcut: '⌘]', action: 'forward' },
       { type: 'separator' },
-      { label: 'Show Full History', shortcut: '⌘Y', action: 'history' }
+      { label: 'Show Full History', labelKey: 'browser.menu.showFullHistory', shortcut: '⌘Y', action: 'history' }
     ]
   }
 };

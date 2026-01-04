@@ -22,6 +22,7 @@ import { Badge } from './ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 import { getApp } from '../config/appRegistry';
+import { useI18n } from '../i18n';
 
 interface MenuBarProps {
   focusedApp?: string | null;
@@ -30,10 +31,11 @@ interface MenuBarProps {
 
 function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
   const { menuBarBackground, blurStyle, getBackgroundColor } = useThemeColors();
-  const { devMode, disableShadows, setIsLocked } = useAppContext();
+  const { devMode, disableShadows, setIsLocked, locale } = useAppContext();
   const { logout, currentUser } = useFileSystem();
+  const { t } = useI18n();
   const [currentTime, setCurrentTime] = useState(() =>
-    new Date().toLocaleTimeString('en-US', {
+    new Date().toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
@@ -41,7 +43,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
   );
 
   const [currentDate, setCurrentDate] = useState(() =>
-    new Date().toLocaleDateString('en-US', {
+    new Date().toLocaleDateString(locale, {
       weekday: 'short',
       month: 'short',
       day: 'numeric'
@@ -72,12 +74,12 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('en-US', {
+      setCurrentTime(now.toLocaleTimeString(locale, {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
       }));
-      setCurrentDate(now.toLocaleDateString('en-US', {
+      setCurrentDate(now.toLocaleDateString(locale, {
         weekday: 'short',
         month: 'short',
         day: 'numeric'
@@ -87,7 +89,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [locale]);
 
   // Get the menu config for the focused app
   const activeApp = focusedApp ? getApp(focusedApp) : getApp('finder');
@@ -95,6 +97,33 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
     name: activeApp?.name || 'Finder',
     menus: activeApp?.menu?.menus || ['File', 'Edit', 'View', 'Go', 'Window', 'Help'],
     items: activeApp?.menu?.items
+  };
+
+  const menuNameToKey: Record<string, string> = {
+    'File': 'menubar.menus.file',
+    'Shell': 'menubar.menus.shell',
+    'Edit': 'menubar.menus.edit',
+    'Format': 'menubar.menus.format',
+    'Song': 'menubar.menus.song',
+    'View': 'menubar.menus.view',
+    'Go': 'menubar.menus.go',
+    'Controls': 'menubar.menus.controls',
+    'Window': 'menubar.menus.window',
+    'Help': 'menubar.menus.help',
+    'Image': 'menubar.menus.image',
+    'Tools': 'menubar.menus.tools',
+    'Conversations': 'menubar.menus.conversations',
+    'Store': 'menubar.menus.store',
+    'History': 'menubar.menus.history',
+    'Bookmarks': 'menubar.menus.bookmarks',
+    'Mailbox': 'menubar.menus.mailbox',
+    'Message': 'menubar.menus.message',
+    'DEV Center': 'menubar.menus.devCenter'
+  };
+
+  const getMenuDisplayName = (menuName: string) => {
+    const key = menuNameToKey[menuName];
+    return key ? t(key) : menuName;
   };
 
   // Add "DEV Center" to Finder menus if devMode is enabled
@@ -112,6 +141,11 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
             if (item.type === 'separator') {
               return <MenubarSeparator key={idx} />;
             }
+
+            const label = item.labelKey
+              ? t(item.labelKey, { appName: appConfig.name })
+              : (item.label ?? '');
+
             return (
               <MenubarItem
                 key={idx}
@@ -127,7 +161,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                   }
                 }}
               >
-                {item.label}
+                {label}
                 {item.shortcut && <MenubarShortcut>{item.shortcut}</MenubarShortcut>}
               </MenubarItem>
             );
@@ -141,45 +175,45 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
       case 'File':
         return (
           <>
-            <MenubarItem>New Window <MenubarShortcut>⌘N</MenubarShortcut></MenubarItem>
-            <MenubarItem>Close Window <MenubarShortcut>⌘W</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.newWindow')} <MenubarShortcut>⌘N</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.closeWindow')} <MenubarShortcut>⌘W</MenubarShortcut></MenubarItem>
           </>
         );
       case 'Edit':
         return (
           <>
-            <MenubarItem>Undo <MenubarShortcut>⌘Z</MenubarShortcut></MenubarItem>
-            <MenubarItem>Redo <MenubarShortcut>⇧⌘Z</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.undo')} <MenubarShortcut>⌘Z</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.redo')} <MenubarShortcut>⇧⌘Z</MenubarShortcut></MenubarItem>
             <MenubarSeparator />
-            <MenubarItem>Cut <MenubarShortcut>⌘X</MenubarShortcut></MenubarItem>
-            <MenubarItem>Copy <MenubarShortcut>⌘C</MenubarShortcut></MenubarItem>
-            <MenubarItem>Paste <MenubarShortcut>⌘V</MenubarShortcut></MenubarItem>
-            <MenubarItem>Select All <MenubarShortcut>⌘A</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.cut')} <MenubarShortcut>⌘X</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.copy')} <MenubarShortcut>⌘C</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.paste')} <MenubarShortcut>⌘V</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.selectAll')} <MenubarShortcut>⌘A</MenubarShortcut></MenubarItem>
           </>
         );
       case 'View':
         return (
           <>
-            <MenubarItem>Reload <MenubarShortcut>⌘R</MenubarShortcut></MenubarItem>
-            <MenubarItem>Toggle Fullscreen <MenubarShortcut>F11</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.reload')} <MenubarShortcut>⌘R</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.toggleFullscreen')} <MenubarShortcut>F11</MenubarShortcut></MenubarItem>
           </>
         );
       case 'Window':
         return (
           <>
-            <MenubarItem>Minimize <MenubarShortcut>⌘M</MenubarShortcut></MenubarItem>
-            <MenubarItem>Bring All to Front</MenubarItem>
+            <MenubarItem>{t('menubar.items.minimize')} <MenubarShortcut>⌘M</MenubarShortcut></MenubarItem>
+            <MenubarItem>{t('menubar.items.bringAllToFront')}</MenubarItem>
           </>
         );
       case 'Help':
         return (
           <>
-            <MenubarItem>{appConfig.name} Help</MenubarItem>
+            <MenubarItem>{t('menubar.help.appHelp', { appName: appConfig.name })}</MenubarItem>
           </>
         );
       default:
         return (
-          <MenubarItem disabled>Feature not implemented</MenubarItem>
+          <MenubarItem disabled>{t('menubar.default.featureNotImplemented')}</MenubarItem>
         );
     }
   };
@@ -216,26 +250,26 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                     window.dispatchEvent(new CustomEvent('aurora-open-settings-section', { detail: 'about' }));
                     onOpenApp?.('settings');
                   }}>
-                    About This Computer...
+                      {t('menubar.system.aboutThisComputer')}
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                  <p>View system information</p>
+                    <p>{t('menubar.system.viewSystemInfo')}</p>
                 </TooltipContent>
               </Tooltip>
               <MenubarSeparator className="bg-white/10" />
               <Tooltip>
                 <TooltipTrigger asChild>
                   <MenubarItem onClick={() => onOpenApp?.('settings')}>
-                    System Settings...
+                      {t('menubar.system.systemSettings')}
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                  <p>View system settings</p>
+                    <p>{t('menubar.system.viewSystemSettings')}</p>
                 </TooltipContent>
               </Tooltip>
               <MenubarItem onClick={() => onOpenApp?.('appstore')}>
-                App Store...
+                  {t('menubar.system.appStore')}
               </MenubarItem>
               <MenubarSeparator className="bg-white/10" />
               <Tooltip>
@@ -244,11 +278,11 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                     // Lock Screen -> Overlay LoginScreen but KEEP session
                     setIsLocked(true);
                   }}>
-                    Lock Screen
+                    {t('menubar.system.lockScreen')}
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                  <p>Return to login screen while <b>keeping session</b></p>
+                  <p>{t('menubar.system.returnToLoginWhile')} <b>{t('menubar.system.keepingSession')}</b></p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -257,11 +291,11 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                     // Switch User -> Logout to suspend, keep storage
                     logout();
                   }}>
-                    Switch User
+                    {t('menubar.system.switchUser')}
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                  <p>Return to user selection screen while <b>keeping session</b></p>
+                  <p>{t('menubar.system.returnToUserSelectionWhile')} <b>{t('menubar.system.keepingSession')}</b></p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -273,11 +307,11 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                     }
                     logout();
                   }}>
-                    Log Out: {currentUser ? currentUser : 'User'}
+                    {t('menubar.system.logOutAs', { username: currentUser ? currentUser : t('menubar.system.user') })}
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                  <p>Return to user selection screen while <b>clearing session</b></p>
+                  <p>{t('menubar.system.returnToUserSelectionWhile')} <b>{t('menubar.system.clearingSession')}</b></p>
                 </TooltipContent>
               </Tooltip>
               <MenubarSeparator className="bg-white/10" />
@@ -291,12 +325,12 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                     }}
                     className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
                   >
-                    <span className="flex-1 text-left">PANIC</span>
-                    <Badge variant="destructive" className="ml-auto text-[10px] h-5 px-1.5">Hard Reset</Badge>
+                    <span className="flex-1 text-left">{t('menubar.system.panic')}</span>
+                    <Badge variant="destructive" className="ml-auto text-[10px] h-5 px-1.5">{t('menubar.system.hardReset')}</Badge>
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                  <p><b>Warning:</b> This will reset {pkg.build.productName} to factory defaults. Good as a panic button if something goes wrong, too.</p>
+                  <p><b>{t('menubar.system.warning')}:</b> {t('menubar.system.panicWarningBody', { productName: pkg.build.productName })}</p>
                 </TooltipContent>
               </Tooltip>
             </MenubarContent>
@@ -310,11 +344,11 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
               className={cn("border-white/10 text-white min-w-[14rem] p-1 z-[10000]", !disableShadows ? "shadow-xl" : "shadow-none")}
               style={{ background: getBackgroundColor(0.8), ...blurStyle }}
             >
-              <MenubarItem>About {appConfig.name}</MenubarItem>
+              <MenubarItem>{t('menubar.app.aboutApp', { appName: appConfig.name })}</MenubarItem>
               <MenubarSeparator className="bg-white/10" />
-              <MenubarItem>Settings...</MenubarItem>
+              <MenubarItem>{t('menubar.app.settings')}</MenubarItem>
               <MenubarSeparator className="bg-white/10" />
-              <MenubarItem>Quit {appConfig.name}</MenubarItem>
+              <MenubarItem>{t('menubar.app.quitApp', { appName: appConfig.name })}</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
 
@@ -331,7 +365,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                   }
                 }}
               >
-                {menu}
+                {getMenuDisplayName(menu)}
               </MenubarTrigger>
               {menu !== 'DEV Center' && (
                 <MenubarContent

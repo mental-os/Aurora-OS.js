@@ -11,35 +11,38 @@ import { cn } from '../ui/utils';
 import { Slider } from '../ui/slider';
 import { Button } from '../ui/button';
 import { EmptyState } from '../ui/empty-state';
+import { useI18n } from '../../i18n';
+
+type TFn = (key: string, vars?: Record<string, string | number>) => string;
 
 // Helper to parse "Artist - Title.ext" or fallback to "Title"
-const parseMetadata = (filename: string) => {
-  const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+const parseMetadata = (filename: string, t: TFn) => {
+  const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
   const parts = nameWithoutExt.split(' - ');
 
   if (parts.length >= 2) {
     return {
-      artist: parts[0].trim(),
-      title: parts.slice(1).join(' - ').trim(),
-      album: 'Unknown Album'
+      artist: parts[0].trim() || t('music.metadata.unknownArtist'),
+      title: parts.slice(1).join(' - ').trim() || t('music.metadata.unknownTitle'),
+      album: t('music.metadata.unknownAlbum'),
     };
   }
 
   return {
-    artist: 'Unknown Artist',
-    title: nameWithoutExt,
-    album: 'Unknown Album'
+    artist: t('music.metadata.unknownArtist'),
+    title: nameWithoutExt || t('music.metadata.unknownTitle'),
+    album: t('music.metadata.unknownAlbum'),
   };
 };
 
-const musicSidebar = (songCount: number, onSelect: (id: string) => void) => ({
+const musicSidebar = (songCount: number, onSelect: (id: string) => void, t: TFn) => ({
   sections: [
     {
-      title: 'Library',
+      title: t('music.sidebar.library'),
       items: [
         {
           id: 'songs',
-          label: 'Songs',
+          label: t('music.sidebar.songs'),
           icon: Music2,
           badge: songCount.toString(),
           action: () => onSelect('songs')
@@ -50,12 +53,12 @@ const musicSidebar = (songCount: number, onSelect: (id: string) => void) => ({
       ],
     },
     {
-      title: 'Favorites',
+      title: t('music.sidebar.favorites'),
       items: [
         //{ id: 'favorites', label: 'Liked Songs', icon: Heart },
         {
           id: 'recent',
-          label: 'Recently Played',
+          label: t('music.sidebar.recentlyPlayed'),
           icon: Clock,
           action: () => onSelect('recent')
         },
@@ -78,6 +81,7 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
   const windowContext = useWindow();
   const activeUser = owner || desktopUser;
   const { getBackgroundColor, blurStyle } = useThemeColors();
+  const { t } = useI18n();
 
   const {
     playlist: songs,
@@ -137,21 +141,21 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
       const node = getNodeAtPath(path, activeUser);
       if (node && node.type === 'file') {
         const content = readFile(path, activeUser);
-        const meta = parseMetadata(node.name); // Ensure parseMetadata is imported or available
+        const meta = parseMetadata(node.name, t);
         const song: Song = {
           id: node.id,
           path: path,
           url: content || '',
-          title: meta.title || 'Unknown Title',
-          artist: meta.artist || 'Unknown Artist',
-          album: meta.album || 'Unknown Album',
+          title: meta.title || t('music.metadata.unknownTitle'),
+          artist: meta.artist || t('music.metadata.unknownArtist'),
+          album: meta.album || t('music.metadata.unknownAlbum'),
           duration: '--:--'
         };
         playSong(song);
         setActiveCategory('recent');
       }
     }
-  }, [initialPath, windowContext?.data?.path, windowContext?.data?.timestamp, activeUser, getNodeAtPath, readFile, playSong, setActiveCategory]);
+  }, [initialPath, windowContext?.data?.path, windowContext?.data?.timestamp, activeUser, getNodeAtPath, readFile, playSong, setActiveCategory, t]);
 
   // Local Library State (Decoupled from Global Playlist to prevent Multi-User Loops)
   const [items, setItems] = useState<Song[]>([]);
@@ -163,7 +167,9 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
   const displaySongs = activeCategory === 'recent'
     ? recent
     : librarySongs;
-  const displayTitle = activeCategory === 'recent' ? 'Recently Played' : 'Songs';
+  const displayTitle = activeCategory === 'recent'
+    ? t('music.titles.recentlyPlayed')
+    : t('music.titles.songs');
 
   // Visual Refs
   const progressBarRef = useRef<HTMLDivElement>(null);
@@ -189,7 +195,7 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
       );
 
       const parsedSongs: Song[] = audioFiles.map(file => {
-        const meta = parseMetadata(file.name);
+        const meta = parseMetadata(file.name, t);
         return {
           id: file.id,
           path: `${pathPrefix}${file.name}`,
@@ -211,7 +217,7 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
         setItems([]);
       }, 0);
     }
-  }, [fileSystem, resolvePath, listDirectory, activeUser, setItems, getNodeAtPath]);
+  }, [fileSystem, resolvePath, listDirectory, activeUser, setItems, getNodeAtPath, t]);
 
 
   // Progressive Metadata Resolver
@@ -298,7 +304,7 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
         style={{ backgroundColor: accentColor }}
       >
         <PlayCircle className="w-4 h-4 inline mr-1.5" />
-        Play All
+        {t('music.actions.playAll')}
       </button>
     </div>
   );
@@ -317,14 +323,14 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
               {activeCategory === 'recent' ? (
                 <EmptyState
                   icon={Clock}
-                  title="No recently played songs"
-                  description="Your recently ad-hoc played songs will appear here."
+                  title={t('music.empty.recent.title')}
+                  description={t('music.empty.recent.description')}
                 />
               ) : (
                 <EmptyState
                   icon={Music2}
-                  title="No songs found"
-                  description="No music files were found in your Music folder."
+                  title={t('music.empty.library.title')}
+                  description={t('music.empty.library.description')}
                   action={
                     <Button
                       variant="outline"
@@ -338,7 +344,11 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
                       className="gap-2 border-white/20 text-white hover:bg-white/10"
                     >
                       <FolderOpen className="w-4 h-4" />
-                      Open {getNodeAtPath(resolvePath('~/Music', activeUser), activeUser) ? 'Music' : 'Home'} Folder
+                      {(() => {
+                        const hasMusicFolder = Boolean(getNodeAtPath(resolvePath('~/Music', activeUser), activeUser));
+                        const folder = hasMusicFolder ? t('music.folders.music') : t('music.folders.home');
+                        return t('music.empty.library.openFolder', { folder });
+                      })()}
                     </Button>
                   }
                 />
@@ -495,10 +505,10 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
               </div>
               <div className="min-w-0">
                 <div className="text-white text-sm truncate font-medium">
-                  {currentSong?.title || "Not Playing"}
+                  {currentSong?.title || t('music.player.notPlaying')}
                 </div>
                 <div className="text-white/60 text-xs truncate">
-                  {currentSong?.artist || "Select a song"}
+                  {currentSong?.artist || t('music.player.selectSong')}
                 </div>
               </div>
             </div>
@@ -550,7 +560,7 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
 
   return (
     <AppTemplate
-      sidebar={musicSidebar(librarySongs.length, (id) => setActiveCategory(id as any))}
+      sidebar={musicSidebar(librarySongs.length, (id) => setActiveCategory(id as any), t)}
       toolbar={toolbar}
       content={content}
       activeItem={activeCategory}
@@ -566,23 +576,23 @@ export const musicMenuConfig: AppMenuConfig = {
   menus: ['File', 'Edit', 'Song', 'View', 'Controls', 'Window', 'Help'],
   items: {
     'File': [
-      { label: 'New Playlist', shortcut: '⌘N', action: 'new-playlist' },
-      { label: 'Import...', shortcut: '⌘O', action: 'import' },
+      { labelKey: 'music.menu.newPlaylist', shortcut: '⌘N', action: 'new-playlist' },
+      { labelKey: 'music.menu.import', shortcut: '⌘O', action: 'import' },
       { type: 'separator' },
-      { label: 'Close Window', shortcut: '⌘W', action: 'close-window' }
+      { labelKey: 'music.menu.closeWindow', shortcut: '⌘W', action: 'close-window' }
     ],
     'Song': [
-      { label: 'Show in Finder', shortcut: '⌘R', action: 'show-in-finder' },
-      { label: 'Add to Playlist', action: 'add-to-playlist' }
+      { labelKey: 'music.menu.showInFinder', shortcut: '⌘R', action: 'show-in-finder' },
+      { labelKey: 'music.menu.addToPlaylist', action: 'add-to-playlist' }
     ],
     'Controls': [
-      { label: 'Play', shortcut: 'Space', action: 'play-pause' },
+      { labelKey: 'music.menu.play', shortcut: 'Space', action: 'play-pause' },
       { type: 'separator' },
-      { label: 'Previous Song', shortcut: '⌘←', action: 'prev' },
-      { label: 'Next Song', shortcut: '⌘→', action: 'next' },
+      { labelKey: 'music.menu.previousSong', shortcut: '⌘←', action: 'prev' },
+      { labelKey: 'music.menu.nextSong', shortcut: '⌘→', action: 'next' },
       { type: 'separator' },
-      { label: 'Volume Up', shortcut: '⌘↑', action: 'volume-up' },
-      { label: 'Volume Down', shortcut: '⌘↓', action: 'volume-down' },
+      { labelKey: 'music.menu.volumeUp', shortcut: '⌘↑', action: 'volume-up' },
+      { labelKey: 'music.menu.volumeDown', shortcut: '⌘↓', action: 'volume-down' },
     ]
   }
 };

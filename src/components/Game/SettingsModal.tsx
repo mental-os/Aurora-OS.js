@@ -6,12 +6,14 @@ import { cn } from '../ui/utils';
 import { feedback } from '../../services/soundFeedback';
 import { soundManager } from '../../services/sound';
 import { useFileSystem } from '../FileSystemContext';
+import { useI18n } from '../../i18n';
 
 interface SettingsModalProps {
     onClose: () => void;
 }
 
 export function SettingsModal({ onClose }: SettingsModalProps) {
+    const { t } = useI18n();
     const [volume, setVolume] = useState(soundManager.getVolume('master') * 100);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const { resetFileSystem } = useFileSystem();
@@ -40,13 +42,13 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
     };
 
     const handleSoftReset = () => {
-        if (confirm('Soft Reset: This will reload the application but keep your data. Continue?')) {
+        if (confirm(t('game.bios.softResetConfirm'))) {
             window.location.reload();
         }
     };
 
     const handleFactoryReset = () => {
-        if (confirm('FACTORY RESET: This will wipe ALL data, users, and files appropriately. This cannot be undone. Are you sure?')) {
+        if (confirm(t('game.bios.factoryResetConfirm'))) {
             feedback.click();
             resetFileSystem();
             setTimeout(() => window.location.reload(), 500);
@@ -62,7 +64,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                 className="bg-zinc-900/90 border border-white/10 p-8 max-w-lg w-full rounded-2xl shadow-2xl relative"
             >
                 <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-2xl font-bold text-white tracking-wide">BIOS Settings</h2>
+                    <h2 className="text-2xl font-bold text-white tracking-wide">{t('game.bios.title')}</h2>
                     <button
                         onClick={() => { feedback.click(); onClose(); }}
                         className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white"
@@ -76,7 +78,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                     <div className="space-y-3">
                         <div className="flex justify-between text-white/80">
                             <span className="flex items-center gap-2 font-medium">
-                                <Volume2 className="w-4 h-4" /> Master Volume
+                                <Volume2 className="w-4 h-4" /> {t('game.bios.masterVolume')}
                             </span>
                             <span className="font-mono text-sm">{volume}%</span>
                         </div>
@@ -99,8 +101,8 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                         <div className="flex items-center gap-3 text-white/80">
                             <Monitor className="w-5 h-5" />
                             <div className="flex flex-col">
-                                <span className="font-medium">Full Screen</span>
-                                <span className="text-xs text-white/40">Immersive mode</span>
+                                <span className="font-medium">{t('game.bios.fullScreen')}</span>
+                                <span className="text-xs text-white/40">{t('game.bios.immersiveMode')}</span>
                             </div>
                         </div>
                         <button
@@ -112,7 +114,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                     : "bg-transparent text-white border-white/20 hover:bg-white/10"
                             )}
                         >
-                            {isFullscreen ? 'Exit' : 'Enter'}
+                            {isFullscreen ? t('game.bios.fullScreenExit') : t('game.bios.fullScreenEnter')}
                         </button>
                     </div>
 
@@ -125,8 +127,8 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                             className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-white/5 hover:bg-blue-500/10 border border-white/5 hover:border-blue-500/30 transition-all group"
                         >
                             <RefreshCw className="w-6 h-6 text-blue-400 group-hover:rotate-180 transition-transform duration-500" />
-                            <span className="text-sm font-medium text-blue-100">Soft Reset</span>
-                            <span className="text-[10px] text-white/30">Reload Application</span>
+                            <span className="text-sm font-medium text-blue-100">{t('game.bios.softReset')}</span>
+                            <span className="text-[10px] text-white/30">{t('game.bios.softResetHint')}</span>
                         </button>
 
                         <button
@@ -134,14 +136,14 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                             className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/30 transition-all group"
                         >
                             <Trash2 className="w-6 h-6 text-red-400 group-hover:shake" />
-                            <span className="text-sm font-medium text-red-100">Factory Reset</span>
-                            <span className="text-[10px] text-white/30">Wipe All Data</span>
+                            <span className="text-sm font-medium text-red-100">{t('game.bios.factoryReset')}</span>
+                            <span className="text-[10px] text-white/30">{t('game.bios.factoryResetHint')}</span>
                         </button>
                     </div>
                 </div>
 
                 <div className="mt-8 text-center text-xs text-white/20 font-mono">
-                    {pkg.build.productName} v{pkg.version} • BIOS Configuration<br></br>More settings can be found once logged in.
+                    {pkg.build.productName} v{pkg.version} • {t('game.bios.footer.biosConfiguration')}<br></br>{t('game.bios.footer.moreSettings')}
                 </div>
             </motion.div>
         </div>

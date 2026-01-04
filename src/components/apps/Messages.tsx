@@ -6,43 +6,46 @@ import { useSessionStorage } from '../../hooks/useSessionStorage';
 import { useElementSize } from '../../hooks/useElementSize';
 import { cn } from '../ui/utils';
 import { GlassInput } from '../ui/GlassInput';
-
-const messagesSidebar = {
-  sections: [
-    {
-      title: 'Conversations',
-      items: [
-        { id: 'all', label: 'All Messages', icon: MessageSquare, badge: '12' },
-        { id: 'groups', label: 'Groups', icon: Users, badge: '3' },
-        { id: 'starred', label: 'Starred', icon: Star },
-        { id: 'archived', label: 'Archived', icon: Archive },
-      ],
-    },
-  ],
-};
-
-const mockConversations = [
-  { id: 1, name: 'Sarah Johnson', lastMessage: 'See you tomorrow!', time: '10:30 AM', unread: 2, avatar: 'bg-pink-500' },
-  { id: 2, name: 'Team Design', lastMessage: 'New mockups are ready', time: '9:15 AM', unread: 5, avatar: 'bg-purple-500' },
-  { id: 3, name: 'Mike Chen', lastMessage: 'Thanks for the help!', time: 'Yesterday', unread: 0, avatar: 'bg-blue-500' },
-  { id: 4, name: 'Project Alpha', lastMessage: 'Meeting at 2pm', time: 'Yesterday', unread: 1, avatar: 'bg-green-500' },
-  { id: 5, name: 'Emma Wilson', lastMessage: 'Got it, thanks!', time: 'Monday', unread: 0, avatar: 'bg-orange-500' },
-];
-
-const mockMessages = [
-  { id: 1, text: 'Hey! How are you doing?', sender: 'other', time: '10:25 AM' },
-  { id: 2, text: 'I\'m good, thanks! Working on the new project.', sender: 'me', time: '10:26 AM' },
-  { id: 3, text: 'That sounds exciting! Want to grab coffee later?', sender: 'other', time: '10:28 AM' },
-  { id: 4, text: 'Sure! How about 3pm?', sender: 'me', time: '10:29 AM' },
-  { id: 5, text: 'See you tomorrow!', sender: 'other', time: '10:30 AM' },
-  { id: 6, text: 'Futu-ti Cristosu ma-tii de responsive design', sender: 'me', time: '10:30 AM' },
-];
+import { useI18n } from '../../i18n';
 
 export function Messages({ owner }: { owner?: string }) {
+  const { t } = useI18n();
+
+  const mockConversations = [
+    { id: 1, name: 'Sarah Johnson', lastMessage: t('messages.mock.lastMessage.seeYouTomorrow'), time: '10:30 AM', unread: 2, avatar: 'bg-pink-500' },
+    { id: 2, name: 'Team Design', lastMessage: t('messages.mock.lastMessage.newMockupsReady'), time: '9:15 AM', unread: 5, avatar: 'bg-purple-500' },
+    { id: 3, name: 'Mike Chen', lastMessage: t('messages.mock.lastMessage.thanksForTheHelp'), time: t('messages.time.yesterday'), unread: 0, avatar: 'bg-blue-500' },
+    { id: 4, name: 'Project Alpha', lastMessage: t('messages.mock.lastMessage.meetingAt2pm'), time: t('messages.time.yesterday'), unread: 1, avatar: 'bg-green-500' },
+    { id: 5, name: 'Emma Wilson', lastMessage: t('messages.mock.lastMessage.gotItThanks'), time: t('messages.time.monday'), unread: 0, avatar: 'bg-orange-500' },
+  ];
+
+  const mockMessages = [
+    { id: 1, text: t('messages.mock.message.heyHowAreYouDoing'), sender: 'other', time: '10:25 AM' },
+    { id: 2, text: t('messages.mock.message.imGoodWorkingOnNewProject'), sender: 'me', time: '10:26 AM' },
+    { id: 3, text: t('messages.mock.message.thatSoundsExcitingCoffeeLater'), sender: 'other', time: '10:28 AM' },
+    { id: 4, text: t('messages.mock.message.sureHowAbout3pm'), sender: 'me', time: '10:29 AM' },
+    { id: 5, text: t('messages.mock.message.seeYouTomorrow'), sender: 'other', time: '10:30 AM' },
+    { id: 6, text: t('messages.mock.message.okFixResponsiveLayout'), sender: 'me', time: '10:30 AM' },
+  ];
+
   // Persisted state
   // Persisted state
   // We keep 'messages' app storage for future features (e.g. draft text), but move navigation to session
   const [activeCategory, setActiveCategory] = useSessionStorage('messages-active-category', 'all', owner);
+
+  const messagesSidebar = {
+    sections: [
+      {
+        title: t('messages.sidebar.conversationsTitle'),
+        items: [
+          { id: 'all', label: t('messages.sidebar.allMessages'), icon: MessageSquare, badge: '12' },
+          { id: 'groups', label: t('messages.sidebar.groups'), icon: Users, badge: '3' },
+          { id: 'starred', label: t('messages.sidebar.starred'), icon: Star },
+          { id: 'archived', label: t('messages.sidebar.archived'), icon: Archive },
+        ],
+      },
+    ],
+  };
 
 
   const [selectedConversationId, setSelectedConversationId] = useState<string | number>(mockConversations[0].id);
@@ -89,7 +92,7 @@ export function Messages({ owner }: { owner?: string }) {
           <div className={cn("p-2", isCompact && "flex justify-center")}>
             {!isCompact ? (
               <GlassInput
-                placeholder="Search..."
+                placeholder={t('messages.searchPlaceholder')}
                 icon={<Search className="w-4 h-4" />}
                 className="bg-black/20"
               />
@@ -187,7 +190,7 @@ export function Messages({ owner }: { owner?: string }) {
                   type="text"
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Type..."
+                  placeholder={t('messages.typePlaceholder')}
                   className="rounded-full py-2.5 h-10"
                 />
               </div>
@@ -224,10 +227,10 @@ export const messagesMenuConfig: AppMenuConfig = {
   menus: ['File', 'Edit', 'View', 'Conversations', 'Window', 'Help'],
   items: {
     'Conversations': [
-      { label: 'New Message', shortcut: '⌘N', action: 'new-message' },
+      { label: 'New Message', labelKey: 'messages.menu.newMessage', shortcut: '⌘N', action: 'new-message' },
       { type: 'separator' },
-      { label: 'Delete Conversation', action: 'delete-conversation' },
-      { label: 'Mute Notifications', action: 'mute' }
+      { label: 'Delete Conversation', labelKey: 'messages.menu.deleteConversation', action: 'delete-conversation' },
+      { label: 'Mute Notifications', labelKey: 'messages.menu.muteNotifications', action: 'mute' }
     ]
   }
 };

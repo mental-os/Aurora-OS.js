@@ -5,6 +5,7 @@ import type { WindowState } from '../hooks/useWindowManager';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useAppContext } from './AppContext';
 import { useFileSystem } from './FileSystemContext';
+import { useI18n } from '../i18n';
 import { cn } from './ui/utils';
 import { getDockApps } from '../config/appRegistry';
 import { AppIcon } from './ui/AppIcon';
@@ -17,6 +18,7 @@ interface DockProps {
 }
 
 function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: DockProps) {
+    const { t } = useI18n();
   const { dockBackground, blurStyle } = useThemeColors();
   const { reduceMotion, disableShadows, disableGradients, accentColor, devMode } = useAppContext();
   const { getNodeAtPath, homePath, installedApps } = useFileSystem();
@@ -225,7 +227,7 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
 
           {/* Trash Icon */}
           <motion.button
-            aria-label="Trash"
+            aria-label={t('fileManager.places.trash')}
             className={cn(
               "relative w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all border border-white/5",
               !disableShadows && "shadow-lg hover:shadow-xl",
@@ -250,7 +252,7 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
               >
-                Trash
+                {t('fileManager.places.trash')}
               </motion.div>
             )}
           </motion.button>
