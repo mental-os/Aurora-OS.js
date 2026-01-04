@@ -6,6 +6,7 @@ import { validateIntegrity } from '../../utils/integrity';
 import { useAppContext } from '../AppContext';
 import { ConnectivityBadge } from '../ui/ConnectivityBadge';
 import background from '../../assets/images/background.png';
+import { useI18n } from '../../i18n';
 
 interface GameScreenLayoutProps {
     children: ReactNode;
@@ -16,6 +17,7 @@ interface GameScreenLayoutProps {
 
 export function GameScreenLayout({ children, footerActions, className = "", zIndex = 40 }: GameScreenLayoutProps) {
     const { accentColor } = useAppContext();
+    const { t } = useI18n();
 
     return (
         <div
@@ -133,11 +135,11 @@ export function GameScreenLayout({ children, footerActions, className = "", zInd
                     <span className="text-white/10">•</span>
                     {validateIntegrity() ? (
                         <span className="text-emerald-500/50 flex items-center gap-1.5 bg-emerald-500/5 px-2 py-0.5 rounded-full border border-emerald-500/10">
-                            <ShieldCheck className="w-3 h-3" /> Original Distribution
+                            <ShieldCheck className="w-3 h-3" /> {t('game.footer.originalDistribution')}
                         </span>
                     ) : (
                         <span className="text-red-500 flex items-center gap-1.5 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20 animate-pulse">
-                            <AlertTriangle className="w-3 h-3" /> Tempered Distribution
+                            <AlertTriangle className="w-3 h-3" /> {t('game.footer.temperedDistribution')}
                         </span>
                     )}
                     <span className="text-white/10">•</span>

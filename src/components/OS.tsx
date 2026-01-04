@@ -23,6 +23,7 @@ import { getGridConfig, gridToPixel, pixelToGrid, findNextFreeCell, gridPosToKey
 import { feedback } from '../services/soundFeedback';
 import { STORAGE_KEYS } from '../utils/memory';
 import { useWindowManager } from '../hooks/useWindowManager';
+import { useI18n } from '../i18n';
 
 // Load icon positions (supports both pixel and grid formats with migration)
 function loadIconPositions(): Record<string, GridPosition> {
@@ -52,6 +53,7 @@ function loadIconPositions(): Record<string, GridPosition> {
 
 export default function OS() {
     const { activeUser } = useAppContext();
+    const { t } = useI18n();
 
     // Track window size for responsive icon positioning
     const [windowSize, setWindowSize] = useState({
@@ -170,54 +172,54 @@ export default function OS() {
 
         switch (type) {
             case 'finder':
-                title = 'Finder';
+                title = t('apps.finder');
                 content = <FileManager owner={owner} initialPath={data?.path} onOpenApp={openWindowRef.current} />;
                 break;
             case 'settings':
-                title = 'System Settings';
+                title = t('apps.systemSettings');
                 content = <Settings owner={owner} />;
                 break;
             case 'photos':
-                title = 'Photos';
+                title = t('apps.photos');
                 content = <Photos owner={owner} />;
                 break;
             case 'music':
-                title = 'Music';
+                title = t('apps.music');
                 content = (
                     <Music owner={owner} initialPath={data?.path} onOpenApp={openWindowRef.current} />
                 );
                 break;
             case 'messages':
-                title = 'Messages';
+                title = t('apps.messages');
                 content = <Messages owner={owner} />;
                 break;
             case 'browser':
-                title = 'Browser';
+                title = t('apps.browser');
                 content = <Browser owner={owner} />;
                 break;
             case 'terminal':
-                title = 'Terminal';
+                title = t('apps.terminal');
                 // Need to forward the ref logic if terminal is special
                 content = <Terminal onLaunchApp={(id, args, owner) => openWindowRef.current(id, { path: args?.[0] }, owner)} owner={owner} />;
                 break;
             case 'trash':
-                title = 'Trash';
+                title = t('apps.trash');
                 content = <FileManager owner={owner} initialPath="~/.Trash" onOpenApp={openWindowRef.current} />;
                 break;
             case 'dev-center':
-                title = 'DEV Center';
+                title = t('apps.devCenter');
                 content = <DevCenter />;
                 break;
             case 'notepad':
-                title = 'Notepad';
+                title = t('apps.notepad');
                 content = <Notepad owner={owner} initialPath={data?.path} />;
                 break;
             case 'calendar':
-                title = 'Calendar';
+                title = t('apps.calendar');
                 content = <Calendar owner={owner} />;
                 break;
             case 'appstore':
-                title = 'App Store';
+                title = t('apps.appStore');
                 content = <AppStore owner={owner} />;
                 break;
             default:
@@ -225,7 +227,7 @@ export default function OS() {
                 content = <PlaceholderApp title={title} />;
         }
         return { content, title };
-    }, []); // Dependencies? openWindowRef is stable
+    }, [t]); // openWindowRef is stable
 
     // Use Window Manager Hook
     const {
@@ -348,7 +350,7 @@ export default function OS() {
                     // Inject timestamp to force update and allow Music app to handle playback on mount/update
                     openWindowRef.current('music', { path, timestamp: Date.now() });
                 } else {
-                    toast.error('Music app is not installed. Install it from the App Store.');
+                    toast.error(t('os.toasts.musicNotInstalled'));
                 }
             } else if (isText) {
                 // Check if notepad app is installed by checking /usr/bin
@@ -356,12 +358,12 @@ export default function OS() {
                 if (notepadBinary) {
                     openWindow('notepad', { path });
                 } else {
-                    toast.error('Notepad is not installed. Install it from the App Store.');
+                    toast.error(t('os.toasts.notepadNotInstalled'));
                 }
             }
         }
 
-    }, [desktopIcons, resolvePath, getNodeAtPath, openWindow]);
+    }, [desktopIcons, resolvePath, getNodeAtPath, openWindow, t]);
 
     const focusedWindowId = useMemo(() => {
         if (windows.length === 0) return null;

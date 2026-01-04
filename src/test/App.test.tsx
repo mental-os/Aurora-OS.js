@@ -70,9 +70,14 @@ describe('Aurora OS Integration', () => {
     });
 
     it('boots and renders the Login Screen', () => {
+        // Skip first-run language onboarding for this test
+        localStorageMock.setItem(
+            'aurora-system-config',
+            JSON.stringify({ devMode: false, exposeRoot: false, locale: 'en-US', onboardingComplete: true })
+        );
+
         render(<App />);
 
-        // Verify Login Screen is present
         // Verify Login Screen is present
         expect(screen.getByText(/Select User/i)).toBeInTheDocument();
         expect(screen.getByText(/Soft Reset/i)).toBeInTheDocument();

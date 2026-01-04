@@ -4,46 +4,48 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useAppContext } from './AppContext';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useState } from 'react';
-
-const notifications = [
-  {
-    id: 1,
-    icon: Mail,
-    title: 'New Email',
-    message: 'You have 3 unread messages',
-    time: '5m ago',
-    color: 'text-blue-500',
-  },
-  {
-    id: 2,
-    icon: Calendar,
-    title: 'Meeting Reminder',
-    message: 'Team sync in 15 minutes',
-    time: '10m ago',
-    color: 'text-red-500',
-  },
-  {
-    id: 3,
-    icon: MessageSquare,
-    title: 'New Message',
-    message: 'Sarah: Hey, are you available?',
-    time: '1h ago',
-    color: 'text-green-500',
-  },
-  {
-    id: 4,
-    icon: Download,
-    title: 'Download Complete',
-    message: 'project-files.zip is ready',
-    time: '2h ago',
-    color: 'text-purple-500',
-  },
-];
+import { useI18n } from '../i18n';
 
 export function NotificationCenter() {
   const { accentColor, reduceMotion, disableShadows } = useAppContext();
   const { blurStyle, getBackgroundColor } = useThemeColors();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useI18n();
+
+  const notifications = [
+    {
+      id: 1,
+      icon: Mail,
+      title: t('notifications.items.newEmail.title'),
+      message: t('notifications.items.newEmail.message', { count: 3 }),
+      time: t('notifications.time.minutesAgo', { minutes: 5 }),
+      color: 'text-blue-500',
+    },
+    {
+      id: 2,
+      icon: Calendar,
+      title: t('notifications.items.meetingReminder.title'),
+      message: t('notifications.items.meetingReminder.message', { minutes: 15 }),
+      time: t('notifications.time.minutesAgo', { minutes: 10 }),
+      color: 'text-red-500',
+    },
+    {
+      id: 3,
+      icon: MessageSquare,
+      title: t('notifications.items.newMessage.title'),
+      message: t('notifications.items.newMessage.message', { sender: 'Sarah' }),
+      time: t('notifications.time.hoursAgo', { hours: 1 }),
+      color: 'text-green-500',
+    },
+    {
+      id: 4,
+      icon: Download,
+      title: t('notifications.items.downloadComplete.title'),
+      message: t('notifications.items.downloadComplete.message', { filename: 'project-files.zip' }),
+      time: t('notifications.time.hoursAgo', { hours: 2 }),
+      color: 'text-purple-500',
+    },
+  ];
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -65,7 +67,7 @@ export function NotificationCenter() {
         <div className="p-4 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bell className="w-5 h-5 text-white/70" />
-            <h2 className="text-white/90">Notifications</h2>
+            <h2 className="text-white/90">{t('notifications.title')}</h2>
           </div>
           <button
             onClick={() => setIsOpen(false)}
@@ -115,7 +117,7 @@ export function NotificationCenter() {
             className="w-full text-sm hover:opacity-80 transition-opacity"
             style={{ color: accentColor }}
           >
-            Clear All
+            {t('notifications.clearAll')}
           </button>
         </div>
       </PopoverContent>

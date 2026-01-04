@@ -2,7 +2,8 @@ export type MenuItem =
     | { type: 'separator' }
     | {
         type?: 'item' | 'checkbox';
-        label: string;
+        label?: string;
+        labelKey?: string;
         shortcut?: string; // "⌘N", "Ctrl+C", etc.
         action?: string;   // Action ID to dispatch event
         checked?: boolean;

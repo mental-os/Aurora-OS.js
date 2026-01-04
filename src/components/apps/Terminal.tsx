@@ -215,17 +215,17 @@ export const terminalMenuConfig: AppMenuConfig = {
   menus: ['Shell', 'Edit', 'View', 'Window', 'Help'],
   items: {
     'Shell': [
-      { label: 'New Tab', shortcut: '⌘T', action: 'new-tab' },
-      { label: 'New Window', shortcut: '⌘N', action: 'new-window' },
+      { label: 'New Tab', labelKey: 'terminal.menu.newTab', shortcut: '⌘T', action: 'new-tab' },
+      { label: 'New Window', labelKey: 'menubar.items.newWindow', shortcut: '⌘N', action: 'new-window' },
       { type: 'separator' },
-      { label: 'Clear Scrollback', shortcut: '⌘K', action: 'clear' },
+      { label: 'Clear Scrollback', labelKey: 'terminal.menu.clearScrollback', shortcut: '⌘K', action: 'clear' },
       { type: 'separator' },
-      { label: 'Close Window', shortcut: '⌘W', action: 'close-window' }
+      { label: 'Close Window', labelKey: 'menubar.items.closeWindow', shortcut: '⌘W', action: 'close-window' }
     ],
     'Edit': [
-      { label: 'Copy', shortcut: '⌘C', action: 'copy' },
-      { label: 'Paste', shortcut: '⌘V', action: 'paste' },
-      { label: 'Select All', shortcut: '⌘A', action: 'select-all' }
+      { label: 'Copy', labelKey: 'menubar.items.copy', shortcut: '⌘C', action: 'copy' },
+      { label: 'Paste', labelKey: 'menubar.items.paste', shortcut: '⌘V', action: 'paste' },
+      { label: 'Select All', labelKey: 'menubar.items.selectAll', shortcut: '⌘A', action: 'select-all' }
     ]
   }
 };

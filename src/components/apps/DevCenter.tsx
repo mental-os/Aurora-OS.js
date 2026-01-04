@@ -9,42 +9,44 @@ import { notify } from '../../services/notifications';
 import { feedback } from '../../services/soundFeedback';
 import { getStorageStats, formatBytes } from '../../utils/memory';
 import { useFileSystem } from '../../components/FileSystemContext';
-
-const devSidebar = {
-    sections: [
-        {
-            title: 'General',
-            items: [
-                { id: 'dashboard', label: 'Dashboard', icon: Activity },
-            ]
-        },
-        {
-            title: 'Interface',
-            items: [
-                { id: 'UI', label: 'UI & Sounds', icon: PartyPopper },
-            ]
-        },
-        {
-            title: 'System',
-            items: [
-                { id: 'storage', label: 'Storage', icon: HardDrive },
-                { id: 'filesystem', label: 'File System', icon: FileJson },
-                { id: 'logs', label: 'System Logs', icon: Terminal },
-            ]
-        },
-        {
-            title: 'Tools',
-            items: [
-                { id: 'editor', label: 'Editor', icon: Code },
-                { id: 'performance', label: 'Performance', icon: Cpu },
-            ]
-        }
-    ]
-};
+import { useI18n } from '../../i18n';
 
 export function DevCenter() {
     const { fileSystem, resetFileSystem } = useFileSystem();
     const [activeTab, setActiveTab] = useState('dashboard');
+    const { t } = useI18n();
+
+    const devSidebar = {
+        sections: [
+            {
+                title: t('devCenter.sidebar.generalTitle'),
+                items: [
+                    { id: 'dashboard', label: t('devCenter.sidebar.dashboard'), icon: Activity },
+                ]
+            },
+            {
+                title: t('devCenter.sidebar.interfaceTitle'),
+                items: [
+                    { id: 'UI', label: t('devCenter.sidebar.uiAndSounds'), icon: PartyPopper },
+                ]
+            },
+            {
+                title: t('devCenter.sidebar.systemTitle'),
+                items: [
+                    { id: 'storage', label: t('devCenter.sidebar.storage'), icon: HardDrive },
+                    { id: 'filesystem', label: t('devCenter.sidebar.fileSystem'), icon: FileJson },
+                    { id: 'logs', label: t('devCenter.sidebar.systemLogs'), icon: Terminal },
+                ]
+            },
+            {
+                title: t('devCenter.sidebar.toolsTitle'),
+                items: [
+                    { id: 'editor', label: t('devCenter.sidebar.editor'), icon: Code },
+                    { id: 'performance', label: t('devCenter.sidebar.performance'), icon: Cpu },
+                ]
+            }
+        ]
+    };
 
     // Storage Tab State
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
@@ -72,9 +74,9 @@ export function DevCenter() {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            notify.system('success', 'Storage', 'Preferences exported successfully');
+            notify.system('success', t('devCenter.storage.toastTitle'), t('devCenter.storage.exportSuccess'));
         } catch {
-            notify.system('error', 'Storage', 'Failed to export preferences');
+            notify.system('error', t('devCenter.storage.toastTitle'), t('devCenter.storage.exportFail'));
         }
     };
 
@@ -86,7 +88,7 @@ export function DevCenter() {
         reader.onload = (e) => {
             try {
                 const json = JSON.parse(e.target?.result as string);
-                if (typeof json !== 'object' || json === null) throw new Error('Invalid JSON');
+                if (typeof json !== 'object' || json === null) throw new Error();
 
                 // Be careful not to wipe specialized internal keys if needed, 
                 // but usually full restore implies wiping others or merging. 
@@ -95,9 +97,9 @@ export function DevCenter() {
                     localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
                 });
                 refreshStorage();
-                notify.system('success', 'Storage', 'Preferences imported successfully');
+                notify.system('success', t('devCenter.storage.toastTitle'), t('devCenter.storage.importSuccess'));
             } catch {
-                notify.system('error', 'Storage', 'Failed to parse import file');
+                notify.system('error', t('devCenter.storage.toastTitle'), t('devCenter.storage.importFail'));
             }
         };
         reader.readAsText(file);
@@ -106,16 +108,16 @@ export function DevCenter() {
     };
 
     const handleClearStorage = () => {
-        if (confirm('Are you sure you want to clear ALL local storage? This will reset usage preferences, theme settings, and window positions.')) {
+        if (confirm(t('devCenter.storage.clearConfirm'))) {
             localStorage.clear();
             refreshStorage();
-            notify.system('success', 'Storage', 'All keys cleared');
+            notify.system('success', t('devCenter.storage.toastTitle'), t('devCenter.storage.clearSuccess'));
         }
     };
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        notify.system('success', 'Clipboard', 'Copied to clipboard');
+        notify.system('success', t('devCenter.clipboard.toastTitle'), t('devCenter.clipboard.copySuccess'));
     };
 
     const renderContent = ({ width }: { width: number }) => {
@@ -131,32 +133,32 @@ export function DevCenter() {
                             <section>
                                 <div className="flex items-center gap-3 mb-4">
                                     <Bell className="w-5 h-5 text-white" />
-                                    <h2 className="text-xl text-white font-medium">System Notifications</h2>
+                                    <h2 className="text-xl text-white font-medium">{t('devCenter.ui.systemNotifications')}</h2>
                                 </div>
                                 <div className={`grid gap-4 ${isNarrow ? 'grid-cols-1' : 'grid-cols-3'}`}>
                                     <GlassButton
                                         variant="default"
                                         className="h-auto block p-4 text-left group border-green-500/20 bg-green-500/10 hover:bg-green-500/20"
-                                        onClick={() => notify.system('success', 'DevCenter', 'Operation completed successfully')}
+                                        onClick={() => notify.system('success', t('devCenter.appTitle'), t('devCenter.ui.successMessage'))}
                                     >
-                                        <div className="font-medium text-green-400 mb-1 group-hover:text-green-300">Success Toast</div>
-                                        <div className="text-sm text-white/50 whitespace-normal">Triggers a success notification with sound</div>
+                                        <div className="font-medium text-green-400 mb-1 group-hover:text-green-300">{t('devCenter.ui.successToast')}</div>
+                                        <div className="text-sm text-white/50 whitespace-normal">{t('devCenter.ui.successDescription')}</div>
                                     </GlassButton>
                                     <GlassButton
                                         variant="default"
                                         className="h-auto block p-4 text-left group border-yellow-500/20 bg-yellow-500/10 hover:bg-yellow-500/20"
-                                        onClick={() => notify.system('warning', 'DevCenter', 'System resources are running low')}
+                                        onClick={() => notify.system('warning', t('devCenter.appTitle'), t('devCenter.ui.warningMessage'))}
                                     >
-                                        <div className="font-medium text-yellow-400 mb-1 group-hover:text-yellow-300">Warning Toast</div>
-                                        <div className="text-sm text-white/50 whitespace-normal">Triggers a warning notification with sound</div>
+                                        <div className="font-medium text-yellow-400 mb-1 group-hover:text-yellow-300">{t('devCenter.ui.warningToast')}</div>
+                                        <div className="text-sm text-white/50 whitespace-normal">{t('devCenter.ui.warningDescription')}</div>
                                     </GlassButton>
                                     <GlassButton
                                         variant="default"
                                         className="h-auto block p-4 text-left group border-red-500/20 bg-red-500/10 hover:bg-red-500/20"
-                                        onClick={() => notify.system('error', 'DevCenter', 'Failed to connect to server')}
+                                        onClick={() => notify.system('error', t('devCenter.appTitle'), t('devCenter.ui.errorMessage'))}
                                     >
-                                        <div className="font-medium text-red-400 mb-1 group-hover:text-red-300">Error Toast</div>
-                                        <div className="text-sm text-white/50 whitespace-normal">Triggers an error notification with sound</div>
+                                        <div className="font-medium text-red-400 mb-1 group-hover:text-red-300">{t('devCenter.ui.errorToast')}</div>
+                                        <div className="text-sm text-white/50 whitespace-normal">{t('devCenter.ui.errorDescription')}</div>
                                     </GlassButton>
                                 </div>
                             </section>
@@ -165,26 +167,26 @@ export function DevCenter() {
                             <section>
                                 <div className="flex items-center gap-3 mb-4">
                                     <Volume2 className="w-5 h-5 text-white" />
-                                    <h2 className="text-xl text-white font-medium">Sound Feedback</h2>
+                                    <h2 className="text-xl text-white font-medium">{t('devCenter.ui.soundFeedback')}</h2>
                                 </div>
                                 <div className={`grid gap-4 ${isNarrow ? 'grid-cols-2' : 'grid-cols-4'}`}>
                                     <GlassButton onClick={() => feedback.click()}>
-                                        <span className="text-white/80">Click</span>
+                                        <span className="text-white/80">{t('devCenter.ui.click')}</span>
                                     </GlassButton>
                                     <GlassButton
                                         onClick={() => feedback.hover()}
                                         onMouseEnter={() => feedback.hover()}
                                     >
-                                        <span className="text-white/80">Hover</span>
+                                        <span className="text-white/80">{t('devCenter.ui.hover')}</span>
                                     </GlassButton>
                                     <GlassButton onClick={() => feedback.folder()}>
-                                        <span className="text-white/80">Folder Open</span>
+                                        <span className="text-white/80">{t('devCenter.ui.folderOpen')}</span>
                                     </GlassButton>
                                     <GlassButton onClick={() => feedback.windowOpen()}>
-                                        <span className="text-white/80">Window Open</span>
+                                        <span className="text-white/80">{t('devCenter.ui.windowOpen')}</span>
                                     </GlassButton>
                                     <GlassButton onClick={() => feedback.windowClose()}>
-                                        <span className="text-white/80">Window Close</span>
+                                        <span className="text-white/80">{t('devCenter.ui.windowClose')}</span>
                                     </GlassButton>
                                 </div>
                             </section>
@@ -197,7 +199,7 @@ export function DevCenter() {
                 return (
                     <div className={`h-full overflow-y-auto ${isNarrow ? 'p-4' : 'p-6'}`}>
                         <div className={`flex items-center justify-between mb-6 ${isVeryNarrow ? 'flex-col items-start gap-4' : ''}`}>
-                            <h2 className="text-xl text-white">Storage Inspector</h2>
+                            <h2 className="text-xl text-white">{t('devCenter.storage.title')}</h2>
                             <div className={`flex items-center gap-2 ${isVeryNarrow ? 'w-full flex flex-wrap justify-end' : ''}`}>
                                 <input
                                     type="file"
@@ -212,7 +214,7 @@ export function DevCenter() {
                                     onClick={() => fileInputRef.current?.click()}
                                 >
                                     <Upload className="w-3.5 h-3.5" />
-                                    Import
+                                    {t('devCenter.storage.import')}
                                 </GlassButton>
                                 <GlassButton
                                     size="sm"
@@ -220,7 +222,7 @@ export function DevCenter() {
                                     onClick={handleExportStorage}
                                 >
                                     <Download className="w-3.5 h-3.5" />
-                                    Export
+                                    {t('devCenter.storage.export')}
                                 </GlassButton>
                                 <GlassButton
                                     size="sm"
@@ -229,28 +231,28 @@ export function DevCenter() {
                                     onClick={handleClearStorage}
                                 >
                                     <XCircle className="w-3.5 h-3.5" />
-                                    Clear
+                                    {t('devCenter.storage.clear')}
                                 </GlassButton>
                             </div>
                         </div>
 
                         <div className={`grid gap-4 mb-8 ${isNarrow ? 'grid-cols-1' : 'grid-cols-2'}`}>
                             <div className="bg-black/20 p-4 rounded-lg border border-white/10">
-                                <div className="text-sm text-white/50 mb-1">Soft Memory (Preferences)</div>
+                                <div className="text-sm text-white/50 mb-1">{t('devCenter.storage.softMemory')}</div>
                                 <div className="text-2xl text-white font-mono">{formatBytes(stats.softMemory.bytes)}</div>
-                                <div className="text-xs text-white/30">{stats.softMemory.keys} keys</div>
+                                <div className="text-xs text-white/30">{t('devCenter.storage.keysCount', { count: stats.softMemory.keys })}</div>
                             </div>
                             <div className="bg-black/20 p-4 rounded-lg border border-white/10">
-                                <div className="text-sm text-white/50 mb-1">Hard Memory (Filesystem)</div>
+                                <div className="text-sm text-white/50 mb-1">{t('devCenter.storage.hardMemory')}</div>
                                 <div className="text-2xl text-white font-mono">{formatBytes(stats.hardMemory.bytes)}</div>
-                                <div className="text-xs text-white/30">{stats.hardMemory.keys} keys</div>
+                                <div className="text-xs text-white/30">{t('devCenter.storage.keysCount', { count: stats.hardMemory.keys })}</div>
                             </div>
                         </div>
 
-                        <h3 className="text-lg text-white mb-4">Local Storage Keys</h3>
+                        <h3 className="text-lg text-white mb-4">{t('devCenter.storage.localStorageKeys')}</h3>
                         <div className="bg-black/20 rounded-lg border border-white/10 overflow-hidden">
                             {Object.keys(localStorage).length === 0 ? (
-                                <div className="p-8 text-center text-white/30 text-sm">No keys found in local storage</div>
+                                <div className="p-8 text-center text-white/30 text-sm">{t('devCenter.storage.noKeysFound')}</div>
                             ) : (
                                 Object.keys(localStorage).map(key => {
                                     const rawValue = localStorage.getItem(key) || '';
@@ -286,7 +288,7 @@ export function DevCenter() {
                                                             e.stopPropagation();
                                                             localStorage.removeItem(key);
                                                             refreshStorage();
-                                                            notify.system('success', 'Storage', `Deleted key: ${key}`);
+                                                            notify.system('success', t('devCenter.storage.toastTitle'), t('devCenter.storage.deletedKey', { key }));
                                                         }}
                                                         className="text-white/30 hover:text-red-400 transition-colors p-1"
                                                     >
@@ -302,7 +304,7 @@ export function DevCenter() {
                                                     <button
                                                         onClick={() => copyToClipboard(formattedValue)}
                                                         className="absolute top-2 right-2 p-1.5 rounded-md bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all opacity-0 group-hover/code:opacity-100"
-                                                        title="Copy value"
+                                                        title={t('devCenter.clipboard.copyValue')}
                                                     >
                                                         <Copy className="w-3.5 h-3.5" />
                                                     </button>
@@ -319,20 +321,20 @@ export function DevCenter() {
                 return (
                     <div className={`h-full flex flex-col ${isNarrow ? 'p-4' : 'p-6'}`}>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl text-white">File System Debugger</h2>
+                            <h2 className="text-xl text-white">{t('devCenter.filesystem.title')}</h2>
                             <GlassButton
                                 variant="danger"
                                 size="sm"
                                 className="gap-2"
                                 onClick={() => {
-                                    if (confirm('Reset entire filesystem? This cannot be undone.')) {
+                                    if (confirm(t('devCenter.filesystem.resetConfirm'))) {
                                         resetFileSystem();
-                                        notify.system('warning', 'FileSystem', 'Filesystem reset to initial state');
+                                        notify.system('warning', t('devCenter.filesystem.toastTitle'), t('devCenter.filesystem.resetSuccess'));
                                     }
                                 }}
                             >
                                 <RefreshCw className="w-4 h-4" />
-                                Reset FS
+                                {t('devCenter.filesystem.resetButton')}
                             </GlassButton>
                         </div>
                         <div className="flex-1 bg-black/40 rounded-lg p-4 font-mono text-xs text-blue-300 overflow-y-auto border border-white/10 whitespace-pre">
@@ -343,12 +345,12 @@ export function DevCenter() {
             case 'logs':
                 return (
                     <div className={`h-full flex flex-col ${isNarrow ? 'p-4' : 'p-6'}`}>
-                        <h2 className="text-xl text-white mb-4">System Logs</h2>
+                        <h2 className="text-xl text-white mb-4">{t('devCenter.logs.title')}</h2>
                         <div className="flex-1 bg-black/40 rounded-lg p-4 font-mono text-sm text-green-400 overflow-y-auto border border-white/10">
-                            <div className="opacity-50">[System] Kernel initialized...</div>
-                            <div className="opacity-50">[System] Loading drivers...</div>
-                            <div>[Auth] User 'drago' logged in</div>
-                            <div>[App] DevCenter launched</div>
+                            <div className="opacity-50">{t('devCenter.logs.kernelInitialized')}</div>
+                            <div className="opacity-50">{t('devCenter.logs.loadingDrivers')}</div>
+                            <div>{t('devCenter.logs.userLoggedIn', { username: 'drago' })}</div>
+                            <div>{t('devCenter.logs.launched')}</div>
                         </div>
                     </div>
                 );
@@ -356,16 +358,16 @@ export function DevCenter() {
                 return (
                     <EmptyState
                         icon={Code}
-                        title="Code Editor"
-                        description="Monaco editor integration coming soon."
+                        title={t('devCenter.editor.title')}
+                        description={t('devCenter.editor.description')}
                     />
                 );
             case 'performance':
                 return (
                     <EmptyState
                         icon={Cpu}
-                        title="Performance Monitor"
-                        description="Real-time CPU/RAM metrics coming soon."
+                        title={t('devCenter.performance.title')}
+                        description={t('devCenter.performance.description')}
                     />
                 );
             case 'dashboard':
@@ -373,8 +375,8 @@ export function DevCenter() {
                 return (
                     <EmptyState
                         icon={Activity}
-                        title="Developer Dashboard"
-                        description={`Welcome to the ${pkg.build.productName} Developer Center.`}
+                        title={t('devCenter.dashboard.title')}
+                        description={t('devCenter.dashboard.description', { productName: pkg.build.productName })}
                     />
                 );
         }
@@ -396,10 +398,10 @@ export const devCenterMenuConfig: AppMenuConfig = {
     menus: ['File', 'Edit', 'View', 'Tools', 'Window', 'Help'],
     items: {
         'Tools': [
-            { label: 'Reset Filesystem', action: 'reset-fs' },
-            { label: 'Clear Logs', action: 'clear-logs' },
+            { labelKey: 'devCenter.menu.resetFilesystem', action: 'reset-fs' },
+            { labelKey: 'devCenter.menu.clearLogs', action: 'clear-logs' },
             { type: 'separator' },
-            { label: 'Run Diagnostics', action: 'run-diagnostics' }
+            { labelKey: 'devCenter.menu.runDiagnostics', action: 'run-diagnostics' }
         ]
     }
 };

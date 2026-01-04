@@ -5,6 +5,7 @@ import { cn } from '../ui/utils';
 import { feedback } from '../../services/soundFeedback';
 import { GameScreenLayout } from './GameScreenLayout';
 import { SettingsModal } from './SettingsModal';
+import { useI18n } from '../../i18n';
 
 interface MainMenuProps {
     onNewGame: () => void;
@@ -13,6 +14,7 @@ interface MainMenuProps {
 }
 
 export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) {
+    const { t } = useI18n();
     const [selected, setSelected] = useState(canContinue ? 0 : 1);
     const [showSettings, setShowSettings] = useState(false);
 
@@ -21,35 +23,37 @@ export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) 
     const menuItems = [
         {
             id: 'continue',
-            label: 'Continue',
+            label: t('game.mainMenu.continue.label'),
             icon: Disc,
             disabled: !canContinue,
             action: onContinue,
-            desc: canContinue ? 'Resume your previous loop' : 'No loop data found'
+            desc: canContinue
+                ? t('game.mainMenu.continue.desc.canContinue')
+                : t('game.mainMenu.continue.desc.noData')
         },
         {
             id: 'new-game',
-            label: 'New Loop',
+            label: t('game.mainMenu.newGame.label'),
             icon: Play,
             disabled: false,
             action: onNewGame,
-            desc: 'Start fresh (Wipes data)'
+            desc: t('game.mainMenu.newGame.desc')
         },
         {
             id: 'settings',
-            label: 'BIOS',
+            label: t('game.mainMenu.settings.label'),
             icon: Settings,
             disabled: false,
             action: () => setShowSettings(true),
-            desc: 'Configure global parameters'
+            desc: t('game.mainMenu.settings.desc')
         },
         {
             id: 'exit',
-            label: 'Shutdown',
+            label: t('game.mainMenu.exit.label'),
             icon: Power,
             disabled: false,
             action: () => window.close(), // Attempt to close tab
-            desc: 'Terminate session'
+            desc: t('game.mainMenu.exit.desc')
         }
     ];
 

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { checkPermissions } from '../../utils/fileSystemUtils';
 import { BreadcrumbPill } from './BreadcrumbPill';
 import { ResponsiveGrid } from './ResponsiveGrid';
+import { useI18n } from '../../i18n';
 
 interface FilePickerProps {
     isOpen: boolean;
@@ -29,6 +30,7 @@ export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath
     const actingUser = (owner || currentUser) ?? undefined;
     const { accentColor } = useAppContext();
     const { windowBackground, titleBarBackground, blurStyle } = useThemeColors();
+    const { t } = useI18n();
 
     const [currentPath, setCurrentPath] = useState(defaultPath || homePath);
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
@@ -51,11 +53,11 @@ export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath
             const userObj = users.find(u => u.username === actingUser);
             if (userObj) {
                 if (!checkPermissions(node, userObj, 'read')) {
-                    toast.error(`Permission denied: ${node.name}`);
+                    toast.error(t('filePicker.toasts.permissionDenied', { name: node.name }));
                     return;
                 }
                 if (!checkPermissions(node, userObj, 'execute')) {
-                    toast.error(`Permission denied: ${node.name}`);
+                    toast.error(t('filePicker.toasts.permissionDenied', { name: node.name }));
                     return;
                 }
             }
@@ -145,7 +147,7 @@ export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath
                     </div>
 
                     <div className="absolute left-1/2 -translate-x-1/2 text-sm text-white/90 font-medium pointer-events-none">
-                        {title || (mode === 'open' ? 'Open File' : 'Save File')}
+                        {title || (mode === 'open' ? t('filePicker.openFile') : t('filePicker.saveFile'))}
                     </div>
                 </div>
 
@@ -204,7 +206,7 @@ export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath
                         {items.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-white/40">
                                 <FolderOpen className="w-12 h-12 mb-4 opacity-50" />
-                                <p>This folder is empty</p>
+                                <p>{t('filePicker.emptyFolder')}</p>
                             </div>
                         ) : (
                             <ResponsiveGrid minItemWidth={100} className="gap-4">
@@ -247,11 +249,11 @@ export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath
                     <div className="p-4 border-t border-white/5 bg-white/5 flex items-center gap-4">
                         {mode === 'save' ? (
                             <div className="flex items-center gap-3 flex-1 w-full">
-                                <span className="text-sm text-white/70 whitespace-nowrap">Name:</span>
+                                <span className="text-sm text-white/70 whitespace-nowrap">{t('filePicker.nameLabel')}</span>
                                 <Input
                                     value={filename}
                                     onChange={(e) => setFilename(e.target.value)}
-                                    placeholder="Untitled"
+                                    placeholder={t('filePicker.untitledPlaceholder')}
                                     className="h-8 bg-black/20 border-white/10 text-white focus:border-white/20 rounded-md"
                                     onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
                                 />
@@ -267,7 +269,7 @@ export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath
                                 } as React.CSSProperties}
                                 className="h-8 border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-white px-4 rounded-md bg-transparent transition-all duration-200"
                             >
-                                Cancel
+                                {t('filePicker.cancel')}
                             </Button>
                             <Button
                                 onClick={handleConfirm}
@@ -278,7 +280,7 @@ export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath
                                 className="h-8 text-white hover:brightness-110 px-6 rounded-md border border-white/10 font-medium transition-all"
                                 disabled={!isSelectionValid}
                             >
-                                {mode === 'open' ? 'Open' : 'Save'}
+                                {mode === 'open' ? t('filePicker.open') : t('filePicker.save')}
                             </Button>
                         </div>
                     </div>

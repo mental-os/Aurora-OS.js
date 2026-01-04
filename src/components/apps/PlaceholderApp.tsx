@@ -1,6 +1,7 @@
 import { Mail, Calendar, LucideIcon, FileQuestion } from 'lucide-react';
 import { useThemeColors } from '../../hooks/useThemeColors';
 import { EmptyState } from '../ui/empty-state';
+import { useI18n } from '../../i18n';
 
 interface PlaceholderAppProps {
     title: string;
@@ -12,14 +13,15 @@ const APP_ICONS: Record<string, LucideIcon> = {
 };
 
 const APP_DESCRIPTIONS: Record<string, string> = {
-    'Mail': 'Manage your emails, contacts, and calendar events.',
-    'Calendar': 'Schedule meetings, events, and reminders.'
+    'Mail': 'placeholderApp.descriptions.mail',
+    'Calendar': 'placeholderApp.descriptions.calendar'
 };
 
 export function PlaceholderApp({ title }: PlaceholderAppProps) {
     const { blurStyle } = useThemeColors();
+    const { t } = useI18n();
     const Icon = APP_ICONS[title] || FileQuestion;
-    const description = APP_DESCRIPTIONS[title] || 'This application is currently under development.';
+    const descriptionKey = APP_DESCRIPTIONS[title] || 'placeholderApp.descriptions.default';
 
     return (
         <div
@@ -30,8 +32,8 @@ export function PlaceholderApp({ title }: PlaceholderAppProps) {
         >
             <EmptyState
                 icon={Icon}
-                title={`${title} is Coming Soon`}
-                description={description}
+                title={t('placeholderApp.comingSoonTitle', { title })}
+                description={t(descriptionKey)}
             />
         </div>
     );

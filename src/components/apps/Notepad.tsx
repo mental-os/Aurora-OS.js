@@ -73,6 +73,7 @@ interface Tab {
 import { useAppContext } from '../AppContext';
 import { useWindow } from '../WindowContext';
 import { STORAGE_KEYS } from '../../utils/memory';
+import { useI18n } from '../../i18n';
 
 // ... interface
 
@@ -95,44 +96,54 @@ const extensionToLanguage = (ext: string): string => {
     }
 };
 
-const getDisplayName = (context: string): string => {
-    switch (context) {
-        case 'markdown': return 'Markdown';
-        case 'javascript': return 'JavaScript';
-        case 'typescript': return 'TypeScript';
-        case 'tsx': return 'TSX';
-        case 'json': return 'JSON';
-        case 'css': return 'CSS';
-        case 'markup': return 'HTML';
-        case 'bash': return 'Bash';
-        case 'txt': return 'Plain Text';
-        default: return context.charAt(0).toUpperCase() + context.slice(1);
-    }
-};
-
 const SUPPORTED_LANGUAGES = [
-    { value: 'markdown', label: 'Markdown' },
-    { value: 'javascript', label: 'JavaScript' },
-    { value: 'typescript', label: 'TypeScript' },
-    { value: 'tsx', label: 'TSX' },
-    { value: 'json', label: 'JSON' },
-    { value: 'css', label: 'CSS' },
-    { value: 'markup', label: 'HTML' },
-    { value: 'bash', label: 'Bash' },
-    { value: 'txt', label: 'Plain Text' },
+    { value: 'markdown', labelKey: 'notepad.languages.markdown' },
+    { value: 'javascript', labelKey: 'notepad.languages.javascript' },
+    { value: 'typescript', labelKey: 'notepad.languages.typescript' },
+    { value: 'tsx', labelKey: 'notepad.languages.tsx' },
+    { value: 'json', labelKey: 'notepad.languages.json' },
+    { value: 'css', labelKey: 'notepad.languages.css' },
+    { value: 'markup', labelKey: 'notepad.languages.markup' },
+    { value: 'bash', labelKey: 'notepad.languages.bash' },
+    { value: 'txt', labelKey: 'notepad.languages.txt' },
 ];
 
 export function Notepad({ owner, initialPath }: NotepadProps) {
+    const { t } = useI18n();
     const { readFile, createFile, writeFile, getNodeAtPath } = useFileSystem();
     const { accentColor, activeUser: desktopUser } = useAppContext();
     const activeUser = owner || desktopUser;
     const windowContext = useWindow();
 
+    const supportedLanguages = SUPPORTED_LANGUAGES.map((lang) => ({
+        ...lang,
+        label: t(lang.labelKey),
+    }));
+
+    const getLanguageDisplayName = (context: string) => {
+        const language = supportedLanguages.find((l) => l.value === context);
+        if (language) return language.label;
+
+        const unknown = context.charAt(0).toUpperCase() + context.slice(1);
+        const key = `notepad.languages.${context}`;
+        const translated = t(key);
+        return translated === key ? unknown : translated;
+    };
+
+    const getUntitledTabName = (index: number) => t('notepad.untitledTab', { index });
+    const createDefaultTab = (index: number): Tab => ({
+        id: crypto.randomUUID(),
+        name: getUntitledTabName(index),
+        content: '',
+        isModified: false,
+        context: 'markdown'
+    });
+
     // State
     const [tabs, setTabs] = useState<Tab[]>(() => {
         // Initializer for lazy state loading
         try {
-            if (!activeUser) return [{ id: '1', name: 'Untitled 1', content: '', isModified: false, context: 'markdown' }];
+            if (!activeUser) return [{ id: '1', name: getUntitledTabName(1), content: '', isModified: false, context: 'markdown' }];
             const key = `${STORAGE_KEYS.APP_PREFIX}notepad-state-${activeUser}`;
             const saved = localStorage.getItem(key);
             if (saved) {
@@ -144,9 +155,9 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                 }
             }
         } catch (e) {
-            console.warn('Failed to load Notepad state:', e);
+            console.warn(e);
         }
-        return [{ id: '1', name: 'Untitled 1', content: '', isModified: false, context: 'markdown' }];
+        return [{ id: '1', name: getUntitledTabName(1), content: '', isModified: false, context: 'markdown' }];
     });
 
     // We also need to restore activeTabId
@@ -267,14 +278,14 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
     // -- Tab Management --
     const handleNewTab = () => {
         const newId = crypto.randomUUID();
-        const newName = `Untitled ${tabs.length + 1} `;
+        const newName = getUntitledTabName(tabs.length + 1);
         setTabs([...tabs, { id: newId, name: newName, content: '', isModified: false, context: 'markdown' }]);
         setActiveTabId(newId);
     };
 
     const forceCloseTab = (id: string) => {
         if (tabs.length === 1) {
-            setTabs([{ id: crypto.randomUUID(), name: 'Untitled 1', content: '', isModified: false, context: 'markdown' }]);
+            setTabs([createDefaultTab(1)]);
             setActiveTabId(tabs[0].id); // This will update in next render actually, but logic holds
         } else {
             const newTabs = tabs.filter(t => t.id !== id);
@@ -315,7 +326,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
 
             const content = readFile(path, activeUser);
             if (content !== null) {
-                const name = path.split('/').pop() || 'Untitled';
+                const name = path.split('/').pop() || t('notepad.untitled');
                 const extension = name.split('.').pop()?.toLowerCase() || '';
                 const context = extensionToLanguage(extension);
 
@@ -332,7 +343,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                     setActiveTabId(newId);
                 }
             } else {
-                toast.error('Failed to read file');
+                toast.error(t('notepad.toasts.failedToReadFile'));
             }
         } else if (filePickerMode === 'save') {
             // Save logic
@@ -341,13 +352,13 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
 
             if (!success) {
                 // If writeFile failed, maybe it doesn't exist, try create
-                const name = path.split('/').pop() || 'Untitled';
+                const name = path.split('/').pop() || t('notepad.untitled');
                 const dir = path.substring(0, path.lastIndexOf('/')) || '/';
                 success = createFile(dir, name, activeTab.content, activeUser);
             }
 
             if (success) {
-                const name = path.split('/').pop() || 'Untitled';
+                const name = path.split('/').pop() || t('notepad.untitled');
                 // Update context based on saved extension
                 const extension = name.split('.').pop()?.toLowerCase() || '';
                 const context = extensionToLanguage(extension);
@@ -357,9 +368,9 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                         ? { ...t, name, path, isModified: false, context }
                         : t
                 ));
-                toast.success('File saved');
+                toast.success(t('notepad.toasts.fileSaved'));
             } else {
-                toast.error('Failed to save file (Check permissions)');
+                toast.error(t('notepad.toasts.failedToSaveFilePermissions'));
             }
         }
         setFilePickerMode(null);
@@ -375,10 +386,10 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                         ? { ...t, isModified: false }
                         : t
                 ));
-                toast.success('Saved');
+                toast.success(t('notepad.toasts.saved'));
                 return true; // Indicate success for quick save
             } else {
-                toast.error('Failed to save');
+                toast.error(t('notepad.toasts.failedToSave'));
                 return false;
             }
         } else {
@@ -519,7 +530,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                                     <button
                                         onClick={() => setFilePickerMode('open')}
                                         className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md transition-colors flex items-center gap-2"
-                                        title="Open File"
+                                        title={t('notepad.actions.openFile')}
                                     >
                                         <FolderOpen className="w-4 h-4" />
                                     </button>
@@ -527,7 +538,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                                         onClick={handleSave}
                                         style={{ color: activeTab.isModified ? accentColor : undefined }}
                                         className={`p-1.5 hover:bg-white/10 rounded-md transition-colors flex items-center gap-2 ${activeTab.isModified ? '' : 'text-white/70 hover:text-white'}`}
-                                        title="Save File"
+                                        title={t('notepad.actions.saveFile')}
                                     >
                                         <Save className="w-4 h-4" />
                                     </button>
@@ -535,16 +546,16 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
 
                                     {!isPreviewMode && activeTab.context === 'markdown' && (
                                         <>
-                                            <button onClick={() => insertMarkdown('bold')} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md" title="Bold">
+                                            <button onClick={() => insertMarkdown('bold')} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md" title={t('notepad.actions.bold')}>
                                                 <Bold className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => insertMarkdown('italic')} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md" title="Italic">
+                                            <button onClick={() => insertMarkdown('italic')} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md" title={t('notepad.actions.italic')}>
                                                 <Italic className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => insertMarkdown('list')} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md" title="List">
+                                            <button onClick={() => insertMarkdown('list')} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md" title={t('notepad.actions.list')}>
                                                 <List className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => insertMarkdown('h1')} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md" title="Heading">
+                                            <button onClick={() => insertMarkdown('h1')} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md" title={t('notepad.actions.heading')}>
                                                 <Type className="w-4 h-4" />
                                             </button>
                                         </>
@@ -565,12 +576,12 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                                         {isPreviewMode ? (
                                             <>
                                                 <EyeOff className="w-3 h-3" />
-                                                Edit
+                                                {t('notepad.preview.edit')}
                                             </>
                                         ) : (
                                             <>
                                                 <Eye className="w-3 h-3" />
-                                                Preview
+                                                {t('notepad.preview.preview')}
                                             </>
                                         )}
                                     </button>
@@ -625,7 +636,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                                 <div className="flex-1 overflow-hidden">
                                     <iframe
                                         srcDoc={activeTab.content}
-                                        title="HTML Preview"
+                                        title={t('notepad.preview.htmlPreviewTitle')}
                                         sandbox="allow-scripts"
                                         className="w-full h-full border-none bg-white"
                                     />
@@ -659,8 +670,8 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                         {/* Status Bar */}
                         <div className="h-6 border-t border-white/5 flex items-center justify-between px-3 text-[10px] text-white/30 select-none bg-white/5">
                             <div className="flex gap-4">
-                                <span>{activeTab.content.length} chars</span>
-                                <span>Ln {activeTab.content.split('\n').length}</span>
+                                <span>{t('notepad.status.chars', { count: activeTab.content.length })}</span>
+                                <span>{t('notepad.status.lines', { count: activeTab.content.split('\n').length })}</span>
                             </div>
                             <Popover>
                                 <PopoverTrigger asChild>
@@ -669,9 +680,9 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                                         style={{
                                             color: 'rgba(255, 255, 255, 0.5)'
                                         }}
-                                        title="Click to switch context"
+                                        title={t('notepad.contextSwitcher.title')}
                                     >
-                                        {getDisplayName(activeTab.context)}
+                                        {getLanguageDisplayName(activeTab.context)}
                                         <ChevronsUpDown className="size-3 opacity-50" />
                                     </div>
                                 </PopoverTrigger>
@@ -687,7 +698,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                                 >
                                     <Command className="bg-transparent text-white">
                                         <CommandInput
-                                            placeholder="Search language..."
+                                            placeholder={t('notepad.contextSwitcher.searchPlaceholder')}
                                             className="h-8 text-[11px] border-b border-white/10"
                                             style={{
                                                 color: 'white',
@@ -695,9 +706,9 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                                             }}
                                         />
                                         <CommandList className="max-h-[200px]">
-                                            <CommandEmpty className="text-[11px] py-2 text-white/40">No language found.</CommandEmpty>
+                                            <CommandEmpty className="text-[11px] py-2 text-white/40">{t('notepad.contextSwitcher.noLanguageFound')}</CommandEmpty>
                                             <CommandGroup>
-                                                {SUPPORTED_LANGUAGES.map((lang) => (
+                                                {supportedLanguages.map((lang) => (
                                                     <CommandItem
                                                         key={lang.value}
                                                         value={lang.value}
@@ -707,7 +718,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                                                                     ? { ...t, context: currentValue }
                                                                     : t
                                                             ));
-                                                            toast.info(`Switched to ${lang.label}`);
+                                                            toast.info(t('notepad.toasts.switchedTo', { language: lang.label }));
                                                         }}
                                                         className="text-[11px] cursor-pointer transition-all duration-150"
                                                         style={{
@@ -767,9 +778,9 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
             <AlertDialog open={!!pendingCloseTabId} onOpenChange={(open) => !open && setPendingCloseTabId(null)}>
                 <AlertDialogContent className="bg-[#1E1E1E] border-white/10 text-white">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Do you want to save changes?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('notepad.dialog.unsaved.title')}</AlertDialogTitle>
                         <AlertDialogDescription className="text-white/70">
-                            Your changes will be lost if you don't save them.
+                            {t('notepad.dialog.unsaved.description')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -777,15 +788,15 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
                             onClick={handleDiscardChanges}
                             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-red-500 hover:text-red-400 hover:bg-white/5 h-9 px-4 py-2"
                         >
-                            Don't Save
+                            {t('notepad.dialog.unsaved.dontSave')}
                         </button>
-                        <AlertDialogCancel className="bg-transparent border-white/10 text-white hover:bg-white/5 hover:text-white">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="bg-transparent border-white/10 text-white hover:bg-white/5 hover:text-white">{t('notepad.dialog.unsaved.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleSaveChanges}
                             className="text-white hover:brightness-110"
                             style={{ backgroundColor: accentColor }}
                         >
-                            Save
+                            {t('notepad.dialog.unsaved.save')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -799,25 +810,25 @@ export const notepadMenuConfig: AppMenuConfig = {
     menus: ['File', 'Edit', 'Format', 'View', 'Window', 'Help'],
     items: {
         'File': [
-            { label: 'New', shortcut: '⌘N', action: 'new' },
-            { label: 'Open...', shortcut: '⌘O', action: 'open' },
-            { label: 'Save', shortcut: '⌘S', action: 'save' },
+            { labelKey: 'notepad.menu.new', shortcut: '⌘N', action: 'new' },
+            { labelKey: 'notepad.menu.open', shortcut: '⌘O', action: 'open' },
+            { labelKey: 'notepad.menu.save', shortcut: '⌘S', action: 'save' },
             { type: 'separator' },
-            { label: 'Close Tab', shortcut: '⌘W', action: 'close-tab' },
+            { labelKey: 'notepad.menu.closeTab', shortcut: '⌘W', action: 'close-tab' },
         ],
         'Format': [
-            { label: 'Bold', shortcut: '⌘B', action: 'format-bold' },
-            { label: 'Italic', shortcut: '⌘I', action: 'format-italic' },
-            { label: 'List', shortcut: '⌘L', action: 'format-list' },
+            { labelKey: 'notepad.menu.bold', shortcut: '⌘B', action: 'format-bold' },
+            { labelKey: 'notepad.menu.italic', shortcut: '⌘I', action: 'format-italic' },
+            { labelKey: 'notepad.menu.list', shortcut: '⌘L', action: 'format-list' },
             { type: 'separator' },
-            { label: 'Heading 1', action: 'format-h1' },
-            { label: 'Heading 2', action: 'format-h2' }
+            { labelKey: 'notepad.menu.heading1', action: 'format-h1' },
+            { labelKey: 'notepad.menu.heading2', action: 'format-h2' }
         ],
         'View': [
-            { label: 'Toggle Preview', shortcut: '⌘P', action: 'toggle-preview' },
+            { labelKey: 'notepad.menu.togglePreview', shortcut: '⌘P', action: 'toggle-preview' },
             { type: 'separator' },
-            { label: 'Zoom In', shortcut: '⌘+', action: 'zoom-in' },
-            { label: 'Zoom Out', shortcut: '⌘-', action: 'zoom-out' }
+            { labelKey: 'notepad.menu.zoomIn', shortcut: '⌘+', action: 'zoom-in' },
+            { labelKey: 'notepad.menu.zoomOut', shortcut: '⌘-', action: 'zoom-out' }
         ]
     }
 };

@@ -31,6 +31,7 @@ import { useElementSize } from '../hooks/useElementSize';
 import { FileIcon } from './ui/FileIcon';
 import { cn } from './ui/utils';
 import { feedback } from '../services/soundFeedback';
+import { useI18n } from '../i18n';
 
 interface BreadcrumbPillProps {
   name: string;
@@ -92,6 +93,7 @@ function BreadcrumbPill({ name, isLast, accentColor, onClick, onDrop }: Breadcru
 
 export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: string; onOpenApp?: (id: string, args?: any, owner?: string) => void, owner?: string }) {
   const { accentColor, activeUser: desktopUser } = useAppContext();
+  const { t } = useI18n();
   const activeUser = owner || desktopUser;
   useMusic();
   // Drag and Drop Logic
@@ -154,11 +156,11 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
       const userObj = users.find(u => u.username === activeUser);
       if (userObj) {
         if (!checkPermissions(node, userObj, 'read')) {
-          toast.error(`Permission denied: ${node.name}`);
+          toast.error(t('fileManager.toasts.permissionDenied', { name: node.name }));
           return;
         }
         if (!checkPermissions(node, userObj, 'execute')) {
-          toast.error(`Permission denied: ${node.name}`);
+          toast.error(t('fileManager.toasts.permissionDenied', { name: node.name }));
           return;
         }
       }
@@ -194,7 +196,7 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
           // Delegate playback to App via initialPath/data (gated by local logic)
           if (onOpenApp) onOpenApp('music', { path: fullPath, timestamp: Date.now() }, activeUser);
         } else {
-          toast.error('Music app is not installed. Install it from the App Store.');
+          toast.error(t('fileManager.toasts.musicNotInstalled'));
         }
       } else if (isText) {
         // Check if notepad app is installed by checking /usr/bin
@@ -204,7 +206,7 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
           const fullPath = resolvePath(rawPath, activeUser);
           if (onOpenApp) onOpenApp('notepad', { path: fullPath }, activeUser);
         } else {
-          toast.error('Notepad is not installed. Install it from the App Store.');
+          toast.error(t('fileManager.toasts.notepadNotInstalled'));
         }
       }
     }
@@ -368,11 +370,11 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
           movedCount++;
       });
       
-      if (movedCount > 0) toast.success(`Moved ${movedCount} items`);
+      if (movedCount > 0) toast.success(t('fileManager.toasts.movedItems', { count: movedCount }));
 
     } catch (err) {
       console.error('Failed to parse drag data', err);
-      toast.error('Move failed: Invalid data');
+      toast.error(t('fileManager.toasts.moveFailedInvalidData'));
     }
   }, [currentPath, moveNodeById, activeUser]);
 
@@ -392,10 +394,15 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
           moveNodeById(id, targetPath, activeUser);
       });
       
-      toast.success(`Moved ${idsToMove.length} items to ${targetPath.split('/').pop()}`);
+      toast.success(
+        t('fileManager.toasts.movedItemsTo', {
+          count: idsToMove.length,
+          target: targetPath.split('/').pop() || targetPath,
+        })
+      );
     } catch (err) {
       console.error('Failed to drop on sidebar', err);
-      toast.error('Failed to process drop');
+      toast.error(t('fileManager.toasts.failedToProcessDrop'));
     }
   }, [moveNodeById, activeUser]);
 
@@ -413,54 +420,54 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
     return {
       sections: [
         {
-          title: 'Favourites',
+          title: t('fileManager.sidebar.favorites'),
           items: [
             {
               id: 'home',
               icon: Home,
-              label: 'Home',
+              label: t('fileManager.places.home'),
               action: () => navigateTo(homePath),
               ...sidebarDropProps(homePath)
             },
             {
               id: 'desktop',
               icon: Monitor,
-              label: 'Desktop',
+              label: t('fileManager.places.desktop'),
               action: () => navigateTo(`${homePath}/Desktop`),
               ...sidebarDropProps(`${homePath}/Desktop`)
             },
             {
               id: 'documents',
               icon: FileText,
-              label: 'Documents',
+              label: t('fileManager.places.documents'),
               action: () => navigateTo(`${homePath}/Documents`),
               ...sidebarDropProps(`${homePath}/Documents`)
             },
             {
               id: 'downloads',
               icon: Download,
-              label: 'Downloads',
+              label: t('fileManager.places.downloads'),
               action: () => navigateTo(`${homePath}/Downloads`),
               ...sidebarDropProps(`${homePath}/Downloads`)
             },
             {
               id: 'pictures',
               icon: Image,
-              label: 'Pictures',
+              label: t('fileManager.places.pictures'),
               action: () => navigateTo(`${homePath}/Pictures`),
               ...sidebarDropProps(`${homePath}/Pictures`)
             },
             {
               id: 'music',
               icon: Music,
-              label: 'Music',
+              label: t('fileManager.places.music'),
               action: () => navigateTo(`${homePath}/Music`),
               ...sidebarDropProps(`${homePath}/Music`)
             },
           ]
         },
         {
-          title: 'System',
+          title: t('fileManager.sidebar.system'),
           items: [
             {
               id: 'root',
@@ -486,12 +493,12 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
           ]
         },
         {
-          title: 'Locations',
+          title: t('fileManager.sidebar.locations'),
           items: [
             {
               id: 'trash',
               icon: isTrashEmpty ? Trash : Trash2,
-              label: 'Trash',
+              label: t('fileManager.places.trash'),
               action: () => navigateTo(`${homePath}/.Trash`),
               ...sidebarDropProps(`${homePath}/.Trash`)
             },
@@ -499,7 +506,7 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
         },
       ]
     };
-  }, [homePath, navigateTo, sidebarDropProps, getNodeAtPath, activeUser]);
+  }, [homePath, navigateTo, sidebarDropProps, getNodeAtPath, activeUser, t]);
 
   const toolbar = (
     <div className="flex items-center w-full gap-2 px-0">
@@ -533,12 +540,12 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
                    }
                 });
                 setSelectedItems(new Set());
-                toast.success(`Moved ${selectedItems.size} items to Trash`);
+                toast.success(t('fileManager.toasts.movedItemsToTrash', { count: selectedItems.size }));
             }
           }}
           disabled={selectedItems.size === 0}
           className={`p-1.5 rounded-md transition-colors ${selectedItems.size === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-red-500/20 text-red-400'}`}
-          title="Move to Trash"
+          title={t('fileManager.actions.moveToTrash')}
         >
           <Trash2 className="w-4 h-4 text-white/50" />
         </button>
@@ -603,7 +610,7 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
                 cumulativePath += `/${segment}`;
                 const isLast = index === visibleSegments.length - 1;
                 const path = cumulativePath; // Close over value
-                const displayName = segment === '.Trash' ? 'Trash' : segment;
+                const displayName = segment === '.Trash' ? t('fileManager.places.trash') : segment;
 
                 return (
                   <BreadcrumbPill
@@ -678,11 +685,11 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
           moveNodeById(id, currentPath, activeUser);
           movedCount++;
       });
-      if (movedCount > 0) toast.success(`Moved ${movedCount} items`);
+      if (movedCount > 0) toast.success(t('fileManager.toasts.movedItems', { count: movedCount }));
     } catch (err) {
       console.error('Failed to handle container drop', err);
     }
-  }, [moveNodeById, currentPath, activeUser]);
+  }, [moveNodeById, currentPath, activeUser, t]);
 
   // Selection Box State
   const [selectionBox, setSelectionBox] = useState<{ start: { x: number, y: number }, current: { x: number, y: number } } | null>(null);
@@ -872,8 +879,8 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
               </div>
               <div className="text-xs text-white/40 shrink-0 pointer-events-none">
                 {item.type === 'directory'
-                  ? `${item.children?.length || 0} items`
-                  : item.size ? `${item.size} bytes` : ''}
+                  ? t('fileManager.details.items', { count: item.children?.length || 0 })
+                  : item.size ? t('fileManager.details.bytes', { count: item.size }) : ''}
               </div>
               {item.permissions && !isMobile && (
                 <div className="text-xs text-white/50 font-mono shrink-0 whitespace-nowrap text-right min-w-[90px] pointer-events-none">
@@ -896,28 +903,28 @@ export const finderMenuConfig: AppMenuConfig = {
   menus: ['File', 'Edit', 'View', 'Go', 'Window', 'Help'],
   items: {
     'File': [
-      { label: 'New Window', shortcut: '⌘N', action: 'new-window' },
-      { label: 'New Folder', shortcut: '⇧⌘N', action: 'new-folder' },
+      { labelKey: 'menubar.items.newWindow', shortcut: '⌘N', action: 'new-window' },
+      { labelKey: 'menubar.items.newFolder', shortcut: '⇧⌘N', action: 'new-folder' },
       { type: 'separator' },
-      { label: 'Close Window', shortcut: '⌘W', action: 'close-window' }
+      { labelKey: 'menubar.items.closeWindow', shortcut: '⌘W', action: 'close-window' }
     ],
     'Edit': [
-      { label: 'Undo', shortcut: '⌘Z', action: 'undo' },
-      { label: 'Redo', shortcut: '⇧⌘Z', action: 'redo' },
+      { labelKey: 'menubar.items.undo', shortcut: '⌘Z', action: 'undo' },
+      { labelKey: 'menubar.items.redo', shortcut: '⇧⌘Z', action: 'redo' },
       { type: 'separator' },
-      { label: 'Cut', shortcut: '⌘X', action: 'cut' },
-      { label: 'Copy', shortcut: '⌘C', action: 'copy' },
-      { label: 'Paste', shortcut: '⌘V', action: 'paste' },
-      { label: 'Select All', shortcut: '⌘A', action: 'select-all' }
+      { labelKey: 'menubar.items.cut', shortcut: '⌘X', action: 'cut' },
+      { labelKey: 'menubar.items.copy', shortcut: '⌘C', action: 'copy' },
+      { labelKey: 'menubar.items.paste', shortcut: '⌘V', action: 'paste' },
+      { labelKey: 'menubar.items.selectAll', shortcut: '⌘A', action: 'select-all' }
     ],
     'Go': [
-      { label: 'Back', shortcut: '⌘[', action: 'go-back' },
-      { label: 'Forward', shortcut: '⌘]', action: 'go-forward' },
-      { label: 'Enclosing Folder', shortcut: '⌘↑', action: 'go-up' },
+      { labelKey: 'menubar.items.back', shortcut: '⌘[', action: 'go-back' },
+      { labelKey: 'menubar.items.forward', shortcut: '⌘]', action: 'go-forward' },
+      { labelKey: 'menubar.items.enclosingFolder', shortcut: '⌘↑', action: 'go-up' },
       { type: 'separator' },
-      { label: 'Home', shortcut: '⇧⌘H', action: 'go-home' },
-      { label: 'Desktop', shortcut: '⇧⌘D', action: 'go-desktop' },
-      { label: 'Downloads', shortcut: '⌥⌘L', action: 'go-downloads' }
+      { labelKey: 'fileManager.places.home', shortcut: '⇧⌘H', action: 'go-home' },
+      { labelKey: 'fileManager.places.desktop', shortcut: '⇧⌘D', action: 'go-desktop' },
+      { labelKey: 'fileManager.places.downloads', shortcut: '⌥⌘L', action: 'go-downloads' }
     ]
   }
 };

@@ -2,6 +2,8 @@ import { createContext, useContext, useState, ReactNode, useEffect, useCallback 
 
 type ThemeMode = 'neutral' | 'shades' | 'contrast';
 
+type AppLocale = string;
+
 interface AppContextType {
   accentColor: string;
   setAccentColor: (color: string) => void;
@@ -21,6 +23,12 @@ interface AppContextType {
   setDevMode: (enabled: boolean) => void;
   exposeRoot: boolean;
   setExposeRoot: (enabled: boolean) => void;
+
+  // Localization
+  locale: AppLocale;
+  setLocale: (locale: AppLocale) => void;
+  onboardingComplete: boolean;
+  setOnboardingComplete: (complete: boolean) => void;
 
   // Lock user session without logging out
   isLocked: boolean;
@@ -51,6 +59,8 @@ interface UserPreferences {
 interface SystemConfig {
   devMode: boolean;
   exposeRoot: boolean;
+  locale: AppLocale;
+  onboardingComplete: boolean;
 }
 
 const DEFAULT_PREFERENCES: UserPreferences = {
@@ -63,9 +73,20 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   wallpaper: 'default',
 };
 
+function detectDefaultLocale(): AppLocale {
+  try {
+    const navLang = typeof navigator !== 'undefined' ? navigator.language : undefined;
+    return navLang || 'en-US';
+  } catch {
+    return 'en-US';
+  }
+}
+
 const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   devMode: false,
   exposeRoot: false,
+  locale: detectDefaultLocale(),
+  onboardingComplete: false,
 };
 
 // Helper: Get key for specific user
@@ -152,7 +173,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Destructure for easy access
   const { accentColor, themeMode, blurEnabled, reduceMotion, disableShadows, disableGradients, wallpaper } = preferences;
-  const { devMode, exposeRoot } = systemConfig;
+  const { devMode, exposeRoot, locale, onboardingComplete } = systemConfig;
 
   // Function to switch context to a different user
   const switchUser = useCallback((username: string) => {
@@ -195,6 +216,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Setters for System Config
   const setDevMode = (enabled: boolean) => setSystemConfig(s => ({ ...s, devMode: enabled }));
   const setExposeRoot = (enabled: boolean) => setSystemConfig(s => ({ ...s, exposeRoot: enabled }));
+  const setLocale = (newLocale: AppLocale) => setSystemConfig(s => ({ ...s, locale: newLocale }));
+  const setOnboardingComplete = (complete: boolean) => setSystemConfig(s => ({ ...s, onboardingComplete: complete }));
 
   // Sync accent color to CSS variable for global theming
   useEffect(() => {
@@ -249,6 +272,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDevMode,
       exposeRoot,
       setExposeRoot,
+      locale,
+      setLocale,
+      onboardingComplete,
+      setOnboardingComplete,
       switchUser,
       activeUser,
       isLocked,

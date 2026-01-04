@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { 
   format, addMonths, subMonths, startOfMonth, endOfMonth, 
   eachDayOfInterval, isSameMonth, isSameDay, isToday, 
   startOfWeek, endOfWeek, getHours, getMinutes, setHours, setMinutes,
   addMinutes, addDays, subDays
 } from 'date-fns';
+import { enUS, es as esLocale, fr as frLocale } from 'date-fns/locale';
 import { 
   Plus, ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, Clock, Type, AlignLeft, Timer, ChevronsUpDown, Check
 } from 'lucide-react';
@@ -29,6 +30,7 @@ import { useAppContext } from '../AppContext';
 import { useFileSystem } from '../FileSystemContext';
 import { STORAGE_KEYS } from '../../utils/memory';
 import { toast } from 'sonner';
+import { useI18n } from '../../i18n';
 
 // --- Types ---
 
@@ -57,14 +59,14 @@ interface CalendarProps {
 // --- Constants ---
 
 const COLORS = [
-  { label: 'Blue', value: 'blue', tw: 'bg-blue-500' },
-  { label: 'Green', value: 'green', tw: 'bg-green-500' },
-  { label: 'Red', value: 'red', tw: 'bg-red-500' },
-  { label: 'Yellow', value: 'yellow', tw: 'bg-yellow-500' },
-  { label: 'Purple', value: 'purple', tw: 'bg-purple-500' },
-  { label: 'Pink', value: 'pink', tw: 'bg-pink-500' },
-  { label: 'Orange', value: 'orange', tw: 'bg-orange-500' },
-  { label: 'Gray', value: 'gray', tw: 'bg-gray-500' },
+  { labelKey: 'calendar.colors.blue', value: 'blue', tw: 'bg-blue-500' },
+  { labelKey: 'calendar.colors.green', value: 'green', tw: 'bg-green-500' },
+  { labelKey: 'calendar.colors.red', value: 'red', tw: 'bg-red-500' },
+  { labelKey: 'calendar.colors.yellow', value: 'yellow', tw: 'bg-yellow-500' },
+  { labelKey: 'calendar.colors.purple', value: 'purple', tw: 'bg-purple-500' },
+  { labelKey: 'calendar.colors.pink', value: 'pink', tw: 'bg-pink-500' },
+  { labelKey: 'calendar.colors.orange', value: 'orange', tw: 'bg-orange-500' },
+  { labelKey: 'calendar.colors.gray', value: 'gray', tw: 'bg-gray-500' },
 ];
 
 const getColorClass = (colorName: string) => {
@@ -98,34 +100,34 @@ const getCategoryColorClass = (type: string) => {
 };
 
 const CATEGORIES = [
-  { id: 'all', label: 'All', color: 'white' },
-  { id: 'work', label: 'Work', color: 'blue' },
-  { id: 'personal', label: 'Personal', color: 'green' },
-  { id: 'social', label: 'Social', color: 'purple' },
-  { id: 'events', label: 'Events', color: 'yellow' },
-  { id: 'family', label: 'Family', color: 'red' },
+  { id: 'all', labelKey: 'calendar.categories.all', color: 'white' },
+  { id: 'work', labelKey: 'calendar.categories.work', color: 'blue' },
+  { id: 'personal', labelKey: 'calendar.categories.personal', color: 'green' },
+  { id: 'social', labelKey: 'calendar.categories.social', color: 'purple' },
+  { id: 'events', labelKey: 'calendar.categories.events', color: 'yellow' },
+  { id: 'family', labelKey: 'calendar.categories.family', color: 'red' },
 ];
 
 const EVENT_TYPES: { value: EventType; label: string }[] = [
-  { value: 'work', label: 'Work' },
-  { value: 'personal', label: 'Personal' },
-  { value: 'social', label: 'Social' },
-  { value: 'events', label: 'Events' },
-  { value: 'family', label: 'Family' },
-  { value: 'other', label: 'Other' },
+  { value: 'work', label: 'calendar.types.work' },
+  { value: 'personal', label: 'calendar.types.personal' },
+  { value: 'social', label: 'calendar.types.social' },
+  { value: 'events', label: 'calendar.types.events' },
+  { value: 'family', label: 'calendar.types.family' },
+  { value: 'other', label: 'calendar.types.other' },
 ];
 
-    const MOCK_EVENTS: CalendarEvent[] = [
-    {
-        id: '1',
-        title: 'Loop Started',
-        type: 'other',
-        start: format(setMinutes(setHours(new Date(), 10), 0), 'yyyy-MM-dd HH:mm'),
-        durationMinutes: 30,
-        location: 'Turms',
-        notes: 'Initial filesystem.',
-        color: 'purple',
-    }
+const getMockEvents = (t: (key: string, vars?: Record<string, string | number>) => string): CalendarEvent[] => [
+  {
+    id: '1',
+    title: t('calendar.mockEvents.loopStarted.title'),
+    type: 'other',
+    start: format(setMinutes(setHours(new Date(), 10), 0), 'yyyy-MM-dd HH:mm'),
+    durationMinutes: 30,
+    location: t('calendar.mockEvents.loopStarted.location'),
+    notes: t('calendar.mockEvents.loopStarted.notes'),
+    color: 'purple',
+  },
 ];
 
 // --- Component ---
@@ -140,6 +142,39 @@ const TIME_SLOTS = Array.from({ length: 48 }).map((_, i) => {
 export function Calendar({ owner }: CalendarProps) {
   const { readFile, writeFile, createFile, createDirectory } = useFileSystem();
   const { activeUser: desktopUser, accentColor } = useAppContext();
+  const { t, locale } = useI18n();
+
+  const dateFnsLocale = useMemo(() => {
+    const base = (locale || 'en-US').split('-')[0]?.toLowerCase();
+    switch (base) {
+      case 'es':
+        return esLocale;
+      case 'fr':
+        return frLocale;
+      default:
+        return enUS;
+    }
+  }, [locale]);
+
+  const weekdaysShort = useMemo(() => {
+    const sunday = new Date(2024, 0, 7);
+    return Array.from({ length: 7 }, (_, i) => format(addDays(sunday, i), 'EEE', { locale: dateFnsLocale }));
+  }, [dateFnsLocale]);
+
+  const categories = useMemo(
+    () => CATEGORIES.map((category) => ({ ...category, label: t(category.labelKey) })),
+    [t]
+  );
+
+  const colors = useMemo(
+    () => COLORS.map((color) => ({ ...color, label: t(color.labelKey) })),
+    [t]
+  );
+
+  const eventTypes = useMemo(
+    () => EVENT_TYPES.map((type) => ({ ...type, labelText: t(type.label) })),
+    [t]
+  );
   
   // Determine effective user (support for `sudo calendar` or `su user calendar`)
   const activeUser = owner || desktopUser;
@@ -210,7 +245,7 @@ export function Calendar({ owner }: CalendarProps) {
             try {
                 loadedEvents = JSON.parse(content);
             } catch (e) {
-                console.error("Calendar: Corrupt config file", e);
+              console.error(e);
                 source = 'corrupt';
             }
         } else {
@@ -220,7 +255,7 @@ export function Calendar({ owner }: CalendarProps) {
             // But if we want to respect "Fallback to local storage" strictly per request:
             // The request said: "taking the content from ... file ... THEN falls back to the local storage"
             // We'll check legacy key or just init.
-            loadedEvents = MOCK_EVENTS;
+            loadedEvents = getMockEvents(t);
             source = 'init';
         }
 
@@ -306,12 +341,12 @@ export function Calendar({ owner }: CalendarProps) {
     saveEventsToDisk(newEvents);
     setIsModalOpen(false);
     setEditingEvent({});
-    toast.success("Event deleted");
+    toast.success(t('calendar.toasts.eventDeleted'));
   };
 
   const handleSaveEvent = () => {
     if (!editingEvent.title || !editingEvent.start || !editingEvent.durationMinutes) {
-        toast.error("Please fill in required fields");
+        toast.error(t('calendar.toasts.requiredFields'));
         return;
     }
 
@@ -348,7 +383,7 @@ export function Calendar({ owner }: CalendarProps) {
     saveEventsToDisk(newEvents);
     setIsModalOpen(false);
     setEditingEvent({});
-    toast.success("Event saved");
+    toast.success(t('calendar.toasts.eventSaved'));
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -381,7 +416,7 @@ export function Calendar({ owner }: CalendarProps) {
     return (
       <div className="flex flex-col h-full bg-black/20 rounded-lg overflow-hidden border border-white/5">
         <div className="grid grid-cols-7 border-b border-white/10 bg-white/5">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          {weekdaysShort.map(day => (
             <div key={day} className="py-2 text-center text-xs font-medium text-white/50 uppercase tracking-widest">
               {day}
             </div>
@@ -473,7 +508,7 @@ export function Calendar({ owner }: CalendarProps) {
             className="text-sm font-semibold uppercase tracking-widest"
             style={{ color: isToday(currentDate) ? accentColor : 'rgba(255,255,255,0.5)' }}
           >
-            {format(currentDate, 'EEEE')}
+            {format(currentDate, 'EEEE', { locale: dateFnsLocale })}
           </span>
           <div 
             className="text-3xl font-light w-10 h-10 flex items-center justify-center rounded-full mt-1"
@@ -491,7 +526,7 @@ export function Calendar({ owner }: CalendarProps) {
             {hours.map(hour => (
               <div key={hour} className="absolute w-full flex group items-start" style={{ top: `${hour * 60}px`, height: '60px' }}>
                 <div className="w-16 text-right pr-4 text-xs text-white/50 font-medium -translate-y-1/2">
-                  {format(setHours(new Date(), hour), 'h a')}
+                  {format(setHours(new Date(), hour), 'h a', { locale: dateFnsLocale })}
                 </div>
                 <div 
                     className="flex-1 h-full border-t border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
@@ -544,7 +579,7 @@ export function Calendar({ owner }: CalendarProps) {
                     
                     {showTime && (
                         <div className="text-white/70 flex items-center gap-1 mb-1 truncate text-[10px]">
-                        {format(event.start, 'h:mm a')} - {format(addMinutes(event.start, event.durationMinutes), 'h:mm a')}
+                      {format(event.start, 'p', { locale: dateFnsLocale })} - {format(addMinutes(event.start, event.durationMinutes), 'p', { locale: dateFnsLocale })}
                         </div>
                     )}
                     
@@ -583,10 +618,10 @@ export function Calendar({ owner }: CalendarProps) {
             )}
             style={{ backgroundColor: accentColor }}
             onClick={() => handleCreateEvent()}
-            title="Create Event"
+            title={t('calendar.actions.createEvent')}
         >
             <Plus className="w-4 h-4" />
-            {!isSidebarCompact && "Create Event"}
+            {!isSidebarCompact && t('calendar.actions.createEvent')}
         </Button>
 
         {!isSidebarCompact && (
@@ -600,6 +635,7 @@ export function Calendar({ owner }: CalendarProps) {
                             setCurrentDate(date);
                         }
                     }}
+                  locale={dateFnsLocale}
                     showOutsideDays={false}
                     className="rounded-md p-1"
                     modifiersStyles={{
@@ -620,10 +656,10 @@ export function Calendar({ owner }: CalendarProps) {
       <div className={cn("space-y-6 overflow-y-auto pr-1 custom-scrollbar w-full", isSidebarCompact && "px-0 overflow-visible")}>
           <div className="space-y-3">
             {!isSidebarCompact && (
-                <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest px-2">My Calendars</h3>
+                <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest px-2">{t('calendar.sidebar.myCalendars')}</h3>
             )}
             <div className={cn("space-y-1", isSidebarCompact && "flex flex-col items-center gap-2 space-y-0")}>
-              {CATEGORIES.map(category => (
+              {categories.map(category => (
                 <div 
                     key={category.id} 
                     className={cn(
@@ -652,18 +688,18 @@ export function Calendar({ owner }: CalendarProps) {
           {!isSidebarCompact && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-2">
-                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest">Filter Colors</h3>
+                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest">{t('calendar.sidebar.filterColors')}</h3>
                     {selectedColor && (
                         <button 
                             onClick={() => setSelectedColor(null)}
                             className="text-[10px] text-white/50 hover:text-white transition-colors uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded hover:bg-white/10"
                         >
-                            Clear
+                            {t('calendar.actions.clear')}
                         </button>
                     )}
                 </div>
                 <div className="grid grid-cols-4 gap-3 px-2 relative z-10">
-                  {COLORS.map(color => (
+                  {colors.map(color => (
                     <button
                       key={color.value}
                       type="button"
@@ -705,7 +741,7 @@ export function Calendar({ owner }: CalendarProps) {
                   "font-bold text-white tracking-tight truncate min-w-0 transition-all text-nowrap",
                    isSmall ? "text-xl flex-1" : "text-3xl"
               )}>
-                {format(currentDate, 'MMMM yyyy')}
+                {format(currentDate, 'MMMM yyyy', { locale: dateFnsLocale })}
               </h2>
               <div className="flex items-center bg-black/40 rounded-lg p-0.5 border border-white/10 backdrop-blur-sm shrink-0">
                 <button 
@@ -721,7 +757,7 @@ export function Calendar({ owner }: CalendarProps) {
                       isSmall ? "px-2 py-1 text-xs" : "px-3 py-1 text-sm"
                   )}
                 >
-                  Today
+                  {t('calendar.toolbar.today')}
                 </button>
                 <button 
                   onClick={() => setCurrentDate(view === 'day' ? addDays(currentDate, 1) : addMonths(currentDate, 1))} 
@@ -744,7 +780,7 @@ export function Calendar({ owner }: CalendarProps) {
                   view === 'month' ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/5"
                 )}
               >
-                Month
+                {t('calendar.toolbar.month')}
               </button>
               <button
                 onClick={() => setView('day')}
@@ -754,7 +790,7 @@ export function Calendar({ owner }: CalendarProps) {
                   view === 'day' ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/5"
                 )}
               >
-                Day
+                {t('calendar.toolbar.day')}
               </button>
             </div>
           </div>
@@ -763,7 +799,7 @@ export function Calendar({ owner }: CalendarProps) {
           <div className="flex-1 min-h-0 min-w-0 bg-black/20 rounded-2xl border border-white/5 backdrop-blur-sm overflow-hidden relative">
             {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center text-white/40">
-                    <div className="animate-pulse">Loading events...</div>
+                <div className="animate-pulse">{t('calendar.loadingEvents')}</div>
                 </div>
             ) : (
                 view === 'month' ? renderMonthView() : renderDayView()
@@ -788,15 +824,15 @@ export function Calendar({ owner }: CalendarProps) {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[425px] bg-[#1E1E1E]/95 border-white/10 text-white backdrop-blur-2xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">{editingEvent.id ? 'Edit Event' : 'New Event'}</DialogTitle>
+            <DialogTitle className="text-xl font-bold">{editingEvent.id ? t('calendar.modal.editEvent') : t('calendar.modal.newEvent')}</DialogTitle>
             <DialogDescription className="text-white/50">
-                {editingEvent.id ? 'View or edit event details.' : 'Schedule a new event on your calendar.'}
+                {editingEvent.id ? t('calendar.modal.editEventDescription') : t('calendar.modal.newEventDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-5 py-4">
             {/* Title */}
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs font-medium ml-1">Title</Label>
+              <Label className="text-white/70 text-xs font-medium ml-1">{t('calendar.modal.fields.title')}</Label>
               <div className="relative group">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white/70 transition-colors">
                     <Type className="w-4 h-4" />
@@ -804,7 +840,7 @@ export function Calendar({ owner }: CalendarProps) {
                 <Input
                     value={editingEvent.title || ''}
                     onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
-                    placeholder="Event title"
+                    placeholder={t('calendar.modal.placeholders.eventTitle')}
                     className="pl-9 bg-white/5 border-white/10 text-white focus:ring-white/20 focus:border-white/20 transition-all placeholder:text-white/20 hover:bg-white/10"
                 />
               </div>
@@ -813,7 +849,7 @@ export function Calendar({ owner }: CalendarProps) {
             <div className="grid grid-cols-2 gap-4">
                 {/* Date Picker */}
                 <div className="space-y-1.5">
-                    <Label className="text-white/70 text-xs font-medium ml-1">Date</Label>
+                  <Label className="text-white/70 text-xs font-medium ml-1">{t('calendar.modal.fields.date')}</Label>
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
@@ -825,7 +861,7 @@ export function Calendar({ owner }: CalendarProps) {
                             >
                                 <CalendarIcon className="mr-2 h-4 w-4 text-white/40" />
                                 <span className="truncate">
-                                    {editingEvent.start ? format(editingEvent.start, "PPP") : "Pick a date"}
+                                  {editingEvent.start ? format(editingEvent.start, 'PPP', { locale: dateFnsLocale }) : t('calendar.modal.placeholders.pickDate')}
                                 </span>
                             </Button>
                         </PopoverTrigger>
@@ -846,6 +882,7 @@ export function Calendar({ owner }: CalendarProps) {
                                             setEditingEvent({ ...editingEvent, start: newDate });
                                         }
                                     }}
+                                    locale={dateFnsLocale}
                                     showOutsideDays={false}
                                     initialFocus
                                     modifiersStyles={{
@@ -867,7 +904,7 @@ export function Calendar({ owner }: CalendarProps) {
 
                 {/* Time Picker (Command Style) */}
                 <div className="space-y-1.5">
-                    <Label className="text-white/70 text-xs font-medium ml-1">Time</Label>
+                  <Label className="text-white/70 text-xs font-medium ml-1">{t('calendar.modal.fields.time')}</Label>
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
@@ -880,7 +917,7 @@ export function Calendar({ owner }: CalendarProps) {
                             >
                                 <div className="flex items-center truncate">
                                     <Clock className="mr-2 h-4 w-4 text-white/40" />
-                                    {editingEvent.start ? format(editingEvent.start, 'HH:mm') : "00:00"}
+                                    {editingEvent.start ? format(editingEvent.start, 'HH:mm') : '00:00'}
                                 </div>
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -898,7 +935,7 @@ export function Calendar({ owner }: CalendarProps) {
                         >
                             <Command className="bg-transparent text-white">
                                 <CommandInput 
-                                    placeholder="Search time..." 
+                                  placeholder={t('calendar.modal.placeholders.searchTime')} 
                                     className="h-8 text-[11px] border-b border-white/10"
                                     style={{
                                         color: 'white',
@@ -906,7 +943,7 @@ export function Calendar({ owner }: CalendarProps) {
                                     }}
                                 />
                                 <CommandList className="max-h-[200px]">
-                                    <CommandEmpty className="text-[11px] py-2 text-white/40">No time found.</CommandEmpty>
+                                  <CommandEmpty className="text-[11px] py-2 text-white/40">{t('calendar.modal.placeholders.noTimeFound')}</CommandEmpty>
                                     <CommandGroup>
                                         {TIME_SLOTS.map((time) => (
                                             <CommandItem
@@ -958,7 +995,7 @@ export function Calendar({ owner }: CalendarProps) {
             <div className="grid grid-cols-2 gap-4">
               {/* Duration Select (Command Style) */}
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs font-medium ml-1">Duration</Label>
+                <Label className="text-white/70 text-xs font-medium ml-1">{t('calendar.modal.fields.duration')}</Label>
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button
@@ -968,7 +1005,9 @@ export function Calendar({ owner }: CalendarProps) {
                         >
                             <div className="flex items-center truncate">
                                 <Timer className="mr-2 h-4 w-4 text-white/40" />
-                                {editingEvent.durationMinutes ? `${editingEvent.durationMinutes} min` : "Select duration"}
+                                {editingEvent.durationMinutes
+                                  ? t('calendar.modal.durationMinutes', { minutes: editingEvent.durationMinutes })
+                                  : t('calendar.modal.placeholders.selectDuration')}
                             </div>
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -984,7 +1023,7 @@ export function Calendar({ owner }: CalendarProps) {
                     >
                         <Command className="bg-transparent text-white">
                             <CommandInput 
-                                placeholder="Search duration..." 
+                              placeholder={t('calendar.modal.placeholders.searchDuration')} 
                                 className="h-8 text-[11px] border-b border-white/10"
                                 style={{
                                     color: 'white',
@@ -992,12 +1031,12 @@ export function Calendar({ owner }: CalendarProps) {
                                 }}
                             />
                             <CommandList>
-                                <CommandEmpty className="text-[11px] py-2 text-white/40">No duration found.</CommandEmpty>
+                              <CommandEmpty className="text-[11px] py-2 text-white/40">{t('calendar.modal.placeholders.noDurationFound')}</CommandEmpty>
                                 <CommandGroup>
                                     {[15, 30, 45, 60, 90, 120, 180, 240].map((mins) => (
                                         <CommandItem
                                             key={mins}
-                                            value={`${mins} minutes`}
+                                    value={t('calendar.modal.minutesOption', { minutes: mins })}
                                             onSelect={() => {
                                                 setEditingEvent({ ...editingEvent, durationMinutes: mins });
                                             }}
@@ -1026,7 +1065,7 @@ export function Calendar({ owner }: CalendarProps) {
                                                 )}
                                                 style={{ color: accentColor }}
                                             />
-                                            {mins} minutes
+                                            {t('calendar.modal.minutesOption', { minutes: mins })}
                                         </CommandItem>
                                     ))}
                                 </CommandGroup>
@@ -1038,7 +1077,7 @@ export function Calendar({ owner }: CalendarProps) {
 
                {/* Type Select (Command Style) */}
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs font-medium ml-1">Type</Label>
+                <Label className="text-white/70 text-xs font-medium ml-1">{t('calendar.modal.fields.type')}</Label>
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button
@@ -1048,8 +1087,8 @@ export function Calendar({ owner }: CalendarProps) {
                         >
                             <div className="flex items-center truncate">
                                 {editingEvent.type 
-                                    ? EVENT_TYPES.find((type) => type.value === editingEvent.type)?.label 
-                                    : "Select type"}
+                                ? eventTypes.find((type) => type.value === editingEvent.type)?.labelText
+                                : t('calendar.modal.placeholders.selectType')}
                             </div>
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -1065,7 +1104,7 @@ export function Calendar({ owner }: CalendarProps) {
                     >
                         <Command className="bg-transparent text-white">
                             <CommandInput 
-                                placeholder="Search type..." 
+                              placeholder={t('calendar.modal.placeholders.searchType')} 
                                 className="h-8 text-[11px] border-b border-white/10"
                                 style={{
                                     color: 'white',
@@ -1073,12 +1112,12 @@ export function Calendar({ owner }: CalendarProps) {
                                 }}
                             />
                             <CommandList>
-                                <CommandEmpty className="text-[11px] py-2 text-white/40">No type found.</CommandEmpty>
+                              <CommandEmpty className="text-[11px] py-2 text-white/40">{t('calendar.modal.placeholders.noTypeFound')}</CommandEmpty>
                                 <CommandGroup>
-                                    {EVENT_TYPES.map((type) => (
+                                {eventTypes.map((type) => (
                                         <CommandItem
                                             key={type.value}
-                                            value={type.label}
+                                    value={type.labelText}
                                             onSelect={() => {
                                                 setEditingEvent({ ...editingEvent, type: type.value });
                                             }}
@@ -1107,7 +1146,7 @@ export function Calendar({ owner }: CalendarProps) {
                                                 )}
                                                 style={{ color: accentColor }}
                                             />
-                                            {type.label}
+                                            {type.labelText}
                                         </CommandItem>
                                     ))}
                                 </CommandGroup>
@@ -1120,7 +1159,7 @@ export function Calendar({ owner }: CalendarProps) {
 
             {/* Location */}
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs font-medium ml-1">Location</Label>
+              <Label className="text-white/70 text-xs font-medium ml-1">{t('calendar.modal.fields.location')}</Label>
               <div className="relative group">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white/70 transition-colors">
                     <MapPin className="w-4 h-4" />
@@ -1128,7 +1167,7 @@ export function Calendar({ owner }: CalendarProps) {
                 <Input
                     value={editingEvent.location || ''}
                     onChange={(e) => setEditingEvent({ ...editingEvent, location: e.target.value })}
-                    placeholder="Add location"
+                    placeholder={t('calendar.modal.placeholders.addLocation')}
                     className="pl-9 bg-white/5 border-white/10 text-white focus:ring-white/20 hover:bg-white/10"
                 />
               </div>
@@ -1136,9 +1175,9 @@ export function Calendar({ owner }: CalendarProps) {
 
             {/* Color */}
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs font-medium ml-1">Color</Label>
+              <Label className="text-white/70 text-xs font-medium ml-1">{t('calendar.modal.fields.color')}</Label>
               <div className="flex gap-3 pt-1">
-                {COLORS.map(color => (
+                {colors.map(color => (
                   <button
                     key={color.value}
                     type="button"
@@ -1156,7 +1195,7 @@ export function Calendar({ owner }: CalendarProps) {
 
             {/* Notes */}
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs font-medium ml-1">Notes</Label>
+              <Label className="text-white/70 text-xs font-medium ml-1">{t('calendar.modal.fields.notes')}</Label>
               <div className="relative group">
                   <div className="absolute left-3 top-3 text-white/40 group-focus-within:text-white/70 transition-colors">
                       <AlignLeft className="w-4 h-4" />
@@ -1164,7 +1203,7 @@ export function Calendar({ owner }: CalendarProps) {
                   <Textarea
                     value={editingEvent.notes || ''}
                     onChange={(e) => setEditingEvent({ ...editingEvent, notes: e.target.value })}
-                    placeholder="Add notes..."
+                    placeholder={t('calendar.modal.placeholders.addNotes')}
                     className="pl-9 bg-white/5 border-white/10 text-white min-h-[80px] focus:ring-white/20 hover:bg-white/10 resize-none"
                   />
               </div>
@@ -1177,18 +1216,18 @@ export function Calendar({ owner }: CalendarProps) {
                     onClick={handleDeleteEvent}
                     className="text-red-400 hover:text-red-300 hover:bg-red-500/10 mr-auto transition-colors"
                 >
-                    Delete
+                {t('calendar.actions.delete')}
                 </Button>
             )}
             <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="hover:bg-white/10 text-white/70 hover:text-white">
-                Cancel
+              {t('calendar.actions.cancel')}
             </Button>
             <Button 
                 onClick={handleSaveEvent} 
                 className="text-white hover:brightness-110 border-0 transition-all"
                 style={{ backgroundColor: accentColor }}
             >
-                Save Event
+              {t('calendar.actions.saveEvent')}
             </Button>
           </DialogFooter>
         </DialogContent>

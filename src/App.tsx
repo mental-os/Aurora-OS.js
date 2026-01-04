@@ -10,6 +10,16 @@ import { MusicProvider } from './components/MusicContext';
 const OS = lazy(() => import('./components/OS'));
 
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useI18n } from './i18n';
+
+function KernelLoadingFallback() {
+  const { t } = useI18n();
+  return (
+    <div className="fixed inset-0 bg-black text-white flex items-center justify-center font-mono">
+      {t('app.loadingKernel')}
+    </div>
+  );
+}
 
 function AppContent() {
   const { currentUser } = useFileSystem();
@@ -26,7 +36,7 @@ function AppContent() {
       {/* Suspense ensures we can load the chunk while showing BootSequence or nothing */}
       {currentUser && (
         <ErrorBoundary>
-          <Suspense fallback={<div className="fixed inset-0 bg-black text-white flex items-center justify-center font-mono">LOADING KERNEL...</div>}>
+          <Suspense fallback={<KernelLoadingFallback />}>
             <OS />
           </Suspense>
         </ErrorBoundary>

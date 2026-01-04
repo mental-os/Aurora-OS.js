@@ -7,10 +7,13 @@ import { feedback } from '../services/soundFeedback';
 import { hasSavedSession, clearSession, softReset } from '../utils/memory';
 
 import { useAppContext } from './AppContext';
+import { useI18n } from '../i18n';
+import { SUPPORTED_LOCALES } from '../i18n/translations';
 
 export function LoginScreen() {
     const { users, login, currentUser, logout, resetFileSystem } = useFileSystem();
-    const { exposeRoot, accentColor, isLocked, setIsLocked } = useAppContext();
+    const { exposeRoot, accentColor, isLocked, setIsLocked, locale, setLocale, onboardingComplete, setOnboardingComplete } = useAppContext();
+    const { t } = useI18n();
 
     // If locked, default to current user
     const lockedUser = isLocked ? users.find(u => u.username === currentUser) : null;
@@ -112,6 +115,8 @@ export function LoginScreen() {
         }
     };
 
+    const showLanguageOnboarding = !onboardingComplete;
+
     return (
         <GameScreenLayout
             zIndex={50000}
@@ -124,28 +129,78 @@ export function LoginScreen() {
                         }}
                         className="hover:text-white/40 transition-colors"
                     >
-                        Soft Reset
+                        {t('login.softReset')}
                     </button>
                     <span>•</span>
                     <button
                         onClick={() => {
-                            if (window.confirm('Hard Reset: This will wipe all data. Continue?')) {
+                            if (window.confirm(t('login.hardResetConfirm'))) {
                                 resetFileSystem();
                                 window.location.reload();
                             }
                         }}
                         className="hover:text-red-400/60 transition-colors"
                     >
-                        Hard Reset
+                        {t('login.hardReset')}
                     </button>
                 </>
             }
         >
             {/* User Selection / Login Container */}
             <div className="w-full max-w-md flex flex-col items-center">
-                {!selectedUser ? (
+                {showLanguageOnboarding ? (
                     <div className="w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h2 className="text-white/80 text-center mb-4 text-lg font-medium">Select User</h2>
+                        <h2 className="text-white/90 text-center mb-1 text-lg font-medium">{t('onboarding.title')}</h2>
+                        <p className="text-white/50 text-center text-sm mb-2">{t('onboarding.subtitle')}</p>
+
+                        <div className="grid grid-cols-1 gap-3 px-2">
+                            {SUPPORTED_LOCALES.map((opt) => {
+                                const active = locale === opt.locale;
+                                return (
+                                    <button
+                                        key={opt.locale}
+                                        onClick={() => {
+                                            feedback.click();
+                                            setLocale(opt.locale);
+                                        }}
+                                        className={cn(
+                                            "flex items-center justify-between gap-4 p-4 rounded-xl transition-all duration-200",
+                                            "bg-white/10 hover:bg-white/20 border border-white/10 hover:border-white/30 backdrop-blur-md",
+                                            active && "border-white/50"
+                                        )}
+                                        style={active ? { borderColor: accentColor } : undefined}
+                                    >
+                                        <span className="text-white font-medium">{opt.label}</span>
+                                        {active ? (
+                                            <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border"
+                                                style={{ borderColor: accentColor, color: accentColor, backgroundColor: `${accentColor}1A` }}
+                                            >
+                                                {t('onboarding.ok')}
+                                            </span>
+                                        ) : null}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                feedback.click();
+                                setOnboardingComplete(true);
+                            }}
+                            className={cn(
+                                "w-full py-3 px-6 rounded-xl font-medium text-white shadow-lg transition-all mt-2",
+                                "active:scale-95 disabled:opacity-50 disabled:active:scale-100",
+                                "flex items-center justify-center gap-2"
+                            )}
+                            style={{ backgroundColor: accentColor, filter: 'brightness(1.1)' }}
+                        >
+                            {t('onboarding.continue')} <ArrowRight className="w-4 h-4 ml-1" />
+                        </button>
+                    </div>
+                ) : !selectedUser ? (
+                    <div className="w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <h2 className="text-white/80 text-center mb-4 text-lg font-medium">{t('login.selectUser')}</h2>
                         <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto px-2">
                             {users.filter(u => exposeRoot || u.username !== 'root').map((user) => (
                                 <button
@@ -160,7 +215,7 @@ export function LoginScreen() {
                                     <div className="w-12 h-12 rounded-full bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform relative">
                                         <span className="text-xl font-bold text-white uppercase">{user.fullName.charAt(0)}</span>
                                         {(currentUser === user.username || hasSavedSession(user.username)) && (
-                                            <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full p-1 shadow-lg border-2 border-slate-800" title="Session Active">
+                                            <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full p-1 shadow-lg border-2 border-slate-800" title={t('login.sessionActive')}>
                                                 <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                                             </div>
                                         )}
@@ -172,9 +227,9 @@ export function LoginScreen() {
                                         <div className="text-white/50 text-sm font-mono flex items-center gap-2">
                                             @{user.username}
                                             {currentUser === user.username ? (
-                                                <span className="text-amber-400 text-[10px] uppercase tracking-wider font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Active</span>
+                                                <span className="text-amber-400 text-[10px] uppercase tracking-wider font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">{t('login.active')}</span>
                                             ) : hasSavedSession(user.username) ? (
-                                                <span className="text-blue-400 text-[10px] uppercase tracking-wider font-bold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">Resume</span>
+                                                <span className="text-blue-400 text-[10px] uppercase tracking-wider font-bold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">{t('login.resume')}</span>
                                             ) : null}
                                         </div>
                                     </div>
@@ -196,10 +251,10 @@ export function LoginScreen() {
 
                         <h2 className="text-2xl font-semibold text-white mb-2">{selectedUser.fullName}</h2>
                         <p className="text-white/50 mb-6 flex flex-col items-center gap-1">
-                            <span>Enter password to unlock</span>
+                            <span>{t('login.enterPasswordToUnlock')}</span>
                             {hasSavedSession(selectedUser.username) && (
                                 <span className="text-xs text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
-                                    Restoring Previous Session
+                                    {t('login.restoringPreviousSession')}
                                 </span>
                             )}
                         </p>
@@ -214,7 +269,7 @@ export function LoginScreen() {
                                     setError(false);
                                 }}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Password"
+                                placeholder={t('login.passwordPlaceholder')}
                                 className={cn(
                                     "w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-center outline-none focus:border-white/30 transition-all",
                                     error && "border-red-500/50 bg-red-500/10 animate-shake"
@@ -223,7 +278,7 @@ export function LoginScreen() {
                             />
                             {error && (
                                 <p className="absolute -bottom-6 left-0 right-0 text-center text-red-300 text-xs animate-in fade-in slide-in-from-top-1">
-                                    Incorrect password. Hint: {selectedUser.passwordHint || (selectedUser.username === 'root' ? 'admin' : selectedUser.username === 'user' ? '1234' : 'guest')}
+                                    {t('login.incorrectPasswordHintPrefix')} {selectedUser.passwordHint || (selectedUser.username === 'root' ? 'admin' : selectedUser.username === 'user' ? '1234' : 'guest')}
                                 </p>
                             )}
                         </div>
@@ -232,7 +287,7 @@ export function LoginScreen() {
                             <div className="w-full flex gap-3 mt-4">
                                 <button
                                     onClick={() => {
-                                        if (window.confirm(`Log out ${selectedUser.username}? This will close all open windows and discard unsaved changes.`)) {
+                                        if (window.confirm(t('login.logOutConfirm', { username: selectedUser.username }))) {
                                             clearSession(selectedUser.username);
                                             setSelectedUser(null);
                                         }
@@ -240,7 +295,7 @@ export function LoginScreen() {
                                     className="flex-1 py-3 px-2 rounded-xl font-medium text-sm transition-all border-2 flex items-center justify-center hover:bg-white/10 active:scale-95"
                                     style={{ borderColor: accentColor, color: accentColor }}
                                 >
-                                    Log Out
+                                    {t('login.logOut')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -260,7 +315,7 @@ export function LoginScreen() {
                                     {isLoggingIn ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
-                                        <>Enter System <ArrowRight className="w-4 h-4 ml-1" /></>
+                                        <>{t('login.enterSystem')} <ArrowRight className="w-4 h-4 ml-1" /></>
                                     )}
                                 </button>
                             </div>
@@ -281,7 +336,7 @@ export function LoginScreen() {
                                 {isLoggingIn ? (
                                     <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
-                                    <>Enter System <ArrowRight className="w-4 h-4 ml-1" /></>
+                                    <>{t('login.enterSystem')} <ArrowRight className="w-4 h-4 ml-1" /></>
                                 )}
                             </button>
                         )}
@@ -298,23 +353,23 @@ export function LoginScreen() {
                                     }}
                                     className="mt-6 text-white/40 hover:text-white/70 text-sm transition-colors"
                                 >
-                                    {isLocked ? 'Switch Account' : 'Back'}
+                                    {isLocked ? t('login.switchAccount') : t('login.back')}
                                 </button>
                             ) : (
                                 <div className="mt-6 flex items-center gap-4 animate-in fade-in zoom-in-95 duration-200">
-                                    <span className="text-white/60 text-sm">Suspend session to switch?</span>
+                                    <span className="text-white/60 text-sm">{t('login.suspendToSwitch')}</span>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => setShowSwitchConfirm(false)}
                                             className="px-3 py-1 text-xs rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
                                         >
-                                            Cancel
+                                            {t('login.cancel')}
                                         </button>
                                         <button
                                             onClick={handleBack}
                                             className="px-3 py-1 text-xs rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors border border-amber-500/20"
                                         >
-                                            Switch User
+                                            {t('login.switchUser')}
                                         </button>
                                     </div>
                                 </div>
