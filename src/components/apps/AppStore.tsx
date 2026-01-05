@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { AppTemplate } from './AppTemplate';
 import { useFileSystem } from '../FileSystemContext';
 import { getAllApps, getAppsByCategory, type AppMetadata } from '../../config/appRegistry';
@@ -21,6 +21,8 @@ export function AppStore({ owner }: AppStoreProps) {
     const { t } = useI18n();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<'all' | AppMetadata['category']>('all');
+    const [installingApps, setInstallingApps] = useState<Record<string, number>>({});
+    const intervalsRef = useRef<Record<string, NodeJS.Timeout>>({});
 
     const categories: Array<{ id: 'all' | AppMetadata['category']; label: string }> = [
         { id: 'all', label: t('appStore.categories.all') },
@@ -30,6 +32,14 @@ export function AppStore({ owner }: AppStoreProps) {
         { id: 'development', label: t('appStore.categories.development') },
         { id: 'system', label: t('appStore.categories.system') },
     ];
+
+    // Cleanup intervals on unmount
+    useEffect(() => {
+        const intervals = intervalsRef.current;
+        return () => {
+            Object.values(intervals).forEach(clearInterval);
+        };
+    }, []);
 
     // Filter apps based on search and category
     const filteredApps = useMemo(() => {
@@ -49,7 +59,33 @@ export function AppStore({ owner }: AppStoreProps) {
     }, [searchQuery, selectedCategory, t]);
 
     const handleInstall = (appId: string) => {
-        installApp(appId, owner);
+        // If already installing, ignore
+        if (installingApps[appId] !== undefined) return;
+
+        setInstallingApps(prev => ({ ...prev, [appId]: 0 }));
+
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 2; 
+            
+            if (progress > 100) {
+                clearInterval(interval);
+                delete intervalsRef.current[appId];
+                
+                installApp(appId, owner);
+                
+                // Remove progress bar
+                setInstallingApps(prev => {
+                    const next = { ...prev };
+                    delete next[appId];
+                    return next;
+                });
+            } else {
+                setInstallingApps(prev => ({ ...prev, [appId]: progress }));
+            }
+        }, 20); // 20ms update rate for smooth animation
+
+        intervalsRef.current[appId] = interval;
     };
 
     const handleUninstall = (appId: string) => {
@@ -109,6 +145,8 @@ export function AppStore({ owner }: AppStoreProps) {
                                 const isInstalled = installedApps.has(app.id);
                                 const displayName = app.nameKey ? t(app.nameKey) : app.name;
                                 const displayDescription = app.descriptionKey ? t(app.descriptionKey) : app.description;
+                                const progress = installingApps[app.id];
+                                const isInstalling = progress !== undefined;
 
                                 return (
                                     <div
@@ -127,12 +165,27 @@ export function AppStore({ owner }: AppStoreProps) {
                                         {/* Description */}
                                         <p className="text-white/70 text-sm mb-4 line-clamp-2">{displayDescription}</p>
 
-                                        {/* Install/Uninstall Button */}
-                                        <div className="flex items-center gap-2">
+                                        {/* Install/Uninstall/Progress Button */}
+                                        <div className="flex items-center gap-2 h-9">
                                             {app.isCore ? (
                                                 <div className="flex items-center gap-2 text-white/40 text-sm">
                                                     <Check className="w-4 h-4" />
                                                     <span>{t('appStore.systemApp')}</span>
+                                                </div>
+                                            ) : isInstalling ? (
+                                                // Progress Bar UI
+                                                <div className="flex-1 h-9 bg-white/5 rounded-md overflow-hidden relative border border-white/10">
+                                                    <div 
+                                                        className="h-full transition-all duration-75 ease-linear"
+                                                        style={{ 
+                                                            width: `${progress}%`, 
+                                                            backgroundColor: accentColor,
+                                                            opacity: 0.9
+                                                        }}
+                                                    />
+                                                    <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
+                                                        {progress}%
+                                                    </div>
                                                 </div>
                                             ) : isInstalled ? (
                                                 <Button
@@ -148,7 +201,7 @@ export function AppStore({ owner }: AppStoreProps) {
                                                 <Button
                                                     onClick={() => handleInstall(app.id)}
                                                     size="sm"
-                                                    className="flex items-center gap-2 text-white"
+                                                    className="flex items-center gap-2 text-white shadow-sm"
                                                     style={{ backgroundColor: accentColor }}
                                                 >
                                                     <Download className="w-4 h-4" />
@@ -156,8 +209,8 @@ export function AppStore({ owner }: AppStoreProps) {
                                                 </Button>
                                             )}
 
-                                            {isInstalled && !app.isCore && (
-                                                <div className="flex items-center gap-1 text-green-400 text-xs">
+                                            {isInstalled && !app.isCore && !isInstalling && (
+                                                <div className="flex items-center gap-1 text-green-400 text-xs ml-auto">
                                                     <Check className="w-3 h-3" />
                                                     {t('appStore.installed')}
                                                 </div>
