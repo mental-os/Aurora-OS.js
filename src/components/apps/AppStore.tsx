@@ -20,7 +20,11 @@ export function AppStore({ owner }: AppStoreProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<'all' | AppMetadata['category']>('all');
     const [installingApps, setInstallingApps] = useState<Record<string, number>>({});
-    const intervalsRef = useRef<Record<string, NodeJS.Timeout>>({});
+    
+    // We use a ref to track active timeouts so we can clear them on unmount
+    const timeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
+    // We also need to track current progress in a ref to avoid stale closures in the recursive timeout
+    const progressRef = useRef<Record<string, number>>({});
 
     const categories: Array<{ id: 'all' | AppMetadata['category']; label: string }> = [
         { id: 'all', label: 'All' },
@@ -31,11 +35,11 @@ export function AppStore({ owner }: AppStoreProps) {
         { id: 'system', label: 'System' },
     ];
 
-    // Cleanup intervals on unmount
+    // Cleanup timeouts on unmount
     useEffect(() => {
-        const intervals = intervalsRef.current;
+        const timeouts = timeoutsRef.current;
         return () => {
-            Object.values(intervals).forEach(clearInterval);
+             Object.values(timeouts).forEach(clearTimeout);
         };
     }, []);
 
@@ -56,34 +60,65 @@ export function AppStore({ owner }: AppStoreProps) {
         return apps;
     }, [searchQuery, selectedCategory]);
 
-    const handleInstall = (appId: string) => {
+    const handleInstall = (appId: string, appSize: number = 50) => {
         // If already installing, ignore
         if (installingApps[appId] !== undefined) return;
 
+        // Initialize state
         setInstallingApps(prev => ({ ...prev, [appId]: 0 }));
+        progressRef.current[appId] = 0;
 
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += 2; 
-            
-            if (progress > 100) {
-                clearInterval(interval);
-                delete intervalsRef.current[appId];
-                
-                installApp(appId, owner);
-                
-                // Remove progress bar
-                setInstallingApps(prev => {
-                    const next = { ...prev };
-                    delete next[appId];
-                    return next;
-                });
-            } else {
-                setInstallingApps(prev => ({ ...prev, [appId]: progress }));
+        // Base speed factor: Larger apps = slower
+        // 50MB is "standard". 350MB is ~7x slower.
+        // We want a base update speed.
+        // Let's say we target ~2-3 seconds for a standard app.
+        const speedFactor = Math.max(1, Math.min(10, appSize / 20));
+
+        const loop = () => {
+            const currentProgress = progressRef.current[appId];
+
+            if (currentProgress >= 100) {
+                 // Final pause before actual install
+                 timeoutsRef.current[appId] = setTimeout(() => {
+                    installApp(appId, owner);
+                    
+                    // Cleanup
+                    delete timeoutsRef.current[appId];
+                    delete progressRef.current[appId];
+                    
+                    setInstallingApps(prev => {
+                        const next = { ...prev };
+                        delete next[appId];
+                        return next;
+                    });
+                 }, 500);
+                 return;
             }
-        }, 20); // 20ms update rate for smooth animation
 
-        intervalsRef.current[appId] = interval;
+            // Variable increment: 1% to 4%
+            const increment = Math.random() * 3 + 1;
+            const newProgress = Math.min(100, currentProgress + increment);
+            
+            progressRef.current[appId] = newProgress;
+            setInstallingApps(prev => ({ ...prev, [appId]: Math.floor(newProgress) }));
+
+            // Variable delay logic
+            // Base delay ~30ms * speedFactor
+            // Random Jitter 0.5 - 1.5
+            const jitter = Math.random() + 0.5;
+            let delay = 30 * speedFactor * jitter;
+
+            // "Stall" simulation
+            // At 85-95%, occasional long pause
+            if (newProgress > 85 && newProgress < 95 && Math.random() > 0.8) {
+                delay += 800; 
+            }
+
+            timeoutsRef.current[appId] = setTimeout(loop, delay);
+        };
+
+        // Start
+        timeoutsRef.current[appId] = setTimeout(loop, 100);
     };
 
     const handleUninstall = (appId: string) => {
@@ -159,7 +194,12 @@ export function AppStore({ owner }: AppStoreProps) {
                                         </div>
 
                                         {/* Description */}
-                                        <p className="text-white/70 text-sm mb-4 line-clamp-2">{app.description}</p>
+                                        <p className="text-white/70 text-sm line-clamp-2">{app.description}</p>
+                                        
+                                        {/* Metadata (Size) */}
+                                        <p className="text-white/30 text-[10px] uppercase tracking-wider font-mono mb-4">
+                                            Size: {app.size ? `${app.size} MB` : 'Unknown'}
+                                        </p>
 
                                         {/* Install/Uninstall/Progress Button */}
                                         <div className="flex items-center gap-2 h-9">
@@ -172,7 +212,7 @@ export function AppStore({ owner }: AppStoreProps) {
                                                 // Progress Bar UI
                                                 <div className="flex-1 h-9 bg-white/5 rounded-md overflow-hidden relative border border-white/10">
                                                     <div 
-                                                        className="h-full transition-all duration-75 ease-linear"
+                                                        className="h-full transition-all duration-200 ease-out"
                                                         style={{ 
                                                             width: `${progress}%`, 
                                                             backgroundColor: accentColor,
@@ -195,7 +235,7 @@ export function AppStore({ owner }: AppStoreProps) {
                                                 </Button>
                                             ) : (
                                                 <Button
-                                                    onClick={() => handleInstall(app.id)}
+                                                    onClick={() => handleInstall(app.id, app.size)}
                                                     size="sm"
                                                     className="flex items-center gap-2 text-white shadow-sm"
                                                     style={{ backgroundColor: accentColor }}
