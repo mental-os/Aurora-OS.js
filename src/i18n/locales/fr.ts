@@ -607,6 +607,35 @@ export const fr: TranslationDict = {
       replyAll: 'Répondre à tous',
       forward: 'Transférer',
     },
+    sidebar: {
+      mailboxes: 'Boîtes aux lettres',
+      inbox: 'Boîte de réception',
+      starred: 'Suivis',
+      archived: 'Archivés',
+      trash: 'Corbeille',
+    },
+    search: {
+      placeholder: 'Rechercher des courriels...',
+    },
+    empty: {
+      noEmails: 'Aucun courriel',
+      noEmailsFound: 'Aucun courriel trouvé',
+      selectEmail: 'Sélectionnez un courriel à lire',
+    },
+    actions: {
+      reply: 'Répondre',
+      forward: 'Transférer',
+      archive: 'Archiver',
+      unarchive: 'Désarchiver',
+      delete: 'Supprimer',
+    },
+    time: {
+      minutesAgo: 'il y a {{minutes}} min',
+      hoursAgo: 'il y a {{hours}} h',
+      today: "Aujourd'hui",
+      yesterday: 'Hier',
+      daysAgo: 'il y a {{days}} j',
+    },
   },
   notepad: {
     untitled: 'Sans titre',

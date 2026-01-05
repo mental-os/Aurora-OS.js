@@ -558,6 +558,35 @@ export const en: TranslationDict = {
       replyAll: 'Reply All',
       forward: 'Forward',
     },
+    sidebar: {
+      mailboxes: 'Mailboxes',
+      inbox: 'Inbox',
+      starred: 'Starred',
+      archived: 'Archived',
+      trash: 'Trash',
+    },
+    search: {
+      placeholder: 'Search emails...',
+    },
+    empty: {
+      noEmails: 'No emails',
+      noEmailsFound: 'No emails found',
+      selectEmail: 'Select an email to read',
+    },
+    actions: {
+      reply: 'Reply',
+      forward: 'Forward',
+      archive: 'Archive',
+      unarchive: 'Unarchive',
+      delete: 'Delete',
+    },
+    time: {
+      minutesAgo: '{{minutes}}m ago',
+      hoursAgo: '{{hours}}h ago',
+      today: 'Today',
+      yesterday: 'Yesterday',
+      daysAgo: '{{days}}d ago',
+    },
   },
   notepad: {
     untitled: 'Untitled',

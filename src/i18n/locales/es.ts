@@ -605,6 +605,35 @@ export const es: TranslationDict = {
       replyAll: 'Responder a todos',
       forward: 'Reenviar',
     },
+    sidebar: {
+      mailboxes: 'Buzones',
+      inbox: 'Bandeja de entrada',
+      starred: 'Destacados',
+      archived: 'Archivados',
+      trash: 'Papelera',
+    },
+    search: {
+      placeholder: 'Buscar correos...',
+    },
+    empty: {
+      noEmails: 'No hay correos',
+      noEmailsFound: 'No se encontraron correos',
+      selectEmail: 'Selecciona un correo para leer',
+    },
+    actions: {
+      reply: 'Responder',
+      forward: 'Reenviar',
+      archive: 'Archivar',
+      unarchive: 'Desarchivar',
+      delete: 'Eliminar',
+    },
+    time: {
+      minutesAgo: 'hace {{minutes}} min',
+      hoursAgo: 'hace {{hours}} h',
+      today: 'Hoy',
+      yesterday: 'Ayer',
+      daysAgo: 'hace {{days}} d',
+    },
   },
   notepad: {
     untitled: 'Sin título',

@@ -2,20 +2,21 @@ import { AppTemplate } from './AppTemplate';
 import { Inbox, Trash2, Archive, Star, Search, Reply, Forward } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useAppContext } from '../AppContext';
-import { useSessionStorage } from '../../hooks/useSessionStorage';
-import { useElementSize } from '../../hooks/useElementSize';
+import { useSessionStorage } from '@/hooks/useSessionStorage.ts';
+import { useElementSize } from '@/hooks/useElementSize.ts';
 import { cn } from '../ui/utils';
 import { GlassInput } from '../ui/GlassInput';
 import { GlassButton } from '../ui/GlassButton';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useI18n } from '@/i18n';
 
 export interface Email {
   id: string;
   from: string;
   fromEmail: string;
   subject: string;
-  body: string; // Markdown content
+  body: string;
   timestamp: Date;
   read: boolean;
   starred: boolean;
@@ -23,19 +24,6 @@ export interface Email {
   deleted: boolean;
 }
 
-const mailSidebar = {
-  sections: [
-    {
-      title: 'Mailboxes',
-      items: [
-        { id: 'inbox', label: 'Inbox', icon: Inbox, badge: '4' },
-        { id: 'starred', label: 'Starred', icon: Star },
-        { id: 'archived', label: 'Archived', icon: Archive },
-        { id: 'trash', label: 'Trash', icon: Trash2 },
-      ],
-    },
-  ],
-};
 
 const mockEmails: Email[] = [
   {
@@ -152,11 +140,26 @@ Happy reading! 📚`,
 ];
 
 export function Mail({ owner }: { owner?: string }) {
+  const { t } = useI18n();
   const [activeMailbox, setActiveMailbox] = useSessionStorage('mail-active-mailbox', 'inbox', owner);
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(mockEmails[0].id);
   const [searchQuery, setSearchQuery] = useState('');
   const [emails, setEmails] = useState<Email[]>(mockEmails);
   const { accentColor } = useAppContext();
+
+  const mailSidebar = {
+    sections: [
+      {
+        title: t('mail.sidebar.mailboxes'),
+        items: [
+          { id: 'inbox', label: t('mail.sidebar.inbox'), icon: Inbox, badge: '4' },
+          { id: 'starred', label: t('mail.sidebar.starred'), icon: Star },
+          { id: 'archived', label: t('mail.sidebar.archived'), icon: Archive },
+          { id: 'trash', label: t('mail.sidebar.trash'), icon: Trash2 },
+        ],
+      },
+    ],
+  };
 
   // Filter emails based on active mailbox
   const filteredEmails = useMemo(() => {
@@ -237,11 +240,11 @@ export function Mail({ owner }: { owner?: string }) {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 60) return t('mail.time.minutesAgo', { minutes: diffMins });
+    if (diffHours < 24) return t('mail.time.hoursAgo', { hours: diffHours });
+    if (diffDays === 0) return t('mail.time.today');
+    if (diffDays === 1) return t('mail.time.yesterday');
+    if (diffDays < 7) return t('mail.time.daysAgo', { days: diffDays });
     return date.toLocaleDateString();
   };
 
@@ -264,7 +267,7 @@ export function Mail({ owner }: { owner?: string }) {
           <div className={cn("p-2", isCompact && "flex justify-center")}>
             {!isCompact ? (
               <GlassInput
-                placeholder="Search emails..."
+                placeholder={t('mail.search.placeholder')}
                 icon={<Search className="w-4 h-4" />}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -281,7 +284,7 @@ export function Mail({ owner }: { owner?: string }) {
           <div className="space-y-1 px-1 flex-1">
             {filteredEmails.length === 0 ? (
               <div className="text-center text-white/40 text-sm py-8">
-                {searchQuery ? 'No emails found' : 'No emails'}
+                {searchQuery ? t('mail.empty.noEmailsFound') : t('mail.empty.noEmails')}
               </div>
             ) : (
               filteredEmails.map(email => (
@@ -382,19 +385,19 @@ export function Mail({ owner }: { owner?: string }) {
                 <div className="flex gap-2 flex-wrap">
                   <GlassButton size="sm" className="gap-2">
                     <Reply className="w-4 h-4" />
-                    Reply
+                    {t('mail.actions.reply')}
                   </GlassButton>
                   <GlassButton size="sm" className="gap-2">
                     <Forward className="w-4 h-4" />
-                    Forward
+                    {t('mail.actions.forward')}
                   </GlassButton>
                   <GlassButton size="sm" onClick={handleArchive} className="gap-2">
                     <Archive className="w-4 h-4" />
-                    {selectedEmail.archived ? 'Unarchive' : 'Archive'}
+                    {selectedEmail.archived ? t('mail.actions.unarchive') : t('mail.actions.archive')}
                   </GlassButton>
                   <GlassButton size="sm" onClick={handleDelete} className="gap-2">
                     <Trash2 className="w-4 h-4" />
-                    Delete
+                    {t('mail.actions.delete')}
                   </GlassButton>
                 </div>
               </div>
@@ -423,7 +426,7 @@ export function Mail({ owner }: { owner?: string }) {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center text-white/40">
                 <Inbox className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p>Select an email to read</p>
+                <p>{t('mail.empty.selectEmail')}</p>
               </div>
             </div>
           )}
