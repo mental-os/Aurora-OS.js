@@ -256,6 +256,7 @@ export const en: TranslationDict = {
     install: 'Install',
     uninstall: 'Uninstall',
     installed: 'Installed',
+    size: 'Size',
   },
   browser: {
     menu: {
