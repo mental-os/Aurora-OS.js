@@ -26,13 +26,13 @@ interface FilePickerProps {
 }
 
 export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath, extension, owner }: FilePickerProps) {
-    const { listDirectory, homePath, getNodeAtPath, users, currentUser } = useFileSystem();
+    const { listDirectory, getNodeAtPath, users, currentUser, resolvePath } = useFileSystem();
     const actingUser = (owner || currentUser) ?? undefined;
     const { accentColor } = useAppContext();
     const { windowBackground, titleBarBackground, blurStyle } = useThemeColors();
     const { t } = useI18n();
 
-    const [currentPath, setCurrentPath] = useState(defaultPath || homePath);
+    const [currentPath, setCurrentPath] = useState(defaultPath || resolvePath('~', actingUser));
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
     const [filename, setFilename] = useState('');
 

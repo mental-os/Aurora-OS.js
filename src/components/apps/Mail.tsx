@@ -179,7 +179,7 @@ Happy reading! 📚`,
 
 export function Mail({ owner }: { owner?: string }) {
   const { t } = useI18n();
-  const { createFile, homePath } = useFileSystem();
+  const { createFile, resolvePath } = useFileSystem();
   const [activeMailbox, setActiveMailbox] = useSessionStorage(
     "mail-active-mailbox",
     "inbox",
@@ -352,7 +352,7 @@ export function Mail({ owner }: { owner?: string }) {
   };
 
   const handleDownloadAttachment = (attachment: EmailAttachment) => {
-    const downloadsPath = `${homePath}/Downloads`;
+    const downloadsPath = resolvePath('~/Downloads', owner);
     const success = createFile(
       downloadsPath,
       attachment.name,
