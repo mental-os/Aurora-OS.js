@@ -297,6 +297,8 @@ export const fr: TranslationDict = {
         "Essayez d'ajuster votre recherche ou le filtre de catégorie pour trouver ce que vous cherchez.",
     },
     systemApp: 'App système',
+    size: 'Taille',
+    sizeUnknown: 'Inconnue',
     install: 'Installer',
     uninstall: 'Désinstaller',
     installed: 'Installée',

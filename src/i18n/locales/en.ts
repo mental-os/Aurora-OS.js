@@ -251,6 +251,8 @@ export const en: TranslationDict = {
       description: "Try adjusting your search or category filter to find what you're looking for.",
     },
     systemApp: 'System App',
+    size: 'Size',
+    sizeUnknown: 'Unknown',
     install: 'Install',
     uninstall: 'Uninstall',
     installed: 'Installed',

@@ -295,6 +295,8 @@ export const es: TranslationDict = {
       description: 'Prueba ajustando tu búsqueda o filtro de categoría para encontrar lo que buscas.',
     },
     systemApp: 'App del sistema',
+    size: 'Tamaño',
+    sizeUnknown: 'Desconocido',
     install: 'Instalar',
     uninstall: 'Desinstalar',
     installed: 'Instalada',
