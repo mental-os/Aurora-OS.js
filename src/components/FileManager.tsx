@@ -610,7 +610,26 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
                 cumulativePath += `/${segment}`;
                 const isLast = index === visibleSegments.length - 1;
                 const path = cumulativePath; // Close over value
-                const displayName = segment === '.Trash' ? t('fileManager.places.trash') : segment;
+                const displayName = (() => {
+                  switch (segment) {
+                    case '.Trash':
+                      return t('fileManager.places.trash');
+                    case 'home':
+                      return t('fileManager.places.home');
+                    case 'Desktop':
+                      return t('fileManager.places.desktop');
+                    case 'Documents':
+                      return t('fileManager.places.documents');
+                    case 'Downloads':
+                      return t('fileManager.places.downloads');
+                    case 'Pictures':
+                      return t('fileManager.places.pictures');
+                    case 'Music':
+                      return t('fileManager.places.music');
+                    default:
+                      return segment;
+                  }
+                })();
 
                 return (
                   <BreadcrumbPill

@@ -302,7 +302,6 @@ export const fr: TranslationDict = {
     install: 'Installer',
     uninstall: 'Désinstaller',
     installed: 'Installée',
-    size: 'Taille',
   },
   browser: {
     menu: {
