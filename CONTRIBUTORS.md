@@ -4,6 +4,7 @@ Aurora-OS.js exists because of the people who imagined it, shaped it, tested it,
 
 This page acknowledges those contributions — past, present, and future.
 
+All contributions listed here were made under the contribution terms described in [CONTRIBUTING.md](CONTRIBUTING.md).  
 Credits listed here are permanent.
 
 ## 🧠 Core & Ongoing Contributors
@@ -11,7 +12,8 @@ Credits listed here are permanent.
 **Cătălin-Robert Drăgoiu // mental.os()**  
 Creator & Maintainer  
 Concept, architecture, design, narrative direction  
-GitHub: https://github.com/mental-os
+GitHub: https://github.com/mental-os  
+Social: [IG/mental.os](https://www.instagram.com/mental.os)
 
 ## 🛠 Community Contributors
 

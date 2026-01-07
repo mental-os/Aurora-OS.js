@@ -57,6 +57,27 @@ Aurora OS.js began as that experiment — inspired by OS.js and [Puter](https://
 
 This is the ideal phase to influence direction, architecture, and gameplay systems.
 
+## 🤝 Contributing & Contribution Terms
+
+Aurora OS.js is open-source and community-friendly, with a long-term vision that will include commercial releases.
+
+Contributions of all kinds are welcome — code, design, documentation, ideas, and feedback.  
+To keep things transparent and fair for everyone, contributions are made under clear contribution terms.
+
+Before submitting a Pull Request, please read:
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — how to contribute, expectations, and contribution terms
+- **[CONTRIBUTORS.md](CONTRIBUTORS.md)** — permanent credit for everyone who helped shape the project
+
+In short:
+
+- You keep authorship of your work
+- Your contribution is credited permanently
+- Your contribution may be used in open-source and future commercial versions of Aurora OS.js
+- There are no retroactive license changes or hidden transfers
+
+If anything feels unclear, open a [discussion](https://github.com/mental-os/Aurora-OS.js/discussions) — transparency matters here.
+
 ## Tech Stack
 
 - **Framework**: React 19 (Vite 7)
@@ -71,8 +92,9 @@ This is the ideal phase to influence direction, architecture, and gameplay syste
 
 ## 🚀 Getting Started
 
-> **Prerequisite**: Node.js 24.0.0+ is required.  
-> **Browser**: Chromium-based browsers (Chrome, Edge, Brave, etc.)
+> **Prerequisite**:  
+> Node.js 24.0.0+ is required.  
+> Chromium-based browsers (Chrome, Edge, Brave, etc.)
 
 ```bash
 npm install
@@ -114,19 +136,19 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
 - Discord (soon)
 - [mental.os() Universe](https://instagram.com/mental.os)
-- [Contributors](CONTRIBUTORS.md)
+- [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
 ### Other links
 
 - [GitHub](https://github.com/mental-os/Aurora-OS.js)
-- [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
+- [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE)
 - GitBook (soon)
 
 ### License
 
 - **Licensed as**: [AGPL-3.0e](LICENSE)
 - **Open-source code**: [OPEN-SOURCE.md](OPEN-SOURCE.md)
-- **Contributing**: (soon)
+- **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### AI Disclosure
 
