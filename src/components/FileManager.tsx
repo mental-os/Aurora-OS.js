@@ -233,39 +233,39 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
     e.stopPropagation(); // Prevent container click from clearing selection
 
     if (e.metaKey || e.ctrlKey) {
-        // Toggle selection
-        setSelectedItems(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
+      // Toggle selection
+      setSelectedItems(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
     } else if (e.shiftKey) {
-        // Range selection
-        if (selectedItems.size === 0) {
-             setSelectedItems(new Set([id]));
-             return;
-        }
-        
-        // Find last selected item (or arbitrary one)
-        const lastId = Array.from(selectedItems).pop();
-        if (!lastId) return;
+      // Range selection
+      if (selectedItems.size === 0) {
+        setSelectedItems(new Set([id]));
+        return;
+      }
 
-        const lastIndex = items.findIndex(i => i.id === lastId);
-        const currentIndex = items.findIndex(i => i.id === id);
-        
-        if (lastIndex === -1 || currentIndex === -1) return;
+      // Find last selected item (or arbitrary one)
+      const lastId = Array.from(selectedItems).pop();
+      if (!lastId) return;
 
-        const start = Math.min(lastIndex, currentIndex);
-        const end = Math.max(lastIndex, currentIndex);
-        
-        const range = items.slice(start, end + 1).map(i => i.id);
-        // Union with existing or replace? Standard is replace + anchor, but union is easier
-        setSelectedItems(new Set([...Array.from(selectedItems), ...range]));
+      const lastIndex = items.findIndex(i => i.id === lastId);
+      const currentIndex = items.findIndex(i => i.id === id);
+
+      if (lastIndex === -1 || currentIndex === -1) return;
+
+      const start = Math.min(lastIndex, currentIndex);
+      const end = Math.max(lastIndex, currentIndex);
+
+      const range = items.slice(start, end + 1).map(i => i.id);
+      // Union with existing or replace? Standard is replace + anchor, but union is easier
+      setSelectedItems(new Set([...Array.from(selectedItems), ...range]));
 
     } else {
-        // Single selection
-        setSelectedItems(new Set([id]));
+      // Single selection
+      setSelectedItems(new Set([id]));
     }
   };
 
@@ -275,10 +275,10 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
     // If dragging an item NOT in selection, select it exclusively
     let itemsToDrag = Array.from(selectedItems);
     if (!selectedItems.has(item.id)) {
-        itemsToDrag = [item.id];
-        setSelectedItems(new Set([item.id]));
+      itemsToDrag = [item.id];
+      setSelectedItems(new Set([item.id]));
     }
-    
+
     e.dataTransfer.setData('application/json', JSON.stringify({
       id: item.id, // Legacy support for single item drops
       ids: itemsToDrag, // NEW: Multi-item payload
@@ -291,9 +291,9 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
   const handleDragOver = useCallback((e: React.DragEvent, item: FileNode) => {
     e.preventDefault(); // allow drop
     if (item.type === 'directory') {
-        // Don't allow dropping onto itself if it's in the selection
-        // But checking IDs in dragOver is hard without parsing data... 
-        // We'll trust the user or handle it in Drop.
+      // Don't allow dropping onto itself if it's in the selection
+      // But checking IDs in dragOver is hard without parsing data... 
+      // We'll trust the user or handle it in Drop.
       e.dataTransfer.dropEffect = 'move';
       setDragTargetId(item.id);
     } else {
@@ -322,54 +322,54 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
       console.log('Drop data:', data);
-      
+
       const idsToMove = data.ids || (data.id ? [data.id] : []);
-      
+
       let movedCount = 0;
       idsToMove.forEach((id: string) => {
-          if (id === targetItem.id) return; // Can't drop on self
-          
-          // Need to find the name for this ID to log/notify? 
-          // We don't have the node object here for external drops easily, but moveNodeById handles it.
-          // BUT we need the name to construct destination path? 
-          // Wait, moveNodeById(id, destPath). destPath includes the filename?
-          // If destPath is a directory, moveNodeById should handle "into"? 
-          // Checking moveNodeById signature... 
-          // implementation usually expects specific path. 
-          // Let's verify moveNodeById behavior. 
-          // If we move /foo/bar.txt to /baz/, the new path is /baz/bar.txt.
-          // The current `moveNodeById` takes (id, newPath).
-          // If `newPath` is a directory, does it automagically append filename?
-          // Looking at usage in original file: 
-          // `const destPath = ... /${targetItem.name}` which is the FOLDER path.
-          // If moveNodeById expects FULL PATH including filename, we have a problem for external IDs where we don't know the name.
-          // Let's assume for now we need the name. `data` payload has `name`. But only for the PRIMARY item.
-          // CRITICAL: We need name for ALL items in multi-drag. 
-          // FIX: The payload should include metadata for all items.
-          
-          // Since I can't easily change the payload to include map of id->name without iterating everything in dragStart...
-          // I will assume for now `moveNodeById` can handle directory targets or I need to fetch names.
-          // Actually, `moveNodeById` inside `useFileSystemMutations` likely updates the parent.
-          
-          // In the original code: 
-          /* 
-            const destPath = currentPath === '/'
-              ? `/${targetItem.name}`
-              : `${currentPath}/${targetItem.name}`;
-             moveNodeById(data.id, destPath, activeUser);
-          */
-          // This implies passing the FOLDER as destPath works? 
-          // If so, great. If acts as "Rename", then we have a bug for moving into folders.
-          // Let's assume it works as "Move Into" based on context.
-          
+        if (id === targetItem.id) return; // Can't drop on self
+
+        // Need to find the name for this ID to log/notify? 
+        // We don't have the node object here for external drops easily, but moveNodeById handles it.
+        // BUT we need the name to construct destination path? 
+        // Wait, moveNodeById(id, destPath). destPath includes the filename?
+        // If destPath is a directory, moveNodeById should handle "into"? 
+        // Checking moveNodeById signature... 
+        // implementation usually expects specific path. 
+        // Let's verify moveNodeById behavior. 
+        // If we move /foo/bar.txt to /baz/, the new path is /baz/bar.txt.
+        // The current `moveNodeById` takes (id, newPath).
+        // If `newPath` is a directory, does it automagically append filename?
+        // Looking at usage in original file: 
+        // `const destPath = ... /${targetItem.name}` which is the FOLDER path.
+        // If moveNodeById expects FULL PATH including filename, we have a problem for external IDs where we don't know the name.
+        // Let's assume for now we need the name. `data` payload has `name`. But only for the PRIMARY item.
+        // CRITICAL: We need name for ALL items in multi-drag. 
+        // FIX: The payload should include metadata for all items.
+
+        // Since I can't easily change the payload to include map of id->name without iterating everything in dragStart...
+        // I will assume for now `moveNodeById` can handle directory targets or I need to fetch names.
+        // Actually, `moveNodeById` inside `useFileSystemMutations` likely updates the parent.
+
+        // In the original code: 
+        /* 
           const destPath = currentPath === '/'
             ? `/${targetItem.name}`
             : `${currentPath}/${targetItem.name}`;
-          
-          moveNodeById(id, destPath, activeUser);
-          movedCount++;
+           moveNodeById(data.id, destPath, activeUser);
+        */
+        // This implies passing the FOLDER as destPath works? 
+        // If so, great. If acts as "Rename", then we have a bug for moving into folders.
+        // Let's assume it works as "Move Into" based on context.
+
+        const destPath = currentPath === '/'
+          ? `/${targetItem.name}`
+          : `${currentPath}/${targetItem.name}`;
+
+        moveNodeById(id, destPath, activeUser);
+        movedCount++;
       });
-      
+
       if (movedCount > 0) toast.success(t('fileManager.toasts.movedItems', { count: movedCount }));
 
     } catch (err) {
@@ -389,11 +389,11 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
       const idsToMove = data.ids || (data.id ? [data.id] : []);
-      
+
       idsToMove.forEach((id: string) => {
-          moveNodeById(id, targetPath, activeUser);
+        moveNodeById(id, targetPath, activeUser);
       });
-      
+
       toast.success(
         t('fileManager.toasts.movedItemsTo', {
           count: idsToMove.length,
@@ -532,15 +532,15 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
         <button
           onClick={() => {
             if (selectedItems.size > 0) {
-                selectedItems.forEach(id => {
-                   const item = items.find(i => i.id === id);
-                   if (item) {
-                       const fullPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
-                        moveToTrash(fullPath, activeUser);
-                   }
-                });
-                setSelectedItems(new Set());
-                toast.success(t('fileManager.toasts.movedItemsToTrash', { count: selectedItems.size }));
+              selectedItems.forEach(id => {
+                const item = items.find(i => i.id === id);
+                if (item) {
+                  const fullPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
+                  moveToTrash(fullPath, activeUser);
+                }
+              });
+              setSelectedItems(new Set());
+              toast.success(t('fileManager.toasts.movedItemsToTrash', { count: selectedItems.size }));
             }
           }}
           disabled={selectedItems.size === 0}
@@ -610,7 +610,7 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
                 cumulativePath += `/${segment}`;
                 const isLast = index === visibleSegments.length - 1;
                 const path = cumulativePath; // Close over value
-                const displayName = segment === '.Trash' ? t('fileManager.places.trash') : segment;
+                const displayName = segment;
 
                 return (
                   <BreadcrumbPill
@@ -679,11 +679,11 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
       const idsToMove = data.ids || (data.id ? [data.id] : []);
-      
+
       let movedCount = 0;
       idsToMove.forEach((id: string) => {
-          moveNodeById(id, currentPath, activeUser);
-          movedCount++;
+        moveNodeById(id, currentPath, activeUser);
+        movedCount++;
       });
       if (movedCount > 0) toast.success(t('fileManager.toasts.movedItems', { count: movedCount }));
     } catch (err) {
@@ -720,40 +720,40 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
         // For simplicity, let's make it replace if no modifier, or union if modifier?
         // Let's go with union for now or clear first? Standard is Clean unless Shift.
         // We'll just Add to current for now to be safe, or Clear triggers on MouseDown.
-        
+
         // Actually MouseDown clears it if not modifier.
-        
+
         // We need to match items against this rect.
         // We need refs to item elements? Or just rough calculation?
         // Grid items are roughly known size/position... but list items are different.
         // Doing this accurately requires measuring DOM nodes.
         // Since we don't have refs to every item easily, we can use "range" logic if in Grid?
         // Or simpler: The DOM nodes exist. We can querySelectorAll button in container?
-        
+
         const buttons = gridRef.current.querySelectorAll('button[draggable="true"]');
         buttons.forEach((btn: Element, index: number) => {
-           // We map DOM index to items index (should match 1:1 if sorted same)
-           const item = items[index];
-           if (!item) return;
-           
-           const btnRect = (btn as HTMLElement).getBoundingClientRect();
-           // Convert btn rect to container relative
-           const btnLeft = btnRect.left - containerRect.left + scrollLeft;
-           const btnTop = btnRect.top - containerRect.top + scrollTop;
-           const btnRight = btnLeft + btnRect.width;
-           const btnBottom = btnTop + btnRect.height;
-           
-           // Intersection check
-           if (
-             btnLeft < boxRight &&
-             btnRight > boxLeft &&
-             btnTop < boxBottom &&
-             btnBottom > boxTop
-           ) {
-             newSelection.add(item.id);
-           }
+          // We map DOM index to items index (should match 1:1 if sorted same)
+          const item = items[index];
+          if (!item) return;
+
+          const btnRect = (btn as HTMLElement).getBoundingClientRect();
+          // Convert btn rect to container relative
+          const btnLeft = btnRect.left - containerRect.left + scrollLeft;
+          const btnTop = btnRect.top - containerRect.top + scrollTop;
+          const btnRight = btnLeft + btnRect.width;
+          const btnBottom = btnTop + btnRect.height;
+
+          // Intersection check
+          if (
+            btnLeft < boxRight &&
+            btnRight > boxLeft &&
+            btnTop < boxBottom &&
+            btnBottom > boxTop
+          ) {
+            newSelection.add(item.id);
+          }
         });
-        
+
         setSelectedItems(newSelection);
         setSelectionBox(null);
       }
@@ -770,8 +770,8 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
   const content = (
     <div
       ref={(node: HTMLDivElement | null) => {
-          containerRefSetter(node);
-          gridRef.current = node;
+        containerRefSetter(node);
+        gridRef.current = node;
       }}
       className="flex-1 overflow-y-auto p-6 transition-colors duration-200 relative outline-none"
       tabIndex={0} // Allow focus for keyboard events
@@ -786,36 +786,36 @@ export function FileManager({ initialPath, onOpenApp, owner }: { initialPath?: s
         // Deselect if clicking on background (not on a button)
         const target = e.target as HTMLElement;
         if (!target.closest('button')) {
-            if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
-                setSelectedItems(new Set());
-            }
-            // Start Selection Box
-            setSelectionBox({
-                 start: { x: e.clientX, y: e.clientY },
-                 current: { x: e.clientX, y: e.clientY }
-            });
+          if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
+            setSelectedItems(new Set());
+          }
+          // Start Selection Box
+          setSelectionBox({
+            start: { x: e.clientX, y: e.clientY },
+            current: { x: e.clientX, y: e.clientY }
+          });
         }
       }}
     >
       {/* Selection Box Overlay */}
       {selectionBox && gridRef.current && (
-           (() => {
-               const containerRect = gridRef.current!.getBoundingClientRect();
-               const scrollLeft = gridRef.current!.scrollLeft;
-               const scrollTop = gridRef.current!.scrollTop;
-               
-               const left = Math.min(selectionBox.start.x, selectionBox.current.x) - containerRect.left + scrollLeft;
-               const top = Math.min(selectionBox.start.y, selectionBox.current.y) - containerRect.top + scrollTop;
-               const width = Math.abs(selectionBox.current.x - selectionBox.start.x);
-               const height = Math.abs(selectionBox.current.y - selectionBox.start.y);
-               
-               return (
-                <div
-                    className="absolute border border-blue-400/50 bg-blue-500/20 z-50 pointer-events-none"
-                    style={{ left, top, width, height }}
-                />
-               );
-           })()
+        (() => {
+          const containerRect = gridRef.current!.getBoundingClientRect();
+          const scrollLeft = gridRef.current!.scrollLeft;
+          const scrollTop = gridRef.current!.scrollTop;
+
+          const left = Math.min(selectionBox.start.x, selectionBox.current.x) - containerRect.left + scrollLeft;
+          const top = Math.min(selectionBox.start.y, selectionBox.current.y) - containerRect.top + scrollTop;
+          const width = Math.abs(selectionBox.current.x - selectionBox.start.x);
+          const height = Math.abs(selectionBox.current.y - selectionBox.start.y);
+
+          return (
+            <div
+              className="absolute border border-blue-400/50 bg-blue-500/20 z-50 pointer-events-none"
+              style={{ left, top, width, height }}
+            />
+          );
+        })()
       )}
 
       {items.length === 0 ? (

@@ -75,16 +75,33 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   wallpaper: 'default',
 };
 
+function getBestSupportedLocale(candidate: string | undefined): AppLocale {
+  if (!candidate) return 'en-US';
+
+  // 1. Try exact match (e.g. 'en-US', 'pt-BR')
+  if (SUPPORTED_LOCALES.some(l => l.locale === candidate)) {
+    return candidate;
+  }
+
+  // 2. Try base language match (e.g. 'en-GB' -> 'en-US', 'pt-PT' -> 'pt-BR')
+  const base = candidate.split('-')[0].toLowerCase();
+  const matched = SUPPORTED_LOCALES.find(l => l.locale.split('-')[0].toLowerCase() === base);
+  if (matched) {
+    return matched.locale;
+  }
+
+  // 3. Absolute fallback
+  return 'en-US';
+}
+
 function detectDefaultLocale(): AppLocale {
   try {
     // Check for saved language (e.g. from Onboarding recovery)
     const saved = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
-    if (saved && SUPPORTED_LOCALES.some(l => l.locale === saved)) {
-      return saved;
-    }
+    if (saved) return getBestSupportedLocale(saved);
 
     const navLang = typeof navigator !== 'undefined' ? navigator.language : undefined;
-    return navLang || 'en-US';
+    return getBestSupportedLocale(navLang);
   } catch {
     return 'en-US';
   }
@@ -224,8 +241,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Setters for System Config
   const setDevMode = (enabled: boolean) => setSystemConfig(s => ({ ...s, devMode: enabled }));
   const setExposeRoot = (enabled: boolean) => setSystemConfig(s => ({ ...s, exposeRoot: enabled }));
-  const setLocale = (newLocale: AppLocale) => setSystemConfig(s => ({ ...s, locale: newLocale }));
+  const setLocale = useCallback((newLocale: AppLocale) => setSystemConfig(s => ({ ...s, locale: newLocale })), []);
   const setOnboardingComplete = (complete: boolean) => setSystemConfig(s => ({ ...s, onboardingComplete: complete }));
+
+  // Sync locale from Electron if available and not explicitly stored
+  useEffect(() => {
+    const syncElectronLocale = async () => {
+      if (window.electron?.getLocale) {
+        try {
+          const storedLocale = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
+          if (!storedLocale) {
+            const systemLocale = await window.electron.getLocale();
+            if (systemLocale) {
+              const bestLocale = getBestSupportedLocale(systemLocale);
+              if (bestLocale !== locale) {
+                setLocale(bestLocale);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to sync locale from Electron:', e);
+        }
+      }
+    };
+    syncElectronLocale();
+  }, [locale, setLocale]);
 
   // Sync accent color to CSS variable for global theming
   useEffect(() => {

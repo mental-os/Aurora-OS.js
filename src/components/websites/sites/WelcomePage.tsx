@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { WebsiteProps } from '../types';
 import { Search } from 'lucide-react';
+import { useI18n } from '../../../i18n';
 
 // Simulated search delay in milliseconds
 const SEARCH_DELAY_MS = 300;
@@ -12,6 +13,7 @@ const SEARCH_DELAY_MS = 300;
 const quickLinks: Array<{ id: number; name: string; url: string; color: string }> = [];
 
 export function WelcomePage({ onNavigate }: WebsiteProps) {
+  const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -44,7 +46,7 @@ export function WelcomePage({ onNavigate }: WebsiteProps) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search websites or enter address..."
+                placeholder={t('browser.welcome.searchPlaceholder')}
                 disabled={isSearching}
                 className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               />
@@ -56,7 +58,7 @@ export function WelcomePage({ onNavigate }: WebsiteProps) {
         {/* Quick Links */}
         {quickLinks.length > 0 && (
           <>
-            <h2 className="text-xl text-white/80 mb-6 font-light">Favorites</h2>
+            <h2 className="text-xl text-white/80 mb-6 font-light">{t('browser.welcome.favorites')}</h2>
             <div className="grid grid-cols-3 gap-4 mb-12">
               {quickLinks.map((link) => (
                 <button
@@ -73,7 +75,7 @@ export function WelcomePage({ onNavigate }: WebsiteProps) {
         )}
 
         {/* Recent Activity */}
-        <h2 className="text-xl text-white/80 mb-4 font-light">Recent Activity</h2>
+        <h2 className="text-xl text-white/80 mb-4 font-light">{t('browser.welcome.recentActivity')}</h2>
         <div className="space-y-2">
           {[
             { name: 'Aurora University', url: 'https://aurora.edu' },

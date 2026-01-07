@@ -25,7 +25,7 @@ import { STORAGE_KEYS } from '../utils/memory';
 import { useWindowManager } from '../hooks/useWindowManager';
 import { useI18n } from '../i18n/index';
 
-import {Mail} from "@/components/apps/Mail.tsx";
+import { Mail } from "@/components/apps/Mail.tsx";
 // Load icon positions (supports both pixel and grid formats with migration)
 function loadIconPositions(): Record<string, GridPosition> {
     try {
@@ -173,25 +173,25 @@ export default function OS() {
 
         switch (type) {
             case 'finder':
-                title = t('apps.finder');
+                title = 'Finder';
                 content = <FileManager owner={owner} initialPath={data?.path} onOpenApp={openWindowRef.current} />;
                 break;
             case 'settings':
-                title = t('apps.systemSettings');
+                title = 'System Settings';
                 content = <Settings owner={owner} />;
                 break;
             case 'photos':
-                title = t('apps.photos');
+                title = 'Photos';
                 content = <Photos owner={owner} />;
                 break;
             case 'music':
-                title = t('apps.music');
+                title = 'Music';
                 content = (
                     <Music owner={owner} initialPath={data?.path} onOpenApp={openWindowRef.current} />
                 );
                 break;
             case 'messages':
-                title = t('apps.messages');
+                title = 'Messages';
                 content = <Messages owner={owner} />;
                 break;
             case 'mail':
@@ -199,32 +199,32 @@ export default function OS() {
                 content = <Mail owner={owner} />;
                 break;
             case 'browser':
-                title = t('apps.browser');
+                title = 'Browser';
                 content = <Browser owner={owner} />;
                 break;
             case 'terminal':
-                title = t('apps.terminal');
+                title = 'Terminal';
                 // Need to forward the ref logic if terminal is special
                 content = <Terminal onLaunchApp={(id, args, owner) => openWindowRef.current(id, { path: args?.[0] }, owner)} owner={owner} />;
                 break;
             case 'trash':
-                title = t('apps.trash');
+                title = 'Trash';
                 content = <FileManager owner={owner} initialPath="~/.Trash" onOpenApp={openWindowRef.current} />;
                 break;
             case 'dev-center':
-                title = t('apps.devCenter');
+                title = 'DEV Center';
                 content = <DevCenter />;
                 break;
             case 'notepad':
-                title = t('apps.notepad');
+                title = 'Notepad';
                 content = <Notepad owner={owner} initialPath={data?.path} />;
                 break;
             case 'calendar':
-                title = t('apps.calendar');
+                title = 'Calendar';
                 content = <Calendar owner={owner} />;
                 break;
             case 'appstore':
-                title = t('apps.appStore');
+                title = 'App Store';
                 content = <AppStore owner={owner} />;
                 break;
             default:
@@ -232,7 +232,7 @@ export default function OS() {
                 content = <PlaceholderApp title={title} />;
         }
         return { content, title };
-    }, [t]); // openWindowRef is stable
+    }, []); // openWindowRef is stable
 
     // Use Window Manager Hook
     const {
@@ -256,7 +256,7 @@ export default function OS() {
 
     const updateIconsPositions = useCallback((updates: Record<string, { x: number; y: number }>) => {
         const config = getGridConfig(window.innerWidth, window.innerHeight);
-        
+
         // 1. Prepare maps
         const newPositionsMap = { ...iconGridPositions };
         const itemsToMoveIntoFolders: { id: string, folderName: string }[] = [];
@@ -264,20 +264,20 @@ export default function OS() {
 
         // 2. First Pass: Check for Folder Drops and calculate initial Grid Targets
         Object.entries(updates).forEach(([id, position]) => {
-             const targetGridPos = pixelToGrid(position.x, position.y, config);
-             const targetCellKey = gridPosToKey(targetGridPos);
+            const targetGridPos = pixelToGrid(position.x, position.y, config);
+            const targetCellKey = gridPosToKey(targetGridPos);
 
-             // Check collision with existing folders (excluding self and other dragged items essentially)
-             // We check against the *entire* current desktopIcons list to find folders.
-             // If we drop ON A FOLDER, we move it.
-             
-             const conflictingIcon = desktopIcons.find(icon => {
+            // Check collision with existing folders (excluding self and other dragged items essentially)
+            // We check against the *entire* current desktopIcons list to find folders.
+            // If we drop ON A FOLDER, we move it.
+
+            const conflictingIcon = desktopIcons.find(icon => {
                 const iconGridPos = iconGridPositions[icon.id];
                 // Must be different ID, and at the target cell
                 return icon.id !== id && iconGridPos && gridPosToKey(iconGridPos) === targetCellKey;
-             });
+            });
 
-             if (conflictingIcon && conflictingIcon.type === 'folder') {
+            if (conflictingIcon && conflictingIcon.type === 'folder') {
                 const targetPixelPos = gridToPixel(iconGridPositions[conflictingIcon.id], config);
                 const targetCenter = { x: targetPixelPos.x + 50, y: targetPixelPos.y + 50 };
                 const dragCenter = { x: position.x + 50, y: position.y + 50 };
@@ -288,16 +288,16 @@ export default function OS() {
                 if (distance < 35) {
                     itemsToMoveIntoFolders.push({ id, folderName: conflictingIcon.name });
                     // Remove from grid map immediately if we are moving it away
-                    delete newPositionsMap[id]; 
+                    delete newPositionsMap[id];
                     return; // Skip grid placement for this item
                 }
-             }
+            }
 
-             // If not moving into folder, it counts as a grid update
-             itemsToUpdateGrid.push({ id, gridPos: targetGridPos });
-             // Temporarily place it in the map for collision checks with *subsequent* items?
-             // Actually we should place them all, then resolving conflicts.
-             newPositionsMap[id] = targetGridPos;
+            // If not moving into folder, it counts as a grid update
+            itemsToUpdateGrid.push({ id, gridPos: targetGridPos });
+            // Temporarily place it in the map for collision checks with *subsequent* items?
+            // Actually we should place them all, then resolving conflicts.
+            newPositionsMap[id] = targetGridPos;
         });
 
         // 3. Process Folder Moves
@@ -311,9 +311,9 @@ export default function OS() {
         // Actually, rearrangeGrid handles shifting *others* out of the way.
         // If we have multiple items, we should apply them sequentially or as a group?
         // Sequential application on top of accumulated state is safest.
-        
+
         let finalPositions = { ...newPositionsMap };
-        
+
         itemsToUpdateGrid.forEach(({ id, gridPos }) => {
             // Apply rearrangement for this single update against the *current accumulated* grid
             // This ensures subsequent items in the batch see the shifted obstacles of previous items.

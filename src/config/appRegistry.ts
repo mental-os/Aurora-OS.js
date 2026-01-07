@@ -40,7 +40,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     finder: {
         id: 'finder',
         name: 'Finder',
-        nameKey: 'apps.finder',
         description: 'File Manager',
         descriptionKey: 'appDescriptions.finder',
         icon: FolderOpen,
@@ -56,7 +55,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     browser: {
         id: 'browser',
         name: 'Browser',
-        nameKey: 'apps.browser',
         description: 'Access the web',
         descriptionKey: 'appDescriptions.browser',
         icon: Globe,
@@ -72,7 +70,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     mail: {
         id: 'mail',
         name: 'Mail',
-        nameKey: 'apps.mail',
         description: 'Read and write emails',
         descriptionKey: 'appDescriptions.mail',
         icon: Mail,
@@ -88,7 +85,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     appstore: {
         id: 'appstore',
         name: 'App Store',
-        nameKey: 'apps.appStore',
         description: 'Download and manage apps',
         descriptionKey: 'appDescriptions.appStore',
         icon: ShoppingBag,
@@ -104,7 +100,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     terminal: {
         id: 'terminal',
         name: 'Terminal',
-        nameKey: 'apps.terminal',
         description: 'Command line interface',
         descriptionKey: 'appDescriptions.terminal',
         icon: Terminal,
@@ -120,7 +115,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     settings: {
         id: 'settings',
         name: 'System Settings',
-        nameKey: 'apps.systemSettings',
         description: 'Configure your system',
         descriptionKey: 'appDescriptions.systemSettings',
         icon: Settings,
@@ -138,7 +132,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     notepad: {
         id: 'notepad',
         name: 'Notepad',
-        nameKey: 'apps.notepad',
         description: 'Edit text files',
         descriptionKey: 'appDescriptions.notepad',
         icon: FileText,
@@ -154,7 +147,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     messages: {
         id: 'messages',
         name: 'Messages',
-        nameKey: 'apps.messages',
         description: 'Chat with friends',
         descriptionKey: 'appDescriptions.messages',
         icon: MessageSquare,
@@ -170,7 +162,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     calendar: {
         id: 'calendar',
         name: 'Calendar',
-        nameKey: 'apps.calendar',
         description: 'Manage your schedule',
         descriptionKey: 'appDescriptions.calendar',
         icon: Calendar,
@@ -186,7 +177,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     photos: {
         id: 'photos',
         name: 'Photos',
-        nameKey: 'apps.photos',
         description: 'View and manage photos',
         descriptionKey: 'appDescriptions.photos',
         icon: Image,
@@ -202,7 +192,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     music: {
         id: 'music',
         name: 'Music',
-        nameKey: 'apps.music',
         description: 'Play your favorite music',
         descriptionKey: 'appDescriptions.music',
         icon: Music,
@@ -219,7 +208,6 @@ export const APP_REGISTRY: Record<string, AppMetadata> = {
     'dev-center': {
         id: 'dev-center',
         name: 'DevCenter',
-        nameKey: 'apps.devCenter',
         description: 'Developer Tools',
         descriptionKey: 'appDescriptions.devCenter',
         icon: Code,

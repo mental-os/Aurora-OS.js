@@ -67,21 +67,6 @@ export const es: TranslationDict = {
     music: 'Reproduce tu música favorita',
     devCenter: 'Herramientas de desarrollo',
   },
-  apps: {
-    finder: 'Finder',
-    systemSettings: 'Configuración del sistema',
-    photos: 'Fotos',
-    music: 'Música',
-    messages: 'Mensajes',
-    browser: 'Navegador',
-    terminal: 'Terminal',
-    trash: 'Papelera',
-    devCenter: 'Centro DEV',
-    notepad: 'Bloc de notas',
-    calendar: 'Calendario',
-    appStore: 'App Store',
-    mail: 'Correo',
-  },
   a11y: {
     common: {
       close: 'Cerrar',
@@ -300,11 +285,12 @@ export const es: TranslationDict = {
       title: 'No se encontraron apps',
       description: 'Prueba ajustando tu búsqueda o filtro de categoría para encontrar lo que buscas.',
     },
+    size: 'Tamaño',
+    sizeUnknown: 'Desconocido',
     systemApp: 'App del sistema',
     install: 'Instalar',
     uninstall: 'Desinstalar',
     installed: 'Instalada',
-    size: 'Tamaño',
   },
   browser: {
     menu: {
@@ -320,11 +306,10 @@ export const es: TranslationDict = {
       newTab: 'Nueva pestaña',
     },
     welcome: {
-      title: 'Bienvenido',
-      subtitle: 'Tus sitios favoritos',
+      searchPlaceholder: 'Busca sitios web o introduce una dirección...',
+      favorites: 'Favoritos',
+      recentActivity: 'Actividad reciente',
     },
-    recentActivity: 'Actividad reciente',
-    exampleWebsite: 'Sitio de ejemplo {{index}}',
     searchPlaceholder: 'Busca o introduce una dirección...',
     error: {
       pageNotFound: 'Página no encontrada',
@@ -559,27 +544,6 @@ export const es: TranslationDict = {
     },
     searchPlaceholder: 'Buscar conversaciones...',
     typePlaceholder: 'Escribe un mensaje...',
-    time: {
-      yesterday: 'Ayer',
-      monday: 'Lunes',
-    },
-    mock: {
-      lastMessage: {
-        seeYouTomorrow: '¡Nos vemos mañana!',
-        newMockupsReady: 'Los nuevos mockups están listos',
-        thanksForTheHelp: '¡Gracias por la ayuda!',
-        meetingAt2pm: 'Reunión a las 2 p. m.',
-        gotItThanks: 'Entendido, ¡gracias!',
-      },
-      message: {
-        heyHowAreYouDoing: '¡Hola! ¿Cómo estás?',
-        imGoodWorkingOnNewProject: 'Bien, gracias. Trabajando en el nuevo proyecto.',
-        thatSoundsExcitingCoffeeLater: '¡Suena genial! ¿Quieres tomar un café más tarde?',
-        sureHowAbout3pm: '¡Claro! ¿Qué tal a las 3?',
-        seeYouTomorrow: '¡Nos vemos mañana!',
-        okFixResponsiveLayout: 'Ok—arreglemos el diseño adaptable.',
-      },
-    },
     menu: {
       newMessage: 'Nuevo mensaje',
       deleteConversation: 'Eliminar conversación',

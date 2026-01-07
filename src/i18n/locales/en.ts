@@ -1,5 +1,12 @@
 import type { TranslationDict } from '../types';
 
+// THIS IS THE MAIN TEMPLATE [EN]
+// other languages should be synced with this file.
+// We only translate UI elements and system notifications/feedback.
+// We do not translate app names of (mock) content (eg. websites, messages, etc) as they should have the same content across languages.
+// For example: trying to access the /root folder without sudo should produce a translatable notification
+// but the websites of the Browser (except home page) and the content of the messages/emails should not be translated.
+
 export const en: TranslationDict = {
   game: {
     mainMenu: {
@@ -52,21 +59,6 @@ export const en: TranslationDict = {
       originalDistribution: 'Original Distribution',
       temperedDistribution: 'Tempered Distribution',
     },
-  },
-  apps: {
-    finder: 'Finder',
-    systemSettings: 'System Settings',
-    photos: 'Photos',
-    music: 'Music',
-    messages: 'Messages',
-    browser: 'Browser',
-    terminal: 'Terminal',
-    trash: 'Trash',
-    devCenter: 'DEV Center',
-    notepad: 'Notepad',
-    calendar: 'Calendar',
-    appStore: 'App Store',
-    mail: 'Mail',
   },
   appDescriptions: {
     finder: 'File Manager',
@@ -256,11 +248,12 @@ export const en: TranslationDict = {
       title: 'No apps found',
       description: "Try adjusting your search or category filter to find what you're looking for.",
     },
+    size: 'Size',
+    sizeUnknown: 'Unknown',
     systemApp: 'System App',
     install: 'Install',
     uninstall: 'Uninstall',
     installed: 'Installed',
-    size: 'Size',
   },
   browser: {
     menu: {
@@ -276,11 +269,10 @@ export const en: TranslationDict = {
       newTab: 'New Tab',
     },
     welcome: {
-      title: 'Welcome',
-      subtitle: 'Your favorite sites',
+      searchPlaceholder: 'Search websites or enter address...',
+      favorites: 'Favorites',
+      recentActivity: 'Recent Activity',
     },
-    recentActivity: 'Recent Activity',
-    exampleWebsite: 'Example Website {{index}}',
     searchPlaceholder: 'Search or enter address...',
     error: {
       pageNotFound: 'Page Not Found',
@@ -515,27 +507,6 @@ export const en: TranslationDict = {
     },
     searchPlaceholder: 'Search conversations...',
     typePlaceholder: 'Type a message...',
-    time: {
-      yesterday: 'Yesterday',
-      monday: 'Monday',
-    },
-    mock: {
-      lastMessage: {
-        seeYouTomorrow: 'See you tomorrow!',
-        newMockupsReady: 'New mockups are ready',
-        thanksForTheHelp: 'Thanks for the help!',
-        meetingAt2pm: 'Meeting at 2pm',
-        gotItThanks: 'Got it, thanks!',
-      },
-      message: {
-        heyHowAreYouDoing: 'Hey! How are you doing?',
-        imGoodWorkingOnNewProject: "I'm good, thanks! Working on the new project.",
-        thatSoundsExcitingCoffeeLater: 'That sounds exciting! Want to grab coffee later?',
-        sureHowAbout3pm: 'Sure! How about 3pm?',
-        seeYouTomorrow: 'See you tomorrow!',
-        okFixResponsiveLayout: 'Ok—let’s fix the responsive layout.',
-      },
-    },
     menu: {
       newMessage: 'New Message',
       deleteConversation: 'Delete Conversation',

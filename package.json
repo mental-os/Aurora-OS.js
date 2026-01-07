@@ -1,6 +1,6 @@
 {
       "name": "aurora-os-js",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "private": true,
       "type": "module",
       "author": "Cătălin-Robert Drăgoiu",
@@ -161,8 +161,10 @@
             },
             "electronLanguages": [
                   "en",
+                  "de",
                   "es",
                   "fr",
+                  "pt",
                   "ro"
             ]
       },

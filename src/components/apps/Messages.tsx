@@ -12,20 +12,20 @@ export function Messages({ owner }: { owner?: string }) {
   const { t } = useI18n();
 
   const mockConversations = [
-    { id: 1, name: 'Sarah Johnson', lastMessage: t('messages.mock.lastMessage.seeYouTomorrow'), time: '10:30 AM', unread: 2, avatar: 'bg-pink-500' },
-    { id: 2, name: 'Team Design', lastMessage: t('messages.mock.lastMessage.newMockupsReady'), time: '9:15 AM', unread: 5, avatar: 'bg-purple-500' },
-    { id: 3, name: 'Mike Chen', lastMessage: t('messages.mock.lastMessage.thanksForTheHelp'), time: t('messages.time.yesterday'), unread: 0, avatar: 'bg-blue-500' },
-    { id: 4, name: 'Project Alpha', lastMessage: t('messages.mock.lastMessage.meetingAt2pm'), time: t('messages.time.yesterday'), unread: 1, avatar: 'bg-green-500' },
-    { id: 5, name: 'Emma Wilson', lastMessage: t('messages.mock.lastMessage.gotItThanks'), time: t('messages.time.monday'), unread: 0, avatar: 'bg-orange-500' },
+    { id: 1, name: 'Sarah Johnson', lastMessage: 'See you tomorrow!', time: '10:30 AM', unread: 2, avatar: 'bg-pink-500' },
+    { id: 2, name: 'Team Design', lastMessage: 'New mockups are ready', time: '9:15 AM', unread: 5, avatar: 'bg-purple-500' },
+    { id: 3, name: 'Mike Chen', lastMessage: 'Thanks for the help!', time: 'Yesterday', unread: 0, avatar: 'bg-blue-500' },
+    { id: 4, name: 'Project Alpha', lastMessage: 'Meeting at 2pm', time: 'Yesterday', unread: 1, avatar: 'bg-green-500' },
+    { id: 5, name: 'Emma Wilson', lastMessage: 'Got it, thanks!', time: 'Monday', unread: 0, avatar: 'bg-orange-500' },
   ];
 
   const mockMessages = [
-    { id: 1, text: t('messages.mock.message.heyHowAreYouDoing'), sender: 'other', time: '10:25 AM' },
-    { id: 2, text: t('messages.mock.message.imGoodWorkingOnNewProject'), sender: 'me', time: '10:26 AM' },
-    { id: 3, text: t('messages.mock.message.thatSoundsExcitingCoffeeLater'), sender: 'other', time: '10:28 AM' },
-    { id: 4, text: t('messages.mock.message.sureHowAbout3pm'), sender: 'me', time: '10:29 AM' },
-    { id: 5, text: t('messages.mock.message.seeYouTomorrow'), sender: 'other', time: '10:30 AM' },
-    { id: 6, text: t('messages.mock.message.okFixResponsiveLayout'), sender: 'me', time: '10:30 AM' },
+    { id: 1, text: 'Hey! How are you doing?', sender: 'other', time: '10:25 AM' },
+    { id: 2, text: "I'm good, thanks! Working on the new project.", sender: 'me', time: '10:26 AM' },
+    { id: 3, text: 'That sounds exciting! Want to grab coffee later?', sender: 'other', time: '10:28 AM' },
+    { id: 4, text: 'Sure! How about 3pm?', sender: 'me', time: '10:29 AM' },
+    { id: 5, text: 'See you tomorrow!', sender: 'other', time: '10:30 AM' },
+    { id: 6, text: 'Ok—let’s fix the responsive layout.', sender: 'me', time: '10:30 AM' },
   ];
 
   // Persisted state

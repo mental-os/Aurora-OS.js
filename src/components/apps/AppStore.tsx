@@ -22,7 +22,7 @@ export function AppStore({ owner }: AppStoreProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<'all' | AppMetadata['category']>('all');
     const [installingApps, setInstallingApps] = useState<Record<string, number>>({});
-    
+
     // We use a ref to track active timeouts so we can clear them on unmount
     const timeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
     // We also need to track current progress in a ref to avoid stale closures in the recursive timeout
@@ -41,7 +41,7 @@ export function AppStore({ owner }: AppStoreProps) {
     useEffect(() => {
         const timeouts = timeoutsRef.current;
         return () => {
-             Object.values(timeouts).forEach(clearTimeout);
+            Object.values(timeouts).forEach(clearTimeout);
         };
     }, []);
 
@@ -80,27 +80,27 @@ export function AppStore({ owner }: AppStoreProps) {
             const currentProgress = progressRef.current[appId];
 
             if (currentProgress >= 100) {
-                 // Final pause before actual install
-                 timeoutsRef.current[appId] = setTimeout(() => {
+                // Final pause before actual install
+                timeoutsRef.current[appId] = setTimeout(() => {
                     installApp(appId, owner);
-                    
+
                     // Cleanup
                     delete timeoutsRef.current[appId];
                     delete progressRef.current[appId];
-                    
+
                     setInstallingApps(prev => {
                         const next = { ...prev };
                         delete next[appId];
                         return next;
                     });
-                 }, 500);
-                 return;
+                }, 500);
+                return;
             }
 
             // Variable increment: 1% to 4%
             const increment = Math.random() * 3 + 1;
             const newProgress = Math.min(100, currentProgress + increment);
-            
+
             progressRef.current[appId] = newProgress;
             setInstallingApps(prev => ({ ...prev, [appId]: Math.floor(newProgress) }));
 
@@ -113,7 +113,7 @@ export function AppStore({ owner }: AppStoreProps) {
             // "Stall" simulation
             // At 85-95%, occasional long pause
             if (newProgress > 85 && newProgress < 95 && Math.random() > 0.8) {
-                delay += 800; 
+                delay += 800;
             }
 
             timeoutsRef.current[appId] = setTimeout(loop, delay);
@@ -199,10 +199,10 @@ export function AppStore({ owner }: AppStoreProps) {
 
                                         {/* Description */}
                                         <p className="text-white/70 text-sm line-clamp-2">{displayDescription}</p>
-                                        
+
                                         {/* Metadata (Size) */}
                                         <p className="text-white/30 text-[10px] uppercase tracking-wider font-mono mb-4">
-                                            {t('appStore.size')}: {app.size ? `${app.size} MB` : 'Unknown'}
+                                            {t('appStore.size')}: {app.size ? `${app.size} MB` : t('appStore.sizeUnknown')}
                                         </p>
 
                                         {/* Install/Uninstall/Progress Button */}
@@ -215,10 +215,10 @@ export function AppStore({ owner }: AppStoreProps) {
                                             ) : isInstalling ? (
                                                 // Progress Bar UI
                                                 <div className="flex-1 h-9 bg-white/5 rounded-md overflow-hidden relative border border-white/10">
-                                                    <div 
+                                                    <div
                                                         className="h-full transition-all duration-200 ease-out"
-                                                        style={{ 
-                                                            width: `${progress}%`, 
+                                                        style={{
+                                                            width: `${progress}%`,
                                                             backgroundColor: accentColor,
                                                             opacity: 0.9
                                                         }}

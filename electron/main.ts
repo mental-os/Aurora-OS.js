@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import squirrelStartup from 'electron-squirrel-startup';
@@ -11,6 +11,11 @@ if (squirrelStartup) {
     app.quit();
 }
 
+// IPC Handlers
+ipcMain.handle('get-locale', () => {
+    return app.getLocale();
+});
+
 function createWindow() {
     // Check for frame option in env var or command line args
     const frameEnabled = process.env.WINDOW_FRAME === 'true' || process.argv.includes('--frame');
@@ -19,6 +24,7 @@ function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
+        show: false, // Start hidden for smoother transition
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -30,6 +36,10 @@ function createWindow() {
         frame: frameEnabled,
         titleBarStyle: frameEnabled ? 'default' : 'hidden',
     });
+
+    // Windowed Fullscreen: Maximize before showing
+    mainWindow.maximize();
+    mainWindow.show();
 
     // Development or Production
     if (process.env.VITE_DEV_SERVER_URL) {

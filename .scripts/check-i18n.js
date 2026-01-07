@@ -44,7 +44,7 @@ function getAllKeys(obj, prefix = '') {
 }
 
 async function run() {
-    const locales = ['en.ts', 'es.ts', 'fr.ts', 'ro.ts'];
+    const locales = ['en.ts', 'de.ts', 'es.ts', 'fr.ts', 'pt.ts', 'ro.ts'];
     let enDict;
     try {
         enDict = await getDict('en.ts');
@@ -90,7 +90,7 @@ async function run() {
     if (hasErrors) {
         process.exit(1);
     } else {
-        console.log('\nVerification successful: All locales are in sync with English baseline.');
+        console.log(`\nVerification successful: All ${locales.length} locales are in sync with English baseline.`);
     }
 }
 

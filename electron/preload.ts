@@ -1,5 +1,8 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
+import { contextBridge, ipcRenderer } from 'electron';
 
-// Currently empty but ready for secure IPC
+// Expose protected APIs to renderer
+contextBridge.exposeInMainWorld('electron', {
+    getLocale: () => ipcRenderer.invoke('get-locale'),
+});
+
 console.log('Electron preload script loaded');

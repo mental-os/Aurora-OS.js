@@ -68,21 +68,6 @@ export const fr: TranslationDict = {
     music: 'Écouter votre musique préférée',
     devCenter: 'Outils de développement',
   },
-  apps: {
-    finder: 'Finder',
-    systemSettings: 'Réglages du système',
-    photos: 'Photos',
-    music: 'Musique',
-    messages: 'Messages',
-    browser: 'Navigateur',
-    terminal: 'Terminal',
-    trash: 'Corbeille',
-    devCenter: 'Centre DEV',
-    notepad: 'Notes',
-    calendar: 'Calendrier',
-    appStore: 'App Store',
-    mail: 'Courrier',
-  },
   a11y: {
     common: {
       close: 'Fermer',
@@ -302,11 +287,12 @@ export const fr: TranslationDict = {
       description:
         "Essayez d'ajuster votre recherche ou le filtre de catégorie pour trouver ce que vous cherchez.",
     },
+    size: 'Taille',
+    sizeUnknown: 'Inconnue',
     systemApp: 'App système',
     install: 'Installer',
     uninstall: 'Désinstaller',
     installed: 'Installée',
-    size: 'Taille',
   },
   browser: {
     menu: {
@@ -322,11 +308,10 @@ export const fr: TranslationDict = {
       newTab: 'Nouvel onglet',
     },
     welcome: {
-      title: 'Bienvenue',
-      subtitle: 'Vos sites favoris',
+      searchPlaceholder: 'Rechercher des sites web ou saisir une adresse...',
+      favorites: 'Favoris',
+      recentActivity: 'Activité récente',
     },
-    recentActivity: 'Activité récente',
-    exampleWebsite: 'Site exemple {{index}}',
     searchPlaceholder: 'Rechercher ou saisir une adresse...',
     error: {
       pageNotFound: 'Page non trouvée',
@@ -561,27 +546,6 @@ export const fr: TranslationDict = {
     },
     searchPlaceholder: 'Rechercher des conversations...',
     typePlaceholder: 'Écrire un message...',
-    time: {
-      yesterday: 'Hier',
-      monday: 'Lundi',
-    },
-    mock: {
-      lastMessage: {
-        seeYouTomorrow: 'À demain !',
-        newMockupsReady: 'Les nouvelles maquettes sont prêtes',
-        thanksForTheHelp: 'Merci pour ton aide !',
-        meetingAt2pm: 'Réunion à 14 h',
-        gotItThanks: 'Compris, merci !',
-      },
-      message: {
-        heyHowAreYouDoing: 'Salut ! Comment ça va ?',
-        imGoodWorkingOnNewProject: 'Ça va, merci ! Je travaille sur le nouveau projet.',
-        thatSoundsExcitingCoffeeLater: 'Ça a l’air top ! On prend un café plus tard ?',
-        sureHowAbout3pm: 'Bien sûr ! Vers 15 h ?',
-        seeYouTomorrow: 'À demain !',
-        okFixResponsiveLayout: 'Ok—corrigeons la mise en page responsive.',
-      },
-    },
     menu: {
       newMessage: 'Nouveau message',
       deleteConversation: 'Supprimer la conversation',
