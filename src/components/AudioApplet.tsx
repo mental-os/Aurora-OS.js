@@ -42,7 +42,7 @@ export function AudioApplet() {
     const [isOpen, setIsOpen] = useState(false);
 
     // Music Context
-    const { currentSong, isPlaying, togglePlay, playNext, playPrev, isMusicOpen } = useMusic();
+    const { currentSong, isPlaying, togglePlay, playNext, playPrev, isMusicOpen, seekTo, currentTime, duration, soundRef } = useMusic();
 
     const handleVolumeChange = (category: SoundCategory, value: number[]) => {
         soundManager.setVolume(category, value[0]);
@@ -98,40 +98,92 @@ export function AudioApplet() {
 
                 {/* Now Playing Section */}
                 {isMusicOpen && currentSong && (
-                    <div className="p-4 border-b border-white/10 flex items-center gap-4 bg-white/5">
-                        {/* Artwork/Icon */}
-                        <div
-                            className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
-                            style={{ backgroundColor: accentColor }}
+                    <div className="p-4 border-b border-white/10 bg-white/5">
+                        <div className="flex items-center gap-4 mb-3">
+                            {/* Artwork/Icon */}
+                            <div
+                                className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
+                                style={{ backgroundColor: accentColor }}
+                            >
+                                <Music2 className="w-6 h-6 text-white" />
+                            </div>
+
+                            {/* Text Info */}
+                            <div className="flex-1 min-w-0">
+                                <div className="text-white text-sm font-medium truncate leading-tight">
+                                    {currentSong.title}
+                                </div>
+                                <div className="text-white/60 text-xs truncate mt-0.5">
+                                    {currentSong.artist}
+                                </div>
+                            </div>
+
+                            {/* Controls */}
+                            <div className="flex items-center gap-2">
+                                <button onClick={playPrev} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                                    <SkipBack className="w-4 h-4 fill-current" />
+                                </button>
+                                <button onClick={togglePlay} className="p-2 bg-white text-black hover:scale-105 active:scale-95 rounded-full transition-all shadow-md">
+                                    {isPlaying ? (
+                                        <Pause className="w-4 h-4 fill-current" />
+                                    ) : (
+                                        <Play className="w-4 h-4 fill-current ml-0.5" />
+                                    )}
+                                </button>
+                                <button onClick={() => playNext()} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                                    <SkipForward className="w-4 h-4 fill-current" />
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/*progress bar */}
+                        <div 
+                            className="h-1 bg-white/10 rounded-full cursor-pointer group/seekbar hover:h-1.5 transition-all"
+                            onClick={(e) => {
+                                if (!soundRef.current || duration === 0) return;
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const x = e.clientX - rect.left;
+                                const percent = x / rect.width;
+                                const seekTime = percent * duration;
+                                seekTo(seekTime);
+                            }}
+                            onMouseDown={(e) => {
+                                if (!soundRef.current || duration === 0) return;
+                                const handleMouseMove = (moveEvent: MouseEvent) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const x = Math.max(0, Math.min(moveEvent.clientX - rect.left, rect.width));
+                                    const percent = x / rect.width;
+                                    const seekTime = percent * duration;
+                                    seekTo(seekTime);
+                                };
+                                
+                                const handleMouseUp = () => {
+                                    document.removeEventListener('mousemove', handleMouseMove);
+                                    document.removeEventListener('mouseup', handleMouseUp);
+                                };
+                                
+                                document.addEventListener('mousemove', handleMouseMove);
+                                document.addEventListener('mouseup', handleMouseUp);
+                            }}
                         >
-                            <Music2 className="w-6 h-6 text-white" />
-                        </div>
-
-                        {/* Text Info */}
-                        <div className="flex-1 min-w-0">
-                            <div className="text-white text-sm font-medium truncate leading-tight">
-                                {currentSong.title}
+                            <div
+                                className="h-full rounded-full relative"
+                                style={{ 
+                                    width: duration > 0 ? `${(currentTime / duration) * 100}%` : '0%',
+                                    backgroundColor: accentColor 
+                                }}
+                            >
+                                <div 
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full opacity-0 group-hover/seekbar:opacity-100 transition-opacity shadow-lg"
+                                    style={{ transform: 'translate(50%, -50%)' }}
+                                />
                             </div>
-                            <div className="text-white/60 text-xs truncate mt-0.5">
-                                {currentSong.artist}
-                            </div>
                         </div>
-
-                        {/* Controls */}
-                        <div className="flex items-center gap-2">
-                            <button onClick={playPrev} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
-                                <SkipBack className="w-4 h-4 fill-current" />
-                            </button>
-                            <button onClick={togglePlay} className="p-2 bg-white text-black hover:scale-105 active:scale-95 rounded-full transition-all shadow-md">
-                                {isPlaying ? (
-                                    <Pause className="w-4 h-4 fill-current" />
-                                ) : (
-                                    <Play className="w-4 h-4 fill-current ml-0.5" />
-                                )}
-                            </button>
-                            <button onClick={() => playNext()} className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
-                                <SkipForward className="w-4 h-4 fill-current" />
-                            </button>
+                        
+                        {/* the time display */}
+                        <div className="flex items-center justify-between text-white/40 text-[10px] tabular-nums mt-1.5">
+                            <span>{Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}</span>
+                            <span>{Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}</span>
                         </div>
                     </div>
                 )}

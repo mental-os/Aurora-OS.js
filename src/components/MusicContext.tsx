@@ -22,6 +22,8 @@ interface MusicContextType {
     isPlaying: boolean;
     volume: number;
     seek: number;
+    currentTime: number;
+    duration: number;
     soundRef: React.MutableRefObject<Howl | null>;
     recent: Song[];
 
@@ -32,6 +34,7 @@ interface MusicContextType {
     playNext: () => void;
     playPrev: () => void;
     setVolume: (vol: number) => void; // 0-100
+    seekTo: (seconds: number) => void;
     stop: () => void;
     pause: () => void;
     isMusicOpen: boolean;
@@ -96,6 +99,8 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMusicOpen, setMusicOpen] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
     const [recent, setRecent] = useState<Song[]>(() => {
         try {
             const saved = localStorage.getItem(getKeys(activeUser || 'guest').RECENT);
@@ -369,6 +374,41 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
         setVolumeState(vol);
     };
 
+    const seekTo = useCallback((seconds: number) => {
+        if (soundRef.current) {
+            soundRef.current.seek(seconds);
+            setCurrentTime(seconds);
+        }
+    }, []);
+
+    // Track current time and duration
+    useEffect(() => {
+        let rafId: number;
+        
+        const updateTime = () => {
+            if (soundRef.current && isPlaying) {
+                const current = soundRef.current.seek();
+                const dur = soundRef.current.duration();
+                if (typeof current === 'number') setCurrentTime(current);
+                if (typeof dur === 'number') setDuration(dur);
+                rafId = requestAnimationFrame(updateTime);
+            }
+        };
+        
+        if (isPlaying) {
+            rafId = requestAnimationFrame(updateTime);
+        } else if (soundRef.current) {
+            const current = soundRef.current.seek();
+            const dur = soundRef.current.duration();
+            if (typeof current === 'number') setCurrentTime(current);
+            if (typeof dur === 'number') setDuration(dur);
+        }
+        
+        return () => {
+            if (rafId) cancelAnimationFrame(rafId);
+        };
+    }, [isPlaying]);
+
     // Restore Session Trigger (On Load)
     useEffect(() => {
         if (currentIndex !== -1 && playlist[currentIndex] && !soundRef.current) {
@@ -386,6 +426,8 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
             isPlaying,
             volume,
             seek: 0,
+            currentTime,
+            duration,
             soundRef,
             recent,
             setPlaylist,
@@ -395,6 +437,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
             playNext,
             playPrev,
             setVolume,
+            seekTo,
             stop,
             pause,
             isMusicOpen,

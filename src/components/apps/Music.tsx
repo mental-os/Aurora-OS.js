@@ -98,6 +98,9 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
     soundRef,
     recent,
     pause,
+    seekTo,
+    currentTime,
+    duration,
     setMusicOpen,
     activeCategory,
     setActiveCategory
@@ -480,13 +483,47 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
           className="h-20 border-t border-white/10 px-4 flex items-center gap-4 shrink-0 relative group"
           style={{ background: getBackgroundColor(0.9), ...blurStyle }}
         >
-          {/* Progress Bar (Simulated on top border) */}
-          <div className="absolute top-0 left-0 h-0.5 bg-white/10 w-full">
+          {/* Progress Bar (Interactive) */}
+          <div 
+            className="absolute top-0 left-0 h-1 bg-white/10 w-full cursor-pointer group/progress hover:h-1.5 transition-all"
+            onClick={(e) => {
+              if (!soundRef.current || duration === 0) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const percent = x / rect.width;
+              const seekTime = percent * duration;
+              seekTo(seekTime);
+            }}
+            onMouseDown={(e) => {
+              if (!soundRef.current || duration === 0) return;
+              
+              const handleMouseMove = (moveEvent: MouseEvent) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = Math.max(0, Math.min(moveEvent.clientX - rect.left, rect.width));
+                const percent = x / rect.width;
+                const seekTime = percent * duration;
+                seekTo(seekTime);
+              };
+              
+              const handleMouseUp = () => {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+              };
+              
+              document.addEventListener('mousemove', handleMouseMove);
+              document.addEventListener('mouseup', handleMouseUp);
+            }}
+          >
             <div
               ref={progressBarRef}
-              className="h-full"
-              style={{ width: '0%', backgroundColor: accentColor }}
-            />
+              className="h-full relative"
+              style={{ width: duration > 0 ? `${(currentTime / duration) * 100}%` : '0%', backgroundColor: accentColor }}
+            >
+              <div 
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-lg"
+                style={{ transform: 'translate(50%, -50%)' }}
+              />
+            </div>
           </div>
 
           {/* Track Info */}
@@ -538,6 +575,13 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
               <SkipForward className="w-5 h-5" />
             </button>
           </div>
+
+          {/* Time Display */}
+          {showPlayerInfo && currentSong && (
+            <div className="text-white/50 text-xs tabular-nums whitespace-nowrap">
+              {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')} / {Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}
+            </div>
+          )}
 
           {/* Volume */}
           {showVolume && (
