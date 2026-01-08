@@ -1,3 +1,4 @@
+import type React from 'react';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { STORAGE_KEYS } from '../utils/memory';
 import { feedback } from '../services/soundFeedback';
@@ -127,6 +128,38 @@ export function useWindowManager(
 
                 topZIndexRef.current += 1;
                 const newZIndex = topZIndexRef.current;
+                // Calculate safe dimensions based on screen size
+                const screenW = typeof window !== 'undefined' ? window.innerWidth : 1024;
+                const screenH = typeof window !== 'undefined' ? window.innerHeight : 768;
+
+                const defaultWidth = 800;
+                const defaultHeight = 600;
+
+                // Ensure window fits on screen with some padding
+                const width = Math.min(defaultWidth, screenW - 100); 
+                const height = Math.min(defaultHeight, screenH - 150); 
+
+                // Calculate diagonal cascade with dynamic wrapping
+                const stepSize = 30;
+                const startX = 100;
+                const startY = 80;
+                const rightPadding = 80;
+                const bottomPadding = 80;
+                
+                // Calculate how many steps fit before hitting screen boundaries
+                const maxStepsX = Math.floor((screenW - width - startX - rightPadding) / stepSize);
+                const maxStepsY = Math.floor((screenH - height - startY - bottomPadding) / stepSize);
+                const calculatedSteps = Math.min(maxStepsX, maxStepsY);
+                
+                // Use calculated steps but ensure at least 3 for variety
+                const maxSteps = Math.max(3, calculatedSteps);
+                
+                const windowIndex = prevWindows.length % maxSteps;
+                const cascadeOffset = windowIndex * stepSize;
+                
+                const x = startX + cascadeOffset;
+                const y = startY + cascadeOffset;
+
                 const newWindow: WindowState = {
                     id: `${type}-${Date.now()}`,
                     type,
@@ -134,8 +167,8 @@ export function useWindowManager(
                     content,
                     isMinimized: false,
                     isMaximized: false,
-                    position: { x: 100 + prevWindows.length * 30, y: 80 + prevWindows.length * 30 },
-                    size: { width: 900, height: 600 },
+                    position: { x, y },
+                    size: { width, height },
                     zIndex: newZIndex,
                     data,
                     owner: owner || activeUser || 'guest',
