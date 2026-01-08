@@ -223,6 +223,30 @@ export const pt: TranslationDict = {
       },
     },
   },
+  memory: {
+    title: 'Memória',
+    used: 'Usada',
+    pressure: 'Pressão',
+    appMemory: 'Memória de Apps',
+    wiredMemory: 'Memória Residente',
+    processName: 'Nome do Processo',
+    memory: 'Memória',
+    swapUsed: 'Swap Usado',
+    systemWired: 'Sistema Aurora',
+    activeSession: 'Memória Residente (Sessão Ativa)',
+    userSession: 'Sessão: {{user}}',
+    backgroundSession: 'Memória Inativa (Fundo)',
+    backgroundProcesses: '{{count}} Processos em Segundo Plano',
+    instances: '{{count}} Instâncias',
+    type: {
+      mainWindow: 'Janela Principal',
+      extraWindow: 'Janela Adicional',
+      extraTabs: '{{count}} Abas Extras',
+    },
+  },
+
+
+
   appStore: {
     menu: {
       checkForUpdates: 'Verificar atualizações...',
@@ -1024,6 +1048,39 @@ export const pt: TranslationDict = {
       next: 'Próximo',
       back: 'Voltar',
       startUsing: 'Começar a Usar o Aurora',
+    },
+  },
+  battery: {
+    title: 'Bateria',
+    charging: 'Carregando',
+    fullyCharged: 'Totalmente Carregada',
+    remaining: '{{percentage}}% Restante',
+    powerSource: 'Fonte de Energia:',
+    powerSources: {
+      adapter: 'Adaptador de Energia',
+      battery: 'Bateria',
+    },
+    condition: 'Condição (Est.)',
+    metrics: {
+      health: 'Saúde',
+      cycles: 'Ciclos',
+      temp: 'Temp',
+      voltage: 'Voltagem',
+    },
+    disclaimer: 'As métricas de saúde e condição da bateria são estimativas baseadas nos sensores do sistema disponíveis. Os valores reais podem variar.',
+    showPercentage: 'Mostrar porcentagem na barra de menus',
+  },
+  audio: {
+    title: 'Som',
+    muteAll: 'Silenciar Tudo',
+    unmute: 'Reativar Som',
+    masterVolume: 'Volume Principal',
+    mixer: 'Mixer',
+    categories: {
+      music: 'Música',
+      system: 'Alertas do Sistema',
+      interface: 'Interface',
+      feedback: 'Feedback de Entrada',
     },
   },
 };

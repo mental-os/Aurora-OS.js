@@ -283,6 +283,30 @@ export const fr: TranslationDict = {
       },
     },
   },
+  memory: {
+    title: 'Mémoire',
+    used: 'Utilisée',
+    pressure: 'Pression',
+    appMemory: 'Mémoire d’app',
+    wiredMemory: 'Mémoire résidente',
+    processName: 'Nom du processus',
+    memory: 'Mémoire',
+    swapUsed: 'Fichier d’échange',
+    systemWired: 'Système Aurora',
+    activeSession: 'Mémoire résidente (Session active)',
+    userSession: 'Session : {{user}}',
+    backgroundSession: 'Mémoire inactif (Arrière-plan)',
+    backgroundProcesses: '{{count}} processus en arrière-plan',
+    instances: '{{count}} instances',
+    type: {
+      mainWindow: 'Fenêtre principale',
+      extraWindow: 'Fenêtre supplémentaire',
+      extraTabs: '{{count}} onglets suppl.',
+    },
+  },
+
+
+
   appStore: {
     menu: {
       checkForUpdates: 'Rechercher des mises à jour...',
@@ -1027,6 +1051,39 @@ export const fr: TranslationDict = {
       hardResetWarning: '⚠️ Tous les fichiers et dossiers personnalisés seront supprimés définitivement',
       factoryReset: 'Réglages d’usine',
       deleteEverything: 'Oui, tout supprimer',
+    },
+  },
+  battery: {
+    title: 'Batterie',
+    charging: 'En charge',
+    fullyCharged: 'Complètement chargée',
+    remaining: '{{percentage}}% restant',
+    powerSource: "Source d'alimentation :",
+    powerSources: {
+      adapter: 'Adaptateur secteur',
+      battery: 'Batterie',
+    },
+    condition: 'État (Est.)',
+    metrics: {
+      health: 'Santé',
+      cycles: 'Cycles',
+      temp: 'Temp',
+      voltage: 'Tension',
+    },
+    disclaimer: 'Les métriques de santé et d\'état de la batterie sont des estimations basées sur les capteurs système disponibles. Les valeurs réelles peuvent varier.',
+    showPercentage: 'Afficher le pourcentage dans la barre des menus',
+  },
+  audio: {
+    title: 'Son',
+    muteAll: 'Tout couper',
+    unmute: 'Rétablir le son',
+    masterVolume: 'Volume principal',
+    mixer: 'Mélangeur',
+    categories: {
+      music: 'Musique',
+      system: 'Alertes système',
+      interface: 'Interface',
+      feedback: 'Retour de saisie',
     },
   },
 };

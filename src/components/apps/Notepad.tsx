@@ -72,7 +72,7 @@ interface Tab {
 // ... imports
 import { useAppContext } from '../AppContext';
 import { useWindow } from '../WindowContext';
-import { STORAGE_KEYS } from '../../utils/memory';
+import { getAppStateKey } from '../../utils/memory';
 import { useI18n } from '../../i18n/index';
 
 // ... interface
@@ -144,7 +144,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
         // Initializer for lazy state loading
         try {
             if (!activeUser) return [{ id: '1', name: getUntitledTabName(1), content: '', isModified: false, context: 'markdown' }];
-            const key = `${STORAGE_KEYS.APP_PREFIX}notepad-state-${activeUser}`;
+            const key = getAppStateKey('notepad', activeUser);
             const saved = localStorage.getItem(key);
             if (saved) {
                 const parsed = JSON.parse(saved);
@@ -164,7 +164,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
     const [activeTabId, setActiveTabId] = useState(() => {
         try {
             if (!activeUser) return '1';
-            const key = `${STORAGE_KEYS.APP_PREFIX}notepad-state-${activeUser}`;
+            const key = getAppStateKey('notepad', activeUser);
             const saved = localStorage.getItem(key);
             if (saved) {
                 const parsed = JSON.parse(saved);
@@ -179,7 +179,7 @@ export function Notepad({ owner, initialPath }: NotepadProps) {
     // Persist State Effect
     useEffect(() => {
         if (!activeUser) return;
-        const key = `${STORAGE_KEYS.APP_PREFIX}notepad-state-${activeUser}`;
+        const key = getAppStateKey('notepad', activeUser);
 
         const saveState = setTimeout(() => {
             const state = {

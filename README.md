@@ -1,6 +1,6 @@
 # Aurora OS.js
 
-[![Version](https://img.shields.io/badge/Version-v0.8.1-blue)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Status](<https://img.shields.io/badge/Roadmap-Stage%200%20(OS%20Foundation)-blue>) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![Build (Nightly)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=nightly&label=Build%20(Nightly)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
+[![Version](https://img.shields.io/badge/Version-v0.8.2-blue)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Status](<https://img.shields.io/badge/Roadmap-Stage%200%20(OS%20Foundation)-blue>) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![Build (Nightly)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=nightly&label=Build%20(Nightly)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
 
 ![Social media image for Aurora OS.js hacking simulator game project](.github/openGraph.png)
 
@@ -103,30 +103,22 @@ npm run dev
 
 Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
-## Release Notes (v0.8.1)
+## Release Notes (v0.8.2)
 
 ### Added
 
-- **Mail App**: Added mail app with basic functionality, to be further enhanced by gameplay logic and features in 0.9.x (just like Messages app should be enhanced by gameplay logic and features in 0.9.x).
-- **Browser App**: Vanilla core-websites that can be opened from the browser app. For now only TrustMail produces a result (eg. interoperability with Mail and filsystem).
-- **Translation**: ro-RO (Romanian), de-DE (German), and pt-BR (Portuguese) standard language added.
+- **Gamified Resource Monitor**: Implemented a global RAM monitoring system that simulates resource usage based on active/inactive user sessions, open windows, and background throttling.
+- **Memory Applet**: Added a new applet that displays memory usage and provides a way to see memory usage in real-time.
+- **Debugging Tools**: Exposed `window.aurora.checkRamUsage()` for real-time resource analysis in the console.
+- **Internationalization (i18n)**: Complete translation support for **Battery Applet** and **Audio Applet** across 6 languages (en, es, fr, de, pt, ro).
+- **Battery Metrics**: Added detailed battery health, cycle count, temperature, and voltage metrics (visible on supported hardware).
 
 ### Improved
 
-- **Apps Main Menu**: Standardized to be included in [app].tsx files.
-- **System States**: Improved the restart/log-out/shutdown logic.
-- **Apps**: Added user context to apps, so they can access user-specific data (eg. user specific home directory, user specific downloads directory, etc.)
-- **Main Menu**: Added confirmation exit at "shutdown" and a force-save function, but also translation supporrt (because Main Menu will be visible after language selection, too).
-- **Environment**: Improved the synconization between dev. and build modules (TS > Vite > Electron) and added environment variables for development and production (language sync, etc.).
-- **Main Menu**: Responsiveness on really small screens.
-- **Onboarding**: Improved the flow of the memory saving, waiting until the last step to write choices to the memory. This prevents incomplete unboarding by pressing "back" button.
-- **Onboarding**: Added input sanitization and validation.
-
-### Fixed
-
-- **Terminal App**: Fixed issue with terminal app retaining history even after a hard wipe - it should persist only in case of a crash.
-- **Onboarding**: Long language selection list was not scrollable - fixed by adding search too.
-- **Onboarding**: Weird behaviour when typing the name of the user. Now the account name is not autocompleted by default.
+- **Realistic App Resources**: Recalibrated all applications with "heavy" modern resource footprints (e.g., Browser ~450MB, DevCenter ~800MB) for better simulation accuracy.
+- **Desktop Detection**: Battery applet now intelligently hides sensor data on desktop environments while preserving basic status.
+- **Audio Applet**: Refactored to support dynamic localization keys.
+- **Code Quality**: Enhanced linting rules, resolved React hook dependency warnings, and standardized storage key management in `memory.ts`.
 
 ### [View full version history](HISTORY.md)
 

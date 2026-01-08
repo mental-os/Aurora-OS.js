@@ -1,3 +1,16 @@
+## 0.8.2
+
+### Added
+
+- **Internationalization (i18n)**: Complete translation support for **Battery Applet** and **Audio Applet** across 6 languages (en, es, fr, de, pt, ro).
+- **Battery Metrics**: Added detailed battery health, cycle count, temperature, and voltage metrics (visible on supported hardware).
+
+### Improved
+
+- **Desktop Detection**: Battery applet now intelligently hides sensor data on desktop environments while preserving basic status.
+- **Audio Applet**: Refactored to support dynamic localization keys.
+- **Code Quality**: Enhanced linting rules and resolved React hook dependency warnings.
+
 ## 0.8.1
 
 ### Added

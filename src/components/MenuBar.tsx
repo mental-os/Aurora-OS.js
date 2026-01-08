@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, memo } from 'react';
 import pkg from '../../package.json';
-import { Orbit, Wifi, Battery } from 'lucide-react';
+import { Orbit, Wifi } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useFullscreen } from '../hooks/useFullscreen';
 import { CreditsDrawer } from './Credits/CreditsDrawer';
@@ -9,6 +9,8 @@ import { useAppContext } from './AppContext';
 import { useFileSystem } from './FileSystemContext';
 import { AudioApplet } from './AudioApplet';
 import { NotificationCenter } from './NotificationCenter';
+import { BatteryApplet } from './BatteryApplet';
+import { MemoryApplet } from './MemoryApplet';
 import { hardReset, clearSession } from '../utils/memory';
 import {
   Menubar,
@@ -386,10 +388,9 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-4 px-2">
-        <button className="text-white/90 hover:text-white transition-colors">
-          <Battery className="w-4 h-4" />
-        </button>
-        <button className="text-white/90 hover:text-white transition-colors">
+        <MemoryApplet />
+        <BatteryApplet key={currentUser} />
+        <button className="flex items-center justify-center text-white/90 hover:text-white transition-colors">
           <Wifi className="w-4 h-4" />
         </button>
         <AudioApplet />

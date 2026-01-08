@@ -281,6 +281,30 @@ export const ro: TranslationDict = {
             },
         },
     },
+  memory: {
+    title: 'Memorie',
+    used: 'Utilizată',
+    pressure: 'Presiune',
+    appMemory: 'Memorie Aplicații',
+    wiredMemory: 'Memorie Rezidentă',
+    processName: 'Nume Proces',
+    memory: 'Memorie',
+    swapUsed: 'Swap Utilizat',
+    systemWired: 'Sistem Aurora',
+    activeSession: 'Memorie Rezidentă (Sesiune Activă)',
+    userSession: 'Sesiune: {{user}}',
+    backgroundSession: 'Memorie Dormantă (Fundal)',
+    backgroundProcesses: '{{count}} Procese în Fundal',
+    instances: '{{count}} Instanțe',
+    type: {
+      mainWindow: 'Fereastră Principală',
+      extraWindow: 'Fereastră Extra',
+      extraTabs: '{{count}} Tab-uri Extra',
+    },
+  },
+
+
+
     appStore: {
         menu: {
             checkForUpdates: 'Verifică actualizări...',
@@ -1023,6 +1047,39 @@ export const ro: TranslationDict = {
             hardResetWarning: '⚠️ Toate fișierele și dosarele personalizate vor fi șterse permanent',
             factoryReset: 'Resetare din Fabrică',
             deleteEverything: 'Da, Șterge Tot',
+        },
+    },
+    battery: {
+        title: 'Baterie',
+        charging: 'Se încarcă',
+        fullyCharged: 'Complet Încărcată',
+        remaining: '{{percentage}}% Rămas',
+        powerSource: 'Sursă Alimentare:',
+        powerSources: {
+            adapter: 'Adaptor de Alimentare',
+            battery: 'Baterie',
+        },
+        condition: 'Stare (Est.)',
+        metrics: {
+            health: 'Sănătate',
+            cycles: 'Cicluri',
+            temp: 'Temp',
+            voltage: 'Voltaj',
+        },
+        disclaimer: 'Măsurătorile privind sănătatea și starea bateriei sunt estimări bazate pe senzorii disponibili ai sistemului. Valorile reale pot varia.',
+        showPercentage: 'Arată procentajul în bara de meniu',
+    },
+    audio: {
+        title: 'Sunet',
+        muteAll: 'Oprește Tot',
+        unmute: 'Pornește Sunet',
+        masterVolume: 'Volum Principal',
+        mixer: 'Mixer',
+        categories: {
+            music: 'Muzică',
+            system: 'Alerte Sistem',
+            interface: 'Interfață',
+            feedback: 'Feedback Intrare',
         },
     },
 };

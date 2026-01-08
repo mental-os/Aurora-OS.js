@@ -1,7 +1,9 @@
+/// <reference path="electron-env.d.ts" />
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import squirrelStartup from 'electron-squirrel-startup';
+import si from 'systeminformation';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,14 +18,24 @@ ipcMain.handle('get-locale', () => {
     return app.getLocale();
 });
 
+ipcMain.handle('get-battery', async () => {
+    try {
+        const battery = await si.battery();
+        return battery;
+    } catch (error) {
+        console.error('Failed to get battery info:', error);
+        return null;
+    }
+});
+
 function createWindow() {
     // Check for frame option in env var or command line args
     const frameEnabled = process.env.WINDOW_FRAME === 'true' || process.argv.includes('--frame');
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        width: 1280,
-        height: 800,
+        width: 1366,
+        height: 768,
         show: false, // Start hidden for smoother transition
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),

@@ -11,6 +11,7 @@ const OS = lazy(() => import('./components/OS'));
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useI18n } from './i18n';
+import { calculateTotalRamUsage } from './utils/resourceMonitor';
 
 function KernelLoadingFallback() {
   const { t } = useI18n();
@@ -30,6 +31,28 @@ function AppContent() {
     switchUser(currentUser || 'root');
   }, [currentUser, switchUser]);
 
+  // Expose RAM usage utility for testing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.aurora = {
+        ...window.aurora,
+        checkRamUsage: () => {
+          try {
+            const report = calculateTotalRamUsage(currentUser || 'root');
+            console.group('RAM Usage Report');
+            console.table(report.breakdown);
+            console.log(`Total Gamified RAM Usage: ${report.totalMB} MB`);
+            console.groupEnd();
+            return report;
+          } catch (e) {
+            console.error('Failed to calculate RAM usage:', e);
+            return { error: e };
+          }
+        }
+      };
+    }
+  }, [currentUser]);
+
   return (
     <>
       {/* Render OS if user is logged in (even if locked) */}
@@ -44,7 +67,7 @@ function AppContent() {
 
       {/* Render Login Overlay if logged out OR locked */}
       {(!currentUser || isLocked) && (
-        <div className="absolute inset-0 z-[20000]">
+        <div className="absolute inset-0 z-20000">
           <LoginScreen />
         </div>
       )}

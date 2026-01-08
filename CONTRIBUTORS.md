@@ -32,6 +32,9 @@ Social: [IG/s.a.u.r.a.b\_](https://www.instagram.com/s.a.u.r.a.b_)
 **[@masterofmagic999](https://github.com/masterofmagic999)**  
 Contribution: Code, Testing
 
+**[@Marcx5](https://github.com/Marcx5)**  
+Contribution: Code
+
 ## 🎨 Design & UX
 
 _(Visual systems, interaction concepts, UI explorations)_

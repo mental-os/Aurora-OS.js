@@ -7,6 +7,7 @@ import { soundManager, type SoundCategory } from '../services/sound';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useAppContext } from './AppContext';
 import { useMusic } from './MusicContext';
+import { useI18n } from '../i18n';
 
 function useAudioMixer() {
     const [state, setState] = useState({
@@ -40,6 +41,7 @@ export function AudioApplet() {
     const { blurStyle, getBackgroundColor } = useThemeColors();
     const { disableShadows, accentColor, reduceMotion } = useAppContext();
     const [isOpen, setIsOpen] = useState(false);
+    const { t } = useI18n();
 
     // Music Context
     const { currentSong, isPlaying, togglePlay, playNext, playPrev, isMusicOpen } = useMusic();
@@ -59,7 +61,7 @@ export function AudioApplet() {
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
                 <button
-                    className={`transition-colors ${isOpen ? 'text-white' : 'text-white/70 hover:text-white'}`}
+                    className={`transition-colors flex items-center justify-center ${isOpen ? 'text-white' : 'text-white/70 hover:text-white'}`}
                 >
                     {isMuted || master === 0 ? (
                         <VolumeX className="w-4 h-4" />
@@ -70,7 +72,7 @@ export function AudioApplet() {
             </PopoverTrigger>
 
             <PopoverContent
-                className={`w-80 p-0 overflow-hidden border-white/20 rounded-2xl ${!disableShadows ? 'shadow-2xl' : 'shadow-none'} ${reduceMotion ? '!animate-none !duration-0' : ''}`}
+                className={`w-80 p-0 overflow-hidden border-white/20 rounded-2xl ${!disableShadows ? 'shadow-2xl' : 'shadow-none'} ${reduceMotion ? 'animate-none! duration-0!' : ''}`}
                 style={{
                     background: getBackgroundColor(0.8),
                     ...blurStyle,
@@ -83,7 +85,7 @@ export function AudioApplet() {
                 <div className="p-4 border-b border-white/5 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Volume2 className="w-5 h-5 text-white/70" />
-                        <h2 className="text-white/90">Sound</h2>
+                        <h2 className="text-white/90 font-semibold">{t('audio.title')}</h2>
                     </div>
                     <button
                         onClick={toggleMute}
@@ -92,7 +94,7 @@ export function AudioApplet() {
                             : 'bg-white/5 text-white/70 hover:bg-white/10'
                             }`}
                     >
-                        {isMuted ? 'Unmute' : 'Mute All'}
+                        {isMuted ? t('audio.unmute') : t('audio.muteAll')}
                     </button>
                 </div>
 
@@ -143,7 +145,7 @@ export function AudioApplet() {
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-white/90 flex items-center gap-2">
                                 <Volume2 className="w-4 h-4 text-white/50" />
-                                Master Volume
+                                {t('audio.masterVolume')}
                             </span>
                             <span className="text-white/50">{Math.round(master * 100)}%</span>
                         </div>
@@ -158,17 +160,17 @@ export function AudioApplet() {
 
                     <Accordion type="single" collapsible className="bg-black/20 rounded-xl border border-white/5 overflow-hidden">
                         <AccordionItem value="sound-mixer" className="border-none">
-                            <AccordionTrigger className="w-full !px-6 py-4 text-white/70">
-                                <h2 className="text-white/90">Mixer</h2>
+                            <AccordionTrigger className="w-full px-6! py-4 text-white/70">
+                                <h2 className="text-white/90">{t('audio.mixer')}</h2>
                             </AccordionTrigger>
-                            <AccordionContent className="!px-6 pb-6 pt-3">
+                            <AccordionContent className="px-6! pb-6 pt-3">
                                 <div className="space-y-6">
                                     {/* Music Stream */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-white/90 flex items-center gap-2">
                                                 <Music2 className="w-4 h-4 text-white/50" />
-                                                Music
+                                                {t('audio.categories.music')}
                                             </span>
                                             <span className="text-white/50">{Math.round(music * 100)}%</span>
                                         </div>
@@ -187,7 +189,7 @@ export function AudioApplet() {
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-white/90 flex items-center gap-2">
                                                 <Bell className="w-4 h-4 text-white/50" />
-                                                System Alerts
+                                                {t('audio.categories.system')}
                                             </span>
                                             <span className="text-white/50">{Math.round(system * 100)}%</span>
                                         </div>
@@ -205,7 +207,7 @@ export function AudioApplet() {
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-white/90 flex items-center gap-2">
                                                 <AppWindow className="w-4 h-4 text-white/50" />
-                                                Interface
+                                                {t('audio.categories.interface')}
                                             </span>
                                             <span className="text-white/50">{Math.round(ui * 100)}%</span>
                                         </div>
@@ -223,7 +225,7 @@ export function AudioApplet() {
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-white/90 flex items-center gap-2">
                                                 <MousePointer2 className="w-4 h-4 text-white/50" />
-                                                Input Feedback
+                                                {t('audio.categories.feedback')}
                                             </span>
                                             <span className="text-white/50">{Math.round(feedback * 100)}%</span>
                                         </div>

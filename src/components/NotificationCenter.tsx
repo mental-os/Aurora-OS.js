@@ -51,7 +51,7 @@ export function NotificationCenter() {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <button
-          className={`transition-colors ${isOpen ? 'text-white' : 'text-white/70 hover:text-white'}`}
+          className={`transition-colors flex items-center justify-center ${isOpen ? 'text-white' : 'text-white/70 hover:text-white'}`}
         >
           <Bell className="w-4 h-4" />
         </button>
