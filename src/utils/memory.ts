@@ -212,3 +212,16 @@ export function clearSession(username: string): void {
     console.log(`Cleared session for user: ${username} (${keysToRemove.length + 3} keys)`);
 }
 
+/**
+ * Get the storage key for an app's persisted state
+ */
+export function getAppStateKey(appId: string, username: string): string {
+    return `${STORAGE_KEYS.APP_PREFIX}${appId}-state-${username}`;
+}
+
+/**
+ * Get the storage key for a user's window session
+ */
+export function getWindowKey(username: string): string {
+    return `${STORAGE_KEYS.WINDOWS_PREFIX}${username}`;
+}
