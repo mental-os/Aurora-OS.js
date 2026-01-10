@@ -10,7 +10,7 @@ import { GlassButton } from "@/components/ui/GlassButton";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useI18n } from "@/i18n";
-import { encodePassword, decodePassword } from "@/utils/authUtils";
+import { decodePassword } from "@/utils/authUtils";
 import { useFileSystem } from "@/components/FileSystemContext";
 import { notify } from "@/services/notifications";
 import { useThemeColors } from "@/hooks/useThemeColors";
