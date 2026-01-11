@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Cpu, Activity, Database } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { cn } from './ui/utils';
-import { useAppContext } from './AppContext';
-import { useThemeColors } from '../hooks/useThemeColors';
-import { useFileSystem } from './FileSystemContext';
-import { calculateTotalRamUsage, RamUsageReport } from '../utils/resourceMonitor';
-import { useI18n } from '../i18n';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/components/ui/utils';
+import { useAppContext } from '@/components/AppContext';
+import { useThemeColors } from '@/hooks/useThemeColors';
+import { useFileSystem } from '@/components/FileSystemContext';
+import { calculateTotalRamUsage, RamUsageReport } from '@/utils/resourceMonitor';
+import { useI18n } from '@/i18n';
 
 interface ProcessItem {
     id: string;

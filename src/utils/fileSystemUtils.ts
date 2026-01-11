@@ -1,6 +1,13 @@
 import pkg from '../../package.json';
 import startupSound from '../assets/sounds/Runway Electric.mp3';
 import startupSound2 from '../assets/sounds/Lo-Fi Girl.mp3';
+import photo1 from '../assets/images/image-1.png';
+import photo2 from '../assets/images/image-2.jpg';
+import photo3 from '../assets/images/image-3.jpg';
+import photo4 from '../assets/images/wallpaper-orbit.png';
+import photo5 from '../assets/images/wallpaper-dunes.png';
+import photo6 from '../assets/images/wallpaper-mesh.png';
+import photo7 from '../assets/images/background.png';
 import { getCoreApps } from '../config/appRegistry';
 
 export interface FileNode {
@@ -213,6 +220,20 @@ export function createUserHome(username: string, permissions: string = 'drwxr-x-
             music.children.push(
                 { name: 'Runway Electric.mp3', type: 'file', content: startupSound, size: 2048, owner: username, permissions: '-rw-r--r--' },
                 { name: 'Lo-Fi Girl.mp3', type: 'file', content: startupSound2, size: 2048, owner: username, permissions: '-rw-r--r--' }
+            );
+        }
+
+        // Populate Pictures
+        const pictures = home.children.find((c: any) => c.name === 'Pictures');
+        if (pictures) {
+            pictures.children.push(
+                { name: 'Waterfall.png', type: 'file', content: photo1, size: 2048000, owner: username, permissions: '-rw-r--r--' },
+                { name: 'Mountain.jpg', type: 'file', content: photo2, size: 2048000, owner: username, permissions: '-rw-r--r--' },
+                { name: 'Skyline.jpg', type: 'file', content: photo3, size: 5242880, owner: username, permissions: '-rw-r--r--' },
+                { name: 'Abstract Orbit.png', type: 'file', content: photo4, size: 567414, owner: username, permissions: '-rw-r--r--' },
+                { name: 'Desert Dunes.png', type: 'file', content: photo5, size: 640422, owner: username, permissions: '-rw-r--r--' },
+                { name: 'Mesh Gradient.png', type: 'file', content: photo6, size: 762581, owner: username, permissions: '-rw-r--r--' },
+                { name: 'System Background.png', type: 'file', content: photo7, size: 5071833, owner: username, permissions: '-rw-r--r--' }
             );
         }
     }

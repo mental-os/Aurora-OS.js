@@ -1,5 +1,5 @@
-import { useAppContext } from '../components/AppContext';
-import { getComplementaryColor, mixColors } from '../utils/colors';
+import { useAppContext } from '@/components/AppContext';
+import { getComplementaryColor, mixColors } from '@/utils/colors';
 
 /**
  * Custom hook to get theme-aware colors based on accent color and theme mode

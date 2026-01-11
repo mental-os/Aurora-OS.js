@@ -507,6 +507,7 @@ export const de: TranslationDict = {
     toasts: {
       musicNotInstalled: 'Die Musik-App ist nicht installiert. Installiere sie im App Store.',
       notepadNotInstalled: 'Notizblock ist nicht installiert. Installiere ihn im App Store.',
+      photosNotInstalled: 'Die Fotos-App ist nicht installiert. Installiere sie im App Store.',
     },
   },
   fileManager: {
@@ -541,6 +542,7 @@ export const de: TranslationDict = {
       permissionDenied: 'Zugriff verweigert: {{name}}',
       musicNotInstalled: 'Die Musik-App ist nicht installiert. Installiere sie im App Store.',
       notepadNotInstalled: 'Notizblock ist nicht installiert. Installiere ihn im App Store.',
+      photosNotInstalled: 'Die Fotos-App ist nicht installiert. Installiere sie im App Store.',
       movedItem: '1 Element verschoben',
       movedItems: '{{count}} Elemente verschoben',
       movedItemTo: '1 Element nach {{target}} verschoben',
@@ -575,29 +577,53 @@ export const de: TranslationDict = {
       muteNotifications: 'Benachrichtigungen stummschalten',
     },
   },
-  photos: {
-    sidebar: {
-      libraryTitle: 'Mediathek',
-      albumsTitle: 'Alben',
+    photos: {
+      sidebar: {
+        libraryTitle: 'Mediathek',
+        albumsTitle: 'Alben',
+      },
+      library: {
+        allPhotos: 'Alle Fotos',
+        favorites: 'Favoriten',
+        recent: 'Zuletzt',
+        people: 'Personen',
+        places: 'Orte',
+      },
+      albums: {
+        vacation2024: 'Urlaub 2024',
+        family: 'Familie',
+        nature: 'Natur',
+      },
+      menu: {
+        slideshow: 'Diashow',
+        rotateClockwise: 'Im Uhrzeigersinn drehen',
+        rotateCounterClockwise: 'Gegen den Uhrzeigersinn drehen',
+      },
+      empty: {
+        recent: {
+          title: 'Keine kürzlich angesehenen Fotos',
+          description: 'Ihre zuletzt geöffneten Fotos werden hier angezeigt.',
+        },
+        favorites: {
+          title: 'Noch keine Favoriten',
+          description: 'Markieren Sie Fotos als Favoriten, um sie hier zu sehen.',
+        },
+        library: {
+          title: 'Keine Fotos gefunden',
+          description: 'In Ihrem Bilder-Ordner wurden keine Fotodateien gefunden.',
+          openFolder: '{{folder}}-Ordner öffnen',
+        },
+        noFolder: {
+          title: "Mediathek von {{user}} nicht gefunden",
+          description: 'Der Ordner {{path}} wurde für diesen Benutzer nicht gefunden.',
+        },
+        openHome: 'Home-Verzeichnis öffnen',
+      },
+      folders: {
+        pictures: 'Bilder',
+        home: 'Home',
+      },
     },
-    library: {
-      allPhotos: 'Alle Fotos',
-      favorites: 'Favoriten',
-      recent: 'Zuletzt',
-      people: 'Personen',
-      places: 'Orte',
-    },
-    albums: {
-      vacation2024: 'Urlaub 2024',
-      family: 'Familie',
-      nature: 'Natur',
-    },
-    menu: {
-      slideshow: 'Diashow',
-      rotateClockwise: 'Im Uhrzeigersinn drehen',
-      rotateCounterClockwise: 'Gegen den Uhrzeigersinn drehen',
-    },
-  },
   mail: {
     login: {
       title: 'E-Mail',
@@ -638,6 +664,8 @@ export const de: TranslationDict = {
       archive: 'Archivieren',
       unarchive: 'Dearchivieren',
       delete: 'Löschen',
+      restore: 'Wiederherstellen',
+      deleteForever: 'Endgültig löschen',
     },
     time: {
       minutesAgo: 'vor {{minutes}}m',
@@ -749,6 +777,7 @@ export const de: TranslationDict = {
     },
     actions: {
       createEvent: 'Termin erstellen',
+      createCategory: 'Kategorie erstellen',
       clear: 'Löschen',
       delete: 'Entfernen',
       cancel: 'Abbrechen',
@@ -756,6 +785,7 @@ export const de: TranslationDict = {
     },
     loadingEvents: 'Termine werden geladen...',
     toasts: {
+      cannotDeleteSystemCategory: 'Systemkategorien können nicht gelöscht werden',
       eventDeleted: 'Termin gelöscht',
       eventSaved: 'Termin gespeichert',
       requiredFields: 'Bitte Pflichtfelder ausfüllen',
@@ -1081,19 +1111,19 @@ export const de: TranslationDict = {
       subtitle: 'Aurora OS ist bereit. Weiterleitung zum Anmeldebildschirm...',
     },
     search: {
-      placeholder: 'Search language...',
-      noResults: 'No languages found',
+      placeholder: 'Sprache suchen...',
+      noResults: 'Keine Sprachen gefunden',
     },
     validation: {
       requiredFields: 'Bitte füllen Sie alle erforderlichen Felder aus',
-      passwordLength: 'Password must be at least 6 characters',
-      userExists: 'User already exists. Please choose another username.',
-      fullNameFormat: 'Full Name should only contain letters, spaces, and hyphens',
-      usernameFormat: 'Username should only contain lowercase letters and numbers',
-      hintLength: 'Password hint is too long (max 50 characters)',
-      hintSecurity: 'Password hint cannot contain the password itself',
-      hintFormat: 'Password hint contains invalid characters',
-      creationFailed: 'Failed to create account. Please try again.',
+      passwordLength: 'Das Passwort muss mindestens 6 Zeichen lang sein',
+      userExists: 'Benutzer existiert bereits. Bitte wähle einen anderen Benutzernamen.',
+      fullNameFormat: 'Der vollständige Name sollte nur Buchstaben, Leerzeichen und Bindestriche enthalten',
+      usernameFormat: 'Der Benutzername sollte nur Kleinbuchstaben und Zahlen enthalten',
+      hintLength: 'Der Passworthinweis ist zu lang (max. 50 Zeichen)',
+      hintSecurity: 'Der Passworthinweis darf das Passwort selbst nicht enthalten',
+      hintFormat: 'Der Passworthinweis enthält ungültige Zeichen',
+      creationFailed: 'Kontoerstellung fehlgeschlagen. Bitte versuche es erneut.',
     },
     buttons: {
       next: 'Weiter',

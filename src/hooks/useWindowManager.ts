@@ -96,7 +96,7 @@ export function useWindowManager(
     }, [windows, activeUser, isRestoring]);
 
     const openWindow = useCallback(
-        (type: string, data?: { path?: string }, owner?: string) => {
+        (type: string, data?: { path?: string; timestamp?: number; [key: string]: any }, owner?: string) => {
             const MULTI_INSTANCE_APPS = ['finder', 'terminal', 'browser'];
 
             setWindows((prevWindows) => {

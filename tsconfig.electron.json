@@ -10,7 +10,13 @@
         ],
         "esModuleInterop": true,
         "moduleResolution": "bundler",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
     },
     "include": [
         "electron/**/*"

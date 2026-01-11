@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from './dialog';
-import { Button } from './button';
-import { Input } from './input';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useFileSystem, FileNode } from '@/components/FileSystemContext';
-import { FileIcon } from './FileIcon';
+import { FileIcon } from '@/components/ui/FileIcon';
 import { ArrowUp, FolderOpen } from 'lucide-react';
 import { useAppContext } from '@/components/AppContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { cn } from './utils';
+import { cn } from '@/components/ui/utils';
 import { notify } from '@/services/notifications';
 import { checkPermissions } from '@/utils/fileSystemUtils';
 import { BreadcrumbPill } from './BreadcrumbPill';
@@ -124,6 +124,7 @@ export function FilePicker({ isOpen, onClose, onSelect, mode, title, defaultPath
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent
+                overlayClassName="bg-black/20 backdrop-blur-[12px]"
                 className="sm:max-w-3xl border-white/20 text-white h-[500px] flex flex-col p-0 gap-0 overflow-hidden shadow-2xl rounded-xl [&>button]:hidden bg-transparent"
                 style={{
                     background: windowBackground,

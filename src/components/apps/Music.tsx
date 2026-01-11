@@ -11,17 +11,17 @@ import {
   Volume2,
   FolderOpen,
 } from "lucide-react";
-import { AppTemplate } from "./AppTemplate";
-import { useAppContext } from "../AppContext";
-import { useThemeColors } from "../../hooks/useThemeColors";
-import { useFileSystem } from "../FileSystemContext";
-import { useMusic, type Song } from "../MusicContext";
-import { useWindow } from "../WindowContext";
-import { cn } from "../ui/utils";
-import { Slider } from "../ui/slider";
-import { Button } from "../ui/button";
-import { EmptyState } from "../ui/empty-state";
-import { useI18n } from "../../i18n/index";
+import { AppTemplate } from "@/components/apps/AppTemplate";
+import { useAppContext } from "@/components/AppContext";
+import { useThemeColors } from "@/hooks/useThemeColors";
+import { useFileSystem } from "@/components/FileSystemContext";
+import { useMusic, type Song, MusicProvider } from "@/components/MusicContext";
+import { useWindow } from "@/components/WindowContext";
+import { cn } from "@/components/ui/utils";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n } from "@/i18n/index";
 
 // Helper types
 type TFn = (key: string, vars?: Record<string, string | number>) => string;
@@ -391,22 +391,37 @@ const NowPlayingBar = memo(({
 
 NowPlayingBar.displayName = 'NowPlayingBar';
 
-interface MusicProps {
+export interface MusicProps {
+  id: string;
+  onLaunchApp?: (appId: string, args: string[], owner?: string) => void;
   owner?: string;
   initialPath?: string;
   onOpenApp?: (type: string, data?: any, owner?: string) => void;
 }
 
-export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
-  // const [appState, setAppState] = useAppStorage... (Moved to Context)
+export function Music(props: MusicProps) {
+  const { activeUser: desktopUser } = useAppContext();
+  const isElevated = props.owner && props.owner !== desktopUser;
 
+  if (isElevated) {
+    return (
+      <MusicProvider owner={props.owner}>
+        <MusicInner {...props} />
+      </MusicProvider>
+    );
+  }
+
+  return <MusicInner {...props} />;
+}
+
+function MusicInner({ owner, initialPath, onOpenApp }: MusicProps) {
   const { resolvePath, getNodeAtPath, readFile } =
     useFileSystem();
   const { accentColor, activeUser: desktopUser } = useAppContext();
   const windowContext = useWindow();
-  const activeUser = owner || desktopUser;
   const { getBackgroundColor, blurStyle } = useThemeColors();
   const { t } = useI18n();
+  const activeUser = owner || desktopUser;
 
   const {
     playlist: songs,
@@ -452,17 +467,16 @@ export function Music({ owner, initialPath, onOpenApp }: MusicProps) {
   useEffect(() => {
     const path = initialPath || windowContext?.data?.path;
     const timestamp = windowContext?.data?.timestamp;
+    const isFresh = timestamp && (Date.now() - timestamp < 2000);
 
-    // Logic: Only play if we have a NEW timestamp (explicit user intent)
-    // OR if it's the very first mount with a path (fresh open) and we haven't processed this path yet.
+    // Logic: Only play if we have a NEW and FRESH timestamp (explicit user intent)
+    // For legacy/initial mount without any timestamp at all, we could fallback, 
+    // but the system now guarantees it for new actions.
 
     const isNewTimestamp =
       timestamp && timestamp !== processedTimestampRef.current;
-    // For initial mount without timestamp (legacy/fresh open), we check path diff,
-    // but practically OS always sends timestamp now. We'll support both.
-    const isNewPath = path && path !== processedPathRef.current;
 
-    if (path && (isNewTimestamp || (isNewPath && !timestamp))) {
+    if (path && isNewTimestamp && isFresh) {
       processedPathRef.current = path;
       if (timestamp) processedTimestampRef.current = timestamp;
 

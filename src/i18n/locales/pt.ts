@@ -513,6 +513,7 @@ export const pt: TranslationDict = {
     toasts: {
       musicNotInstalled: 'O app Música não está instalado. Instale na Loja de Apps.',
       notepadNotInstalled: 'O Bloco de Notas não está instalado. Instale na Loja de Apps.',
+      photosNotInstalled: 'O app Fotos não está instalado. Instale na Loja de Apps.',
     },
   },
   fileManager: {
@@ -547,6 +548,7 @@ export const pt: TranslationDict = {
       permissionDenied: 'Permissão negada: {{name}}',
       musicNotInstalled: 'O app Música não está instalado. Instale na Loja de Apps.',
       notepadNotInstalled: 'O Bloco de Notas não está instalado. Instale na Loja de Apps.',
+      photosNotInstalled: 'O app Fotos não está instalado. Instale na Loja de Apps.',
       movedItem: '1 item movido',
       movedItems: '{{count}} itens movidos',
       movedItemTo: '1 item movido para {{target}}',
@@ -581,29 +583,53 @@ export const pt: TranslationDict = {
       muteNotifications: 'Silenciar notificações',
     },
   },
-  photos: {
-    sidebar: {
-      libraryTitle: 'Biblioteca',
-      albumsTitle: 'Álbuns',
+    photos: {
+      sidebar: {
+        libraryTitle: 'Biblioteca',
+        albumsTitle: 'Álbuns',
+      },
+      library: {
+        allPhotos: 'Todas as fotos',
+        favorites: 'Favoritas',
+        recent: 'Recentes',
+        people: 'Pessoas',
+        places: 'Locais',
+      },
+      albums: {
+        vacation2024: 'Férias 2024',
+        family: 'Família',
+        nature: 'Natureza',
+      },
+      menu: {
+        slideshow: 'Apresentação',
+        rotateClockwise: 'Girar no sentido horário',
+        rotateCounterClockwise: 'Girar no sentido anti-horário',
+      },
+      empty: {
+        recent: {
+          title: 'Nenhuma foto visualizada recentemente',
+          description: 'Fotos que você abriu recentemente aparecerão aqui.',
+        },
+        favorites: {
+          title: 'Nenhuma favorita ainda',
+          description: 'Marque fotos como favoritas para vê-las aqui.',
+        },
+        library: {
+          title: 'Nenhuma foto encontrada',
+          description: 'Nenhum arquivo de foto foi encontrado na sua pasta Imagens.',
+          openFolder: 'Abrir pasta {{folder}}',
+        },
+        noFolder: {
+          title: "Biblioteca de {{user}} não encontrada",
+          description: 'A pasta {{path}} não foi encontrada para este usuário.',
+        },
+        openHome: 'Abrir pasta pessoal',
+      },
+      folders: {
+        pictures: 'Imagens',
+        home: 'Início',
+      },
     },
-    library: {
-      allPhotos: 'Todas as fotos',
-      favorites: 'Favoritas',
-      recent: 'Recentes',
-      people: 'Pessoas',
-      places: 'Locais',
-    },
-    albums: {
-      vacation2024: 'Férias 2024',
-      family: 'Família',
-      nature: 'Natureza',
-    },
-    menu: {
-      slideshow: 'Apresentação',
-      rotateClockwise: 'Girar no sentido horário',
-      rotateCounterClockwise: 'Girar no sentido anti-horário',
-    },
-  },
   mail: {
     login: {
       title: 'E-mail',
@@ -644,6 +670,8 @@ export const pt: TranslationDict = {
       archive: 'Arquivar',
       unarchive: 'Desarquivar',
       delete: 'Excluir',
+      restore: 'Restaurar',
+      deleteForever: 'Excluir permanentemente',
     },
     time: {
       minutesAgo: 'há {{minutes}}m',
@@ -755,6 +783,7 @@ export const pt: TranslationDict = {
     },
     actions: {
       createEvent: 'Criar evento',
+      createCategory: 'Criar categoria',
       clear: 'Limpar',
       delete: 'Remover',
       cancel: 'Cancelar',
@@ -762,6 +791,7 @@ export const pt: TranslationDict = {
     },
     loadingEvents: 'Carregando eventos...',
     toasts: {
+      cannotDeleteSystemCategory: 'Categorias do sistema não podem ser excluídas',
       eventDeleted: 'Evento removido',
       eventSaved: 'Evento salvo',
       requiredFields: 'Preencha os campos obrigatórios',
@@ -1087,19 +1117,19 @@ export const pt: TranslationDict = {
       subtitle: 'O Aurora OS está pronto. Redirecionando para a tela de login...',
     },
     search: {
-      placeholder: 'Search language...',
-      noResults: 'No languages found',
+      placeholder: 'Buscar idioma...',
+      noResults: 'Nenhum idioma encontrado',
     },
     validation: {
       requiredFields: 'Preencha todos os campos obrigatórios',
-      passwordLength: 'Password must be at least 6 characters',
-      userExists: 'User already exists. Please choose another username.',
-      fullNameFormat: 'Full Name should only contain letters, spaces, and hyphens',
-      usernameFormat: 'Username should only contain lowercase letters and numbers',
-      hintLength: 'Password hint is too long (max 50 characters)',
-      hintSecurity: 'Password hint cannot contain the password itself',
-      hintFormat: 'Password hint contains invalid characters',
-      creationFailed: 'Failed to create account. Please try again.',
+      passwordLength: 'A senha deve ter pelo menos 6 caracteres',
+      userExists: 'O usuário já existe. Por favor, escolha outro nome de usuário.',
+      fullNameFormat: 'O nome completo deve conter apenas letras, espaços e hifens',
+      usernameFormat: 'O nome de usuário deve conter apenas letras minúsculas e números',
+      hintLength: 'A dica de senha é muito longa (máx. 50 caracteres)',
+      hintSecurity: 'A dica de senha não pode conter a própria senha',
+      hintFormat: 'A dica de senha contém caracteres inválidos',
+      creationFailed: 'Falha ao criar conta. Por favor, tente novamente.',
     },
     buttons: {
       next: 'Próximo',

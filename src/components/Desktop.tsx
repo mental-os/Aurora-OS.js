@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo, useRef, forwardRef } from 'react';
-import { useAppContext } from './AppContext';
+import { useAppContext } from '@/components/AppContext';
 
 export interface DesktopIcon {
   id: string;
@@ -8,11 +8,11 @@ export interface DesktopIcon {
   position: { x: number; y: number };
   isEmpty?: boolean;
 }
-// import { lightenColor } from '../utils/colors';
-import { FileIcon } from './ui/FileIcon';
-import { useFileSystem } from './FileSystemContext';
-import { ContextMenuItem as ContextMenuItemType } from '../types';
-import { useI18n } from '../i18n';
+// import { lightenColor } from '@/utils/colors';
+import { FileIcon } from '@/components/ui/FileIcon';
+import { useFileSystem } from '@/components/FileSystemContext';
+import { ContextMenuItem as ContextMenuItemType } from '@/types';
+import { useI18n } from '@/i18n';
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -20,11 +20,11 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuShortcut,
-} from './ui/context-menu';
-import { renderContextMenuItems } from './ui/context-menu-utils';
-// import { checkPermissions } from '../utils/fileSystemUtils';
+} from '@/components/ui/context-menu';
+import { renderContextMenuItems } from '@/components/ui/context-menu-utils';
+// import { checkPermissions } from '@/utils/fileSystemUtils';
 import { FolderOpen, Trash2, Clipboard, Image as ImageIcon, Scissors, Copy, Info } from 'lucide-react';
-import { notify } from '../services/notifications';
+import { notify } from '@/services/notifications';
 import defaultWallpaper from '../assets/images/background.png';
 import orbitWallpaper from '../assets/images/wallpaper-orbit.png';
 import meshWallpaper from '../assets/images/wallpaper-mesh.png';

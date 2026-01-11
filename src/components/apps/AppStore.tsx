@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { AppTemplate } from './AppTemplate';
-import { useFileSystem } from '../FileSystemContext';
+import { useFileSystem } from "@/components/FileSystemContext";
 import { getAllApps, getAppsByCategory, type AppMetadata } from '../../config/appRegistry';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';

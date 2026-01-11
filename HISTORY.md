@@ -1,3 +1,35 @@
+## 0.8.3
+
+### Added
+
+- **Context menu**: Each APP feeds context menu information the same way they feed Menu Bar items. Some apps may not have/require context menu items.
+- **Finder**: Recursive search functionality aware of the current location.
+- **Music**: Added support for scanning real metadata for files in `/src/assets/sounds` (was relying on filename before).
+
+### Improved
+
+- **Standardized System Notifications**: All feedback notifications (errors, warnings, etc.) now use the same system notification component `notification.tsx`. These are different than App notifications that will go into the notification center (applet).
+- **Finder**: Show item count in the sidebar for Favorites and for Locations sections.
+  debar is aware of the existing folders in user's home directory.
+- **Finder/Desktop**: Context menu copy/paste functionality.
+- **Finder/Desktop**: Improved "Get Info" diagnostic display with rich, internationalized details (Permissions, Owner, Modified, Size).
+- **All APPs**: Benefit from optimizations, especially in terms of React drawing and memory usage.
+- **Notepad**: Opens with an empty state that propts user to open a file, instead of the clasic "first tab already open" - this gives the posibility to close all tabs.
+- **Translation System**: Added `.scripts/check-identical-translations.js` to identify potentially untranslated strings by comparing locales against the English baseline.
+- **I18n Coverage**: Fully localized missing strings in `de.ts`, `es.ts`, `fr.ts`, and `pt.ts`, and refined `ro.ts` for natural phrasing.
+- **Translation System**: `.scripts/check-i18n.js` script find automatically missing or extra keys in translations as well as all the files in `/src/i18n/locales`. Aditional workflow for translations is added in [TRANSLATION.md](TRANSLATION.md).
+
+### Fixed
+
+- **Finder**: Drag-to-move to same location bug.
+- **Finder**: Drag-to-move from one window to another now corectly checks for permissions (applies to Desktop too).
+- **Finder**: Drop highlight issue when it stayed active in some cases.
+- **Finder**: Terminal not passing the correct home path to Finder (eg. `su guest` > `finder ~` should open Finder as guest in `/home/guest`, but it opened in `/home/[user]`).
+- **Notepad**: Tabs now remain active when closing and opening Notepad. Unsaved files prevent the app from closing.
+- **Notepad**: Tabs now remember the mode of each tab (edit / preview) to prevent unwanted preview mode where it is not supported.
+- **Music**: Ghost keys issue that appeared even if the app was not installed is now fixed.
+- **Music**: The subsystem of scanning metadata, handleling Sound applet, etc. is tied to the actual launch of the Music app, avoiding issues like not having the Music app installed but still producing effects.
+
 ## 0.8.2
 
 ### Added

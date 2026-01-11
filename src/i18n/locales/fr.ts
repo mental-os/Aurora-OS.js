@@ -137,19 +137,19 @@ export const fr: TranslationDict = {
       subtitle: 'Aurora OS est prêt. Redirection vers l’écran de connexion...',
     },
     search: {
-      placeholder: 'Search language...',
-      noResults: 'No languages found',
+      placeholder: 'Rechercher une langue...',
+      noResults: 'Aucune langue trouvée',
     },
     validation: {
       requiredFields: 'Veuillez remplir tous les champs requis',
-      passwordLength: 'Password must be at least 6 characters',
-      userExists: 'User already exists. Please choose another username.',
-      fullNameFormat: 'Full Name should only contain letters, spaces, and hyphens',
-      usernameFormat: 'Username should only contain lowercase letters and numbers',
-      hintLength: 'Password hint is too long (max 50 characters)',
-      hintSecurity: 'Password hint cannot contain the password itself',
-      hintFormat: 'Password hint contains invalid characters',
-      creationFailed: 'Failed to create account. Please try again.',
+      passwordLength: 'Le mot de passe doit contenir au moins 6 caractères',
+      userExists: 'L’utilisateur existe déjà. Veuillez choisir un autre nom d’utilisateur.',
+      fullNameFormat: 'Le nom complet ne doit contenir que des lettres, des espaces et des traits d’union',
+      usernameFormat: 'Le nom d’utilisateur ne doit contenir que des lettres minuscules et des chiffres',
+      hintLength: 'L’indice de mot de passe est trop long (max 50 caractères)',
+      hintSecurity: 'L’indice de mot de passe ne peut pas contenir le mot de passe lui-même',
+      hintFormat: 'L’indice de mot de passe contient des caractères non valides',
+      creationFailed: 'Échec de la création du compte. Veuillez réessayer.',
     },
     buttons: {
       next: 'Suivant',
@@ -574,6 +574,7 @@ export const fr: TranslationDict = {
     toasts: {
       musicNotInstalled: 'L’app Musique n’est pas installée. Installez-la depuis l’App Store.',
       notepadNotInstalled: 'L’app Notes n’est pas installée. Installez-la depuis l’App Store.',
+      photosNotInstalled: 'L’app Photos n’est pas installée. Installez-la depuis l’App Store.',
     },
   },
   fileManager: {
@@ -608,6 +609,7 @@ export const fr: TranslationDict = {
       permissionDenied: 'Permission refusée : {{name}}',
       musicNotInstalled: 'L’app Musique n’est pas installée. Installez-la depuis l’App Store.',
       notepadNotInstalled: 'L’app Notes n’est pas installée. Installez-la depuis l’App Store.',
+      photosNotInstalled: 'L’app Photos n’est pas installée. Installez-la depuis l’App Store.',
       movedItem: '1 élément déplacé',
       movedItems: '{{count}} éléments déplacés',
       movedItemTo: '1 élément déplacé vers {{target}}',
@@ -642,29 +644,53 @@ export const fr: TranslationDict = {
       muteNotifications: 'Couper les notifications',
     },
   },
-  photos: {
-    sidebar: {
-      libraryTitle: 'Bibliothèque',
-      albumsTitle: 'Albums',
+    photos: {
+      sidebar: {
+        libraryTitle: 'Bibliothèque',
+        albumsTitle: 'Albums',
+      },
+      library: {
+        allPhotos: 'Toutes les photos',
+        favorites: 'Favoris',
+        recent: 'Récents',
+        people: 'Personnes',
+        places: 'Lieux',
+      },
+      albums: {
+        vacation2024: 'Vacances 2024',
+        family: 'Famille',
+        nature: 'Nature',
+      },
+      menu: {
+        slideshow: 'Diaporama',
+        rotateClockwise: 'Pivoter vers la droite',
+        rotateCounterClockwise: 'Pivoter vers la gauche',
+      },
+      empty: {
+        recent: {
+          title: 'Aucune photo visionnée récemment',
+          description: 'Vos photos récemment ouvertes apparaîtront ici.',
+        },
+        favorites: {
+          title: 'Pas encore de favoris',
+          description: 'Marquez des photos comme favorites pour les voir ici.',
+        },
+        library: {
+          title: 'Aucune photo trouvée',
+          description: 'Aucun fichier photo n’a été trouvé dans votre dossier Images.',
+          openFolder: 'Ouvrir le dossier {{folder}}',
+        },
+        noFolder: {
+          title: "Bibliothèque de {{user}} introuvable",
+          description: 'Le dossier {{path}} n’a pas été trouvé pour cet utilisateur.',
+        },
+        openHome: 'Ouvrir le dossier personnel',
+      },
+      folders: {
+        pictures: 'Images',
+        home: 'Accueil',
+      },
     },
-    library: {
-      allPhotos: 'Toutes les photos',
-      favorites: 'Favoris',
-      recent: 'Récents',
-      people: 'Personnes',
-      places: 'Lieux',
-    },
-    albums: {
-      vacation2024: 'Vacances 2024',
-      family: 'Famille',
-      nature: 'Nature',
-    },
-    menu: {
-      slideshow: 'Diaporama',
-      rotateClockwise: 'Pivoter vers la droite',
-      rotateCounterClockwise: 'Pivoter vers la gauche',
-    },
-  },
   mail: {
     login: {
       title: 'Courrier',
@@ -705,6 +731,8 @@ export const fr: TranslationDict = {
       archive: 'Archiver',
       unarchive: 'Désarchiver',
       delete: 'Supprimer',
+      restore: 'Restaurer',
+      deleteForever: 'Supprimer définitivement',
     },
     time: {
       minutesAgo: 'il y a {{minutes}} min',
@@ -816,6 +844,7 @@ export const fr: TranslationDict = {
     },
     actions: {
       createEvent: 'Créer un événement',
+      createCategory: 'Créer une catégorie',
       clear: 'Effacer',
       delete: 'Supprimer',
       cancel: 'Annuler',
@@ -823,6 +852,7 @@ export const fr: TranslationDict = {
     },
     loadingEvents: 'Chargement des événements...',
     toasts: {
+      cannotDeleteSystemCategory: 'Les catégories système ne peuvent pas être supprimées',
       eventDeleted: 'Événement supprimé',
       eventSaved: 'Événement enregistré',
       requiredFields: 'Veuillez remplir les champs requis',

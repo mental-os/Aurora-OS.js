@@ -1,17 +1,17 @@
 import { useState, useRef, useEffect, useCallback, ReactNode } from "react";
-import { validateIntegrity } from "../utils/integrity";
-import { useFileSystem } from "../components/FileSystemContext";
-import { useAppContext } from "../components/AppContext";
-import { checkPermissions } from "../utils/fileSystemUtils";
+import { validateIntegrity } from "@/utils/integrity";
+import { useFileSystem } from "@/components/FileSystemContext";
+import { useAppContext } from "@/components/AppContext";
+import { checkPermissions } from "@/utils/fileSystemUtils";
 import {
   getCommand,
   commands,
   getAllCommands,
-} from "../utils/terminal/registry";
-import { TerminalCommand } from "../utils/terminal/types";
-import { getColorShades } from "../utils/colors";
-import { useI18n } from "../i18n/index";
-import { STORAGE_KEYS } from "../utils/memory";
+} from "@/utils/terminal/registry";
+import { TerminalCommand } from "@/utils/terminal/types";
+import { getColorShades } from "@/utils/colors";
+import { useI18n } from "@/i18n/index";
+import { STORAGE_KEYS } from "@/utils/memory";
 
 export interface CommandHistory {
   id: string;

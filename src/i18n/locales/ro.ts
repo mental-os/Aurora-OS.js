@@ -151,7 +151,7 @@ export const ro: TranslationDict = {
             creationFailed: 'Crearea contului a eșuat. Te rugăm să încerci din nou.',
         },
         buttons: {
-            next: 'Următorul',
+            next: 'Înainte',
             back: 'Înapoi',
             startUsing: 'Începe să folosești Aurora',
         },
@@ -201,7 +201,7 @@ export const ro: TranslationDict = {
             history: 'Istoric',
             bookmarks: 'Marcaje',
             mailbox: 'Cutie poștală',
-            message: 'Mesaj',
+            message: 'Mesaje',
             devCenter: 'Centru DEV',
             tools: 'Unelte',
             image: 'Imagine',
@@ -289,23 +289,23 @@ export const ro: TranslationDict = {
             },
         },
         subtitles: {
-            appMissing: 'Aplicație Lipsă',
-            permissionDenied: 'Permisiune Refuzată',
+            appMissing: 'Aplicație lipsă',
+            permissionDenied: 'Permisiune refuzată',
             saved: 'Salvat',
             deleted: 'Șters',
             moved: 'Mutat',
             trash: 'Coș de gunoi',
             failed: 'Eșuat',
             ui: 'Interfață',
-            export: 'Export',
-            import: 'Import',
+            export: 'Exportă',
+            import: 'Importă',
             clipboard: 'Clipboard',
             validation: 'Validare',
             success: 'Succes',
             error: 'Eroare',
             info: 'Informații',
             warning: 'Avertisment',
-            fileError: 'Eroare Fișier',
+            fileError: 'Eroare fișier',
         },
     },
   memory: {
@@ -571,6 +571,7 @@ export const ro: TranslationDict = {
         toasts: {
             musicNotInstalled: 'Muzica nu este instalată. Instaleaz-o din App Store.',
             notepadNotInstalled: 'Notepad nu este instalat. Instalează-l din App Store.',
+            photosNotInstalled: 'Aplicația Fotografii nu este instalată. Instaleaz-o din App Store.',
         },
     },
     fileManager: {
@@ -595,16 +596,17 @@ export const ro: TranslationDict = {
             downloads: 'Descărcări',
             pictures: 'Imagini',
             music: 'Muzică',
-            trash: 'Gunoi',
+            trash: 'Coș de gunoi',
         },
         actions: {
-            moveToTrash: 'Mută la Gunoi',
+            moveToTrash: 'Mută la Coșul de gunoi',
             search: 'Caută',
         },
         toasts: {
             permissionDenied: 'Permisiune refuzată: {{name}}',
             musicNotInstalled: 'Muzica nu este instalată. Instaleaz-o din App Store.',
             notepadNotInstalled: 'Notepad nu este instalat. Instalează-l din App Store.',
+            photosNotInstalled: 'Aplicația Fotografii nu este instalată. Instaleaz-o din App Store.',
             movedItem: '1 element mutat',
             movedItems: 'S-au mutat {{count}} elemente',
             movedItemTo: '1 element mutat în {{target}}',
@@ -661,6 +663,30 @@ export const ro: TranslationDict = {
             rotateClockwise: 'Rotește Dreapta',
             rotateCounterClockwise: 'Rotește Stânga',
         },
+        empty: {
+            recent: {
+                title: 'Nicio fotografie vizualizată recent',
+                description: 'Fotografiile tale deschise recent vor apărea aici.',
+            },
+            favorites: {
+                title: 'Nicio favorită încă',
+                description: 'Marchează fotografiile ca favorite pentru a le vedea aici.',
+            },
+            library: {
+                title: 'Nu s-au găsit fotografii',
+                description: 'Nu s-au găsit fișiere foto în dosarul Imagini.',
+                openFolder: 'Deschide dosarul {{folder}}',
+            },
+            noFolder: {
+                title: "Biblioteca lui {{user}} nu a fost găsită",
+                description: 'Dosarul {{path}} nu a fost găsit pentru acest utilizator.',
+            },
+            openHome: 'Deschide Directorul Acasă',
+        },
+        folders: {
+            pictures: 'Imagini',
+            home: 'Acasă',
+        },
     },
     mail: {
         login: {
@@ -702,6 +728,8 @@ export const ro: TranslationDict = {
             archive: 'Arhivează',
             unarchive: 'Dezarhivează',
             delete: 'Șterge',
+            restore: 'Restaurează',
+            deleteForever: 'Șterge Definitiv',
         },
         time: {
             minutesAgo: 'acum {{minutes}}m',
@@ -813,6 +841,7 @@ export const ro: TranslationDict = {
         },
         actions: {
             createEvent: 'Creează Eveniment',
+            createCategory: 'Creează Categorie',
             clear: 'Șterge',
             delete: 'Șterge',
             cancel: 'Anulează',
@@ -820,6 +849,7 @@ export const ro: TranslationDict = {
         },
         loadingEvents: 'Se încarcă evenimente...',
         toasts: {
+            cannotDeleteSystemCategory: 'Categoriile de sistem nu pot fi șterse',
             eventDeleted: 'Eveniment șters',
             eventSaved: 'Eveniment salvat',
             requiredFields: 'Te rog completează câmpurile obligatorii',

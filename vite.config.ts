@@ -6,6 +6,7 @@ import packageJson from './package.json';
 
 export default defineConfig({
   base: './',
+  clearScreen: false,
   plugins: [
     react(),
     {
@@ -27,7 +28,9 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
-    minify: 'terser',
+    minify: 'esbuild',
+    assetsInlineLimit: 10240,
+    emptyOutDir: true,
     chunkSizeWarningLimit: 1000,
   },
   server: {

@@ -312,6 +312,7 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
 
       const isMusic = /\.(mp3|wav|flac|ogg|m4a)$/i.test(item.name);
       const isText = /\.(txt|md|json|js|ts|tsx|css|html|sh)$/i.test(item.name);
+      const isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(item.name);
 
       if (isMusic) {
         // Check if music app is installed by checking /usr/bin
@@ -329,9 +330,18 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
         const notepadBinary = getNodeAtPath('/usr/bin/notepad', activeUser);
         if (notepadBinary) {
           const fullPath = resolvePath(path, activeUser);
-          if (onOpenApp) onOpenApp('notepad', { path: fullPath }, activeUser);
+          if (onOpenApp) onOpenApp('notepad', { path: fullPath, timestamp: Date.now() }, activeUser);
         } else {
           notify.system('error', 'Finder', t('fileManager.toasts.notepadNotInstalled'), t('notifications.subtitles.appMissing'));
+        }
+      } else if (isImage) {
+        // Check if photos app is installed by checking /usr/bin
+        const photosBinary = getNodeAtPath('/usr/bin/photos', activeUser);
+        if (photosBinary) {
+          const fullPath = resolvePath(path, activeUser);
+          if (onOpenApp) onOpenApp('photos', { path: fullPath, timestamp: Date.now() }, activeUser);
+        } else {
+          notify.system('error', 'Finder', t('fileManager.toasts.photosNotInstalled'), t('notifications.subtitles.appMissing'));
         }
       } else {
           // Fallback or unknowns: maybe open in text editor or show info?

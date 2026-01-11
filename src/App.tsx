@@ -1,15 +1,16 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { LoginScreen } from './components/LoginScreen';
-import { AppProvider, useAppContext } from './components/AppContext';
-import { FileSystemProvider, useFileSystem } from './components/FileSystemContext';
-import { GameRoot } from './components/Game/GameRoot';
-import { MusicProvider } from './components/MusicContext';
+import { LoginScreen } from '@/components/LoginScreen';
+import { AppProvider, useAppContext } from '@/components/AppContext';
+import { FileSystemProvider, useFileSystem } from '@/components/FileSystemContext';
+import { GameRoot } from '@/components/Game/GameRoot';
+import { MusicProvider } from '@/components/MusicContext';
+import { PhotosProvider } from '@/components/PhotosContext';
 
 // Lazy load the Heavy OS component
 // This ensures we don't load Desktop/Apps/Assets until we actually start the game
-const OS = lazy(() => import('./components/OS'));
+const OS = lazy(() => import('@/components/OS'));
 
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useI18n } from './i18n';
 import { calculateTotalRamUsage } from './utils/resourceMonitor';
 
@@ -54,24 +55,26 @@ function AppContent() {
   }, [currentUser]);
 
   return (
-    <MusicProvider key={currentUser || 'guest'} owner={currentUser || 'guest'}>
-      {/* Render OS if user is logged in (even if locked) */}
-      {/* Suspense ensures we can load the chunk while showing BootSequence or nothing */}
-      {currentUser && (
-        <ErrorBoundary>
-          <Suspense fallback={<KernelLoadingFallback />}>
-            <OS />
-          </Suspense>
-        </ErrorBoundary>
-      )}
+    <PhotosProvider owner={currentUser || 'guest'}>
+      <MusicProvider owner={currentUser || 'guest'}>
+        {/* Render OS if user is logged in (even if locked) */}
+        {/* Suspense ensures we can load the chunk while showing BootSequence or nothing */}
+        {currentUser && (
+          <ErrorBoundary>
+            <Suspense fallback={<KernelLoadingFallback />}>
+              <OS />
+            </Suspense>
+          </ErrorBoundary>
+        )}
 
-      {/* Render Login Overlay if logged out OR locked */}
-      {(!currentUser || isLocked) && (
-        <div className="absolute inset-0 z-20000">
-          <LoginScreen />
-        </div>
-      )}
-    </MusicProvider>
+        {/* Render Login Overlay if logged out OR locked */}
+        {(!currentUser || isLocked) && (
+          <div className="absolute inset-0 z-20000">
+            <LoginScreen />
+          </div>
+        )}
+      </MusicProvider>
+    </PhotosProvider>
   );
 }
 

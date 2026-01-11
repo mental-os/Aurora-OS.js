@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
-import { IntroSequence } from './IntroSequence';
-import { MainMenu } from './MainMenu';
-import { BootSequence } from './BootSequence';
-import { useFileSystem } from '../../components/FileSystemContext';
-import { useAppContext } from '../../components/AppContext';
+import { IntroSequence } from '@/components/Game/IntroSequence';
+import { MainMenu } from '@/components/Game/MainMenu';
+import { BootSequence } from '@/components/Game/BootSequence';
+import { useFileSystem } from '@/components/FileSystemContext';
+import { useAppContext } from '@/components/AppContext';
 
-import { STORAGE_KEYS, hardReset } from '../../utils/memory';
+import { STORAGE_KEYS, hardReset } from '@/utils/memory';
 import {Onboarding} from "@/components/Game/Onboarding.tsx";
 
 // The "Actual Game" being played is passed as children (The OS Desktop)

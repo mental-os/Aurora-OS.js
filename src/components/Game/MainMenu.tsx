@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Power, Play, Disc } from 'lucide-react';
-import { cn } from '../ui/utils';
-import { feedback } from '../../services/soundFeedback';
-import { GameScreenLayout } from './GameScreenLayout';
-import { SettingsModal } from './SettingsModal';
-import { useI18n } from '../../i18n/index';
-import { useFileSystem } from '../FileSystemContext';
+import { cn } from '@/components/ui/utils';
+import { feedback } from '@/services/soundFeedback';
+import { GameScreenLayout } from '@/components/Game/GameScreenLayout';
+import { SettingsModal } from '@/components/Game/SettingsModal';
+import { useI18n } from '@/i18n/index';
+import { useFileSystem } from '@/components/FileSystemContext';
 
 interface MainMenuProps {
     onNewGame: () => void;

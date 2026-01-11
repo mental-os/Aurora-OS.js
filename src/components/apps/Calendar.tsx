@@ -1,6 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek, getHours, getMinutes, setHours, setMinutes, addMinutes, addDays, subDays } from 'date-fns';
-import { enUS, es as esLocale, fr as frLocale } from 'date-fns/locale';
+import { useMemo, useState, useEffect, useCallback } from 'react';
+import { Rnd } from 'react-rnd';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, startOfWeek, endOfWeek, getHours, getMinutes, setHours, addMinutes, addDays, subDays, subMinutes } from 'date-fns';
+import { enUS, es as esLocale, fr as frLocale, de as deLocale, pt as ptLocale, ro as roLocale, zhCN as zhLocale } from 'date-fns/locale';
 import { Plus, ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, Clock, Type, AlignLeft, Timer, ChevronsUpDown, Check } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -17,6 +18,8 @@ import { useFileSystem } from '@/components/FileSystemContext';
 import { STORAGE_KEYS } from '@/utils/memory';
 import { notify } from '@/services/notifications';
 import { useI18n } from '@/i18n/index';
+import { useThemeColors } from '@/hooks/useThemeColors';
+
 
 // --- Types ---
 
@@ -36,6 +39,13 @@ interface CalendarEvent {
 // Helper for date conversion since JSON stores strings
 interface HydratedCalendarEvent extends Omit<CalendarEvent, 'start'> {
   start: Date;
+}
+
+interface Category {
+  id: string;
+  label?: string; // For user categories
+  labelKey?: string; // For system categories
+  color: string;
 }
 
 interface CalendarProps {
@@ -81,11 +91,9 @@ const EVENT_BG_COLORS: Record<string, string> = {
   gray: "bg-gray-500/20 hover:bg-gray-500/30",
 };
 
-const getCategoryColorClass = (type: string) => {
-  return CATEGORY_BORDER_COLORS[type] || "border-gray-500";
-};
 
-const CATEGORIES = [
+
+const DEFAULT_CATEGORIES: Category[] = [
   { id: 'all', labelKey: 'calendar.categories.all', color: 'white' },
   { id: 'work', labelKey: 'calendar.categories.work', color: 'blue' },
   { id: 'personal', labelKey: 'calendar.categories.personal', color: 'green' },
@@ -103,18 +111,42 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
   { value: 'other', label: 'calendar.types.other' },
 ];
 
-const getMockEvents = (t: (key: string, vars?: Record<string, string | number>) => string): CalendarEvent[] => [
-  {
-    id: '1',
-    title: t('calendar.mockEvents.loopStarted.title'),
-    type: 'other',
-    start: format(setMinutes(setHours(new Date(), 10), 0), 'yyyy-MM-dd HH:mm'),
-    durationMinutes: 30,
-    location: t('calendar.mockEvents.loopStarted.location'),
-    notes: t('calendar.mockEvents.loopStarted.notes'),
-    color: 'purple',
-  },
-];
+const getMockEvents = (t: (key: string, vars?: Record<string, string | number>) => string): CalendarEvent[] => {
+  let startDate = new Date();
+  
+  // Try to use system install date for historical accuracy
+  try {
+     const installDateStr = localStorage.getItem(STORAGE_KEYS.INSTALL_DATE);
+     if (installDateStr) {
+        startDate = new Date(installDateStr);
+     } else {
+        // Fallback: If no install date (dev/legacy), stick to "Today at 10:00"
+        startDate.setHours(10, 0, 0, 0);
+     }
+  } catch {
+     startDate.setHours(10, 0, 0, 0);
+  }
+
+  // Ensure it's 10:00 AM regardless of day (unless it's the exact install time we want, but "Ten AM" feels canonical for a start event)
+  // Request was: "follow the onboarding completion time".
+  // So we should strictly use the timestamp as is, maybe rounded to nearest 15/30 mins for cleanliness?
+  // Let's use the exact time or rounded to start of hour.
+  // "Loop Started" usually implies the moment the system booted.
+  // Let's round to nearest minute for clean JSON.
+  
+  return [
+    {
+      id: '1',
+      title: t('calendar.mockEvents.loopStarted.title'),
+      type: 'other',
+      start: format(startDate, 'yyyy-MM-dd HH:mm'),
+      durationMinutes: 30,
+      location: t('calendar.mockEvents.loopStarted.location'),
+      notes: t('calendar.mockEvents.loopStarted.notes'),
+      color: 'purple',
+    },
+  ];
+};
 
 // --- Component ---
 
@@ -127,8 +159,25 @@ const TIME_SLOTS = Array.from({ length: 48 }).map((_, i) => {
 
 export function Calendar({ owner }: CalendarProps) {
   const { readFile, writeFile, createFile, createDirectory } = useFileSystem();
-  const { activeUser: desktopUser, accentColor } = useAppContext();
+  const { activeUser: desktopUser, accentColor, timeMode } = useAppContext();
   const { t, locale } = useI18n();
+  const { windowBackground, sidebarBackground, getBackgroundColor, blurStyle } = useThemeColors();
+
+  // Helper to shift date for display if in Server Time (UTC)
+  const toDisplayDate = useCallback((date: Date) => {
+    if (timeMode === 'server') {
+       return addMinutes(date, date.getTimezoneOffset());
+    }
+    return date;
+  }, [timeMode]);
+
+  // Helper to unshift date from display back to real date
+  const fromDisplayDate = useCallback((date: Date) => {
+    if (timeMode === 'server') {
+       return subMinutes(date, date.getTimezoneOffset());
+    }
+    return date;
+  }, [timeMode]);
 
   const dateFnsLocale = useMemo(() => {
     const base = (locale || 'en-US').split('-')[0]?.toLowerCase();
@@ -137,6 +186,14 @@ export function Calendar({ owner }: CalendarProps) {
         return esLocale;
       case 'fr':
         return frLocale;
+      case 'de':
+        return deLocale;
+      case 'pt':
+        return ptLocale;
+      case 'ro':
+        return roLocale;
+      case 'zh':
+        return zhLocale;
       default:
         return enUS;
     }
@@ -147,10 +204,8 @@ export function Calendar({ owner }: CalendarProps) {
     return Array.from({ length: 7 }, (_, i) => format(addDays(sunday, i), 'EEE', { locale: dateFnsLocale }));
   }, [dateFnsLocale]);
 
-  const categories = useMemo(
-    () => CATEGORIES.map((category) => ({ ...category, label: t(category.labelKey) })),
-    [t]
-  );
+  // Removed conflicting categories useMemo
+  // const categories = useMemo(...) -> We now use state 'categories'
 
   const colors = useMemo(
     () => COLORS.map((color) => ({ ...color, label: t(color.labelKey) })),
@@ -201,6 +256,24 @@ export function Calendar({ owner }: CalendarProps) {
 
   // Hard Memory (Data)
   const [events, setEvents] = useState<HydratedCalendarEvent[]>([]);
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+
+  // Local helper to resolve category style dynamically
+  const resolveCategoryClass = (categoryId: string) => {
+     // 1. Try static map first (fast path for default categories)
+     if (CATEGORY_BORDER_COLORS[categoryId]) return CATEGORY_BORDER_COLORS[categoryId];
+     
+     // 2. Find in dynamic categories
+     const cat = categories.find(c => c.id === categoryId);
+     if (cat) {
+        // If it has a color name that matches our tokens
+        if (CATEGORY_BORDER_COLORS[cat.color]) return CATEGORY_BORDER_COLORS[cat.color];
+        
+        // If it has a raw color (future proof), we might return inline style, but for now fallback
+     }
+     
+     return "border-gray-500";
+  };
 
   const filteredEvents = events.filter(event => {
     const matchesCategory = selectedCategory === 'all' || event.type === selectedCategory;
@@ -212,7 +285,14 @@ export function Calendar({ owner }: CalendarProps) {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Partial<HydratedCalendarEvent>>({});
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryColor, setNewCategoryColor] = useState("blue");
+
+  // Drag Helper
+  // Track dragging event ID to block clicks (via pointer-events: none)
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   // --- Persistence Effects ---
 
@@ -229,7 +309,17 @@ export function Calendar({ owner }: CalendarProps) {
 
       if (content) {
         try {
-          loadedEvents = JSON.parse(content);
+          const parsed = JSON.parse(content);
+          if (Array.isArray(parsed)) {
+            // Migration: Old format (Array of events)
+            loadedEvents = parsed;
+          } else {
+            // New format: { events, categories }
+            loadedEvents = parsed.events || [];
+            if (parsed.categories) {
+              setCategories(parsed.categories);
+            }
+          }
         } catch (e) {
           console.error(e);
           source = 'corrupt';
@@ -261,9 +351,12 @@ export function Calendar({ owner }: CalendarProps) {
 
       if (source === 'init') {
         // Auto-create config file
-        // Ensure .config exists
         createDirectory(userHome, '.Config', activeUser);
-        createFile(configDir, 'calendar.json', JSON.stringify(loadedEvents, null, 2), activeUser);
+        const initialData = {
+          events: loadedEvents,
+          categories: DEFAULT_CATEGORIES
+        };
+        createFile(configDir, 'calendar.json', JSON.stringify(initialData, null, 2), activeUser);
       }
 
       setIsLoading(false);
@@ -273,20 +366,29 @@ export function Calendar({ owner }: CalendarProps) {
   }, [activeUser, readFile, createFile, createDirectory, configFile, configDir, userHome, t]);
 
   // Save Events (Write-through)
-  const saveEventsToDisk = (newEvents: HydratedCalendarEvent[]) => {
-    // Serialize
-    const serialized = newEvents.map(e => ({
+  // Accepts optional categories to save, otherwise uses current state (careful with stale closures if not passed)
+  // To avoid stale closures, we pass both implicitly or explicitly
+  const saveEventsToDisk = (eventsToSave: HydratedCalendarEvent[], categoriesToSave: Category[] = categories) => {
+    // Serious serialization
+    const serializedEvents = eventsToSave.map(e => ({
       ...e,
       start: format(e.start, 'yyyy-MM-dd HH:mm')
     }));
 
-    const success = writeFile(configFile, JSON.stringify(serialized, null, 2), activeUser);
+    const dataToSave = {
+      events: serializedEvents,
+      categories: categoriesToSave
+    };
+
+    const success = writeFile(configFile, JSON.stringify(dataToSave, null, 2), activeUser);
     if (!success) {
       // Retry by ensuring directory exists (rare edge case where dir was deleted while app running)
       createDirectory(userHome, '.Config', activeUser);
-      writeFile(configFile, JSON.stringify(serialized, null, 2), activeUser);
+      writeFile(configFile, JSON.stringify(dataToSave, null, 2), activeUser);
     }
   };
+  
+
 
   // Save Soft State (UI Preferences)
   useEffect(() => {
@@ -305,8 +407,9 @@ export function Calendar({ owner }: CalendarProps) {
       startDate.setHours(startDate.getHours() + 1, 0, 0, 0);
     }
     // Deep clone to avoid ref issues
+    // Convert to Visual Date for editing
     setEditingEvent({
-      start: new Date(startDate),
+      start: toDisplayDate(new Date(startDate)),
       durationMinutes: 60,
       color: 'blue',
       type: 'work',
@@ -315,7 +418,11 @@ export function Calendar({ owner }: CalendarProps) {
   };
 
   const handleEventClick = (event: HydratedCalendarEvent) => {
-    setEditingEvent({ ...event });
+    // Convert to Visual Date for editing
+    setEditingEvent({ 
+      ...event,
+      start: toDisplayDate(event.start)
+    });
     setIsModalOpen(true);
   };
 
@@ -344,7 +451,7 @@ export function Calendar({ owner }: CalendarProps) {
         ...e,
         title: editingEvent.title!,
         type: editingEvent.type || 'other',
-        start: editingEvent.start!,
+        start: fromDisplayDate(editingEvent.start!), // Convert back to Real Date
         durationMinutes: editingEvent.durationMinutes!,
         location: editingEvent.location || '',
         notes: editingEvent.notes || '',
@@ -356,7 +463,7 @@ export function Calendar({ owner }: CalendarProps) {
         id: crypto.randomUUID(),
         title: editingEvent.title,
         type: editingEvent.type || 'other',
-        start: editingEvent.start,
+        start: fromDisplayDate(editingEvent.start!), // Convert back to Real Date
         durationMinutes: editingEvent.durationMinutes,
         location: editingEvent.location || '',
         notes: editingEvent.notes || '',
@@ -372,6 +479,12 @@ export function Calendar({ owner }: CalendarProps) {
     notify.system('success', 'Calendar', t('calendar.toasts.eventSaved'), t('notifications.subtitles.saved'));
   };
 
+  const handleUpdateEvent = (id: string, updates: Partial<HydratedCalendarEvent>) => {
+    const newEvents = events.map(e => e.id === id ? { ...e, ...updates } : e);
+    setEvents(newEvents);
+    saveEventsToDisk(newEvents);
+  };
+
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       setCurrentDate(date);
@@ -381,8 +494,76 @@ export function Calendar({ owner }: CalendarProps) {
 
   // --- Render Views ---
 
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) return;
+
+    const newCategory: Category = {
+      id: crypto.randomUUID(),
+      label: newCategoryName,
+      color: newCategoryColor,
+      labelKey: undefined
+    };
+    
+    const newCategories = [...categories, newCategory];
+    setCategories(newCategories);
+    saveEventsToDisk(events, newCategories); // Explicit Save
+    
+    setIsCategoryModalOpen(false);
+    setNewCategoryName("");
+    setNewCategoryColor("blue");
+  };
+
+  const handleDeleteCategory = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (DEFAULT_CATEGORIES.find(c => c.id === id)) {
+       notify.system('error', 'Calendar', t('calendar.toasts.cannotDeleteSystemCategory'), t('notifications.subtitles.error'));
+       return;
+    }
+    const newCategories = categories.filter(c => c.id !== id);
+    setCategories(newCategories);
+    saveEventsToDisk(events, newCategories); // Explicit Save
+    
+    if (selectedCategory === id) setSelectedCategory('all');
+  };
+
+  // DnD Handlers for Month View
+  const handleDragStart = (e: React.DragEvent, event: HydratedCalendarEvent) => {
+    e.dataTransfer.setData('text/plain', event.id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetDate: Date) => {
+    e.preventDefault();
+    const eventId = e.dataTransfer.getData('text/plain');
+    const event = events.find(ev => ev.id === eventId);
+    
+    if (event) {
+      // Logic: targetDate is the Visual Day (e.g. Sep 1 UTC).
+      // Event Start is Real Date.
+      // We want to keep the Visual Time (e.g. 10:00).
+      // So Visual New Start = Visual Day + Visual Time.
+      // Real New Start = fromDisplayDate(Visual New Start).
+
+      const visualEventStart = toDisplayDate(event.start);
+      const newStartVisual = new Date(targetDate);
+      newStartVisual.setHours(getHours(visualEventStart), getMinutes(visualEventStart));
+      
+      const newStartReal = fromDisplayDate(newStartVisual);
+      
+      handleUpdateEvent(event.id, { start: newStartReal });
+    }
+  };
+
   const renderMonthView = () => {
-    const monthStart = startOfMonth(currentDate);
+    const visualCurrentDate = toDisplayDate(currentDate);
+    const visualToday = toDisplayDate(new Date());
+
+    const monthStart = startOfMonth(visualCurrentDate);
     const monthEnd = endOfMonth(monthStart);
     const startDate = startOfWeek(monthStart);
     const endDate = endOfWeek(monthEnd);
@@ -400,7 +581,7 @@ export function Calendar({ owner }: CalendarProps) {
     });
 
     return (
-      <div className="flex flex-col h-full bg-black/20 rounded-lg overflow-hidden border border-white/5">
+      <div className="flex flex-col h-full rounded-lg overflow-hidden border border-white/5" style={{ backgroundColor: getBackgroundColor(0.2) }}>
         <div className="grid grid-cols-7 border-b border-white/10 bg-white/5">
           {weekdaysShort.map(day => (
             <div key={day} className="py-2 text-center text-xs font-medium text-white/50 uppercase tracking-widest">
@@ -414,8 +595,9 @@ export function Calendar({ owner }: CalendarProps) {
             {weeks.map((week, wIndex) => (
               <div key={wIndex} className="grid grid-cols-7 min-h-[120px] flex-1 border-b border-white/5 last:border-b-0">
                 {week.map((day, dIndex) => {
-                  const dayEvents = filteredEvents.filter(e => isSameDay(e.start, day));
-                  const isSelectedMonth = isSameMonth(day, currentDate);
+                  const dayEvents = filteredEvents.filter(e => isSameDay(toDisplayDate(e.start), day));
+                  const isSelectedMonth = isSameMonth(day, visualCurrentDate);
+                  const isTodayVisual = isSameDay(day, visualToday);
 
                   return (
                     <div
@@ -423,20 +605,22 @@ export function Calendar({ owner }: CalendarProps) {
                       className={cn(
                         "border-r border-white/5 p-1 relative group transition-colors min-h-[100px]",
                         !isSelectedMonth && "bg-black/20",
-                        isToday(day) && "bg-white/5",
+                        isTodayVisual && "bg-white/5",
                         "hover:bg-white/10"
                       )}
                       onClick={() => {
                         handleDateSelect(day);
                       }}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, day)}
                     >
                       <div className="flex justify-between items-start mb-1">
                         <span
                           className={cn(
                             "text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full transition-colors",
-                            !isToday(day) && (isSelectedMonth ? "text-white/90" : "text-white/30")
+                            !isTodayVisual && (isSelectedMonth ? "text-white/90" : "text-white/30")
                           )}
-                          style={isToday(day) ? { backgroundColor: accentColor, color: 'white' } : undefined}
+                          style={isTodayVisual ? { backgroundColor: accentColor, color: 'white' } : undefined}
                         >
                           {format(day, 'd')}
                         </span>
@@ -448,13 +632,15 @@ export function Calendar({ owner }: CalendarProps) {
                             key={event.id}
                             className={cn(
                               "text-[10px] px-2 py-1 rounded-md truncate font-medium text-white cursor-pointer transition-colors hover:brightness-110 hover:z-20 relative border-l-2 bg-opacity-80 backdrop-blur-sm",
-                              getCategoryColorClass(event.type),
+                              resolveCategoryClass(event.type),
                               EVENT_BG_COLORS[event.color] || EVENT_BG_COLORS.blue
                             )}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEventClick(event);
                             }}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, event)}
                           >
                             {event.title}
                           </div>
@@ -485,25 +671,71 @@ export function Calendar({ owner }: CalendarProps) {
 
   const renderDayView = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i);
-    const dayEvents = filteredEvents.filter(e => isSameDay(e.start, currentDate));
+    const visualCurrentDate = toDisplayDate(currentDate);
+    const visualToday = toDisplayDate(new Date());
+    
+    // Filter events that visually appear on this day
+    const rawDayEvents = filteredEvents.filter(e => isSameDay(toDisplayDate(e.start), visualCurrentDate));
+
+    // Sort: Earlier start first. If same start, Longer duration first (so shorter ones sit on top visually)
+    const dayEvents = rawDayEvents.sort((a, b) => {
+      const aStart = toDisplayDate(a.start).getTime();
+      const bStart = toDisplayDate(b.start).getTime();
+      if (aStart !== bStart) return aStart - bStart;
+      return b.durationMinutes - a.durationMinutes;
+    });
+
+    // Calculate layout overlaps (indentation levels)
+    const getEventLayout = (events: typeof dayEvents) => {
+      const layoutMap = new Map<string, { indent: number, maxIndent: number }>();
+      const activeEvents: { end: number, indent: number }[] = [];
+
+      events.forEach(event => {
+        const start = toDisplayDate(event.start).getTime();
+        const end = start + (event.durationMinutes * 60 * 1000);
+
+        // Remove events that have ended before this one starts
+        for (let i = activeEvents.length - 1; i >= 0; i--) {
+          if (activeEvents[i].end <= start) {
+            activeEvents.splice(i, 1);
+          }
+        }
+
+        // Find first available indent index (column)
+        // We look for gaps in the sequence 0, 1, 2...
+        // Construct a set of used indents
+        const usedIndents = new Set(activeEvents.map(e => e.indent));
+        let indent = 0;
+        while (usedIndents.has(indent)) {
+          indent++;
+        }
+
+        activeEvents.push({ end, indent });
+        layoutMap.set(event.id, { indent, maxIndent: 0 }); // maxIndent computed later if needed for widths, but we use simple cascading for now
+      });
+
+      return layoutMap;
+    };
+
+    const layout = getEventLayout(dayEvents);
 
     return (
-      <div className="flex flex-col h-full bg-black/20 rounded-lg overflow-hidden border border-white/5 relative">
+      <div className="flex flex-col h-full rounded-lg overflow-hidden border border-white/5 relative" style={{ backgroundColor: getBackgroundColor(0.2) }}>
         <div className="flex flex-col items-center justify-center py-4 border-b border-white/10 bg-white/5">
           <span
             className="text-sm font-semibold uppercase tracking-widest"
-            style={{ color: isToday(currentDate) ? accentColor : 'rgba(255,255,255,0.5)' }}
+            style={{ color: isSameDay(visualCurrentDate, visualToday) ? accentColor : 'rgba(255,255,255,0.5)' }}
           >
-            {format(currentDate, 'EEEE', { locale: dateFnsLocale })}
+            {format(visualCurrentDate, 'EEEE', { locale: dateFnsLocale })}
           </span>
           <div
             className="text-3xl font-light w-10 h-10 flex items-center justify-center rounded-full mt-1"
             style={{
-              backgroundColor: isToday(currentDate) ? accentColor : 'transparent',
-              color: isToday(currentDate) ? 'white' : 'white'
+              backgroundColor: isSameDay(visualCurrentDate, visualToday) ? accentColor : 'transparent',
+              color: isSameDay(visualCurrentDate, visualToday) ? 'white' : 'white'
             }}
           >
-            {format(currentDate, 'd')}
+            {format(visualCurrentDate, 'd')}
           </div>
         </div>
 
@@ -516,16 +748,16 @@ export function Calendar({ owner }: CalendarProps) {
                 </div>
                 <div
                   className="flex-1 h-full border-t border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
-                  onClick={() => handleCreateEvent(setHours(currentDate, hour))}
+                  onClick={() => handleCreateEvent(fromDisplayDate(setHours(visualCurrentDate, hour)))}
                 />
               </div>
             ))}
 
-            {isToday(currentDate) && (
+            {isSameDay(visualCurrentDate, visualToday) && (
               <div
                 className="absolute w-full border-t-2 z-10 pointer-events-none flex items-center"
                 style={{
-                  top: `${getHours(new Date()) * 60 + getMinutes(new Date())}px`,
+                  top: `${getHours(visualToday) * 60 + getMinutes(visualToday)}px`,
                   borderColor: accentColor
                 }}
               >
@@ -537,35 +769,90 @@ export function Calendar({ owner }: CalendarProps) {
             )}
 
             {dayEvents.map(event => {
-              const startMinutes = getHours(event.start) * 60 + getMinutes(event.start);
+              const visualStart = toDisplayDate(event.start);
+              const startMinutes = getHours(visualStart) * 60 + getMinutes(visualStart);
               const height = event.durationMinutes;
               const showTime = height >= 30;
               const showLocation = height >= 50;
+              
+              const layoutInfo = layout.get(event.id) || { indent: 0 };
+              const indent = layoutInfo.indent;
+              const xOffset = 64 + (indent * 24); // Shift right by 24px per level for better visibility
+              const width = `calc(100% - ${xOffset + 16}px)`; // Maintain right padding
+              const zIndex = 20 + indent; // Higher indent = higher z-index
+
+              const isDragging = draggingId === event.id;
 
               return (
-                <div
+                <Rnd
                   key={event.id}
+                  default={{
+                    x: xOffset, 
+                    y: startMinutes,
+                    width: width,
+                    height: height
+                  }}
+                  // If dragging, let Rnd handle position (undefined). If static, enforce layout.
+                  position={isDragging ? undefined : { x: xOffset, y: startMinutes }}
+                  size={isDragging ? undefined : { width: width, height: height }}
+                  minHeight={30}
+                  dragAxis="y"
+                  bounds="parent"
+                  enableResizing={{ top: false, right: false, bottom: true, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
+                  onDragStart={() => {}} // Don't block clicks on start
+                  onDrag={() => {
+                    if (draggingId !== event.id) setDraggingId(event.id);
+                  }}
+                  onDragStop={(_e, d) => {
+                    setDraggingId(null);
+
+                    const newStartMinutes = d.y;
+                    // Calculate based on Visual Date
+                    const newStartVisual = new Date(visualCurrentDate);
+                    newStartVisual.setHours(0, newStartMinutes, 0, 0); 
+                    
+                    // Snap to 15 mins
+                    const snappedMinutes = Math.round(newStartMinutes / 15) * 15;
+                    const hours = Math.floor(snappedMinutes / 60);
+                    const minutes = snappedMinutes % 60;
+                    newStartVisual.setHours(hours, minutes);
+                    
+                    const newStartReal = fromDisplayDate(newStartVisual);
+
+                    handleUpdateEvent(event.id, { start: newStartReal });
+                  }}
+                  onResizeStart={() => setDraggingId(event.id)}
+                  onResizeStop={(_e, _direction, ref, _delta, _position) => {
+                    setDraggingId(null);
+
+                    const newHeight = parseInt(ref.style.height, 10);
+                     // Snap duration to 15 mins
+                    const snappedDuration = Math.round(newHeight / 15) * 15;
+                    handleUpdateEvent(event.id, { durationMinutes: Math.max(15, snappedDuration) });
+                  }}
                   className={cn(
-                    "absolute left-16 right-4 rounded-md p-2 text-xs border-l-4 overflow-hidden hover:brightness-110 cursor-pointer transition-colors bg-black/40 backdrop-blur-sm",
-                    getCategoryColorClass(event.type)
+                    "absolute rounded-md text-xs border-l-4 overflow-hidden hover:brightness-110 cursor-pointer transition-colors bg-black/60 backdrop-blur-md shadow-md hover:z-60! group",
+                    resolveCategoryClass(event.type)
                   )}
                   style={{
-                    top: `${startMinutes}px`,
-                    height: `${height}px`,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEventClick(event);
+                    zIndex: isDragging ? 50 : zIndex
                   }}
                 >
-                  <div className={cn("absolute inset-0", EVENT_BG_COLORS[event.color] || EVENT_BG_COLORS.blue)} />
+                  <div 
+                    className={cn("absolute inset-0 w-full h-full", EVENT_BG_COLORS[event.color] || EVENT_BG_COLORS.blue)} 
+                    style={{ pointerEvents: draggingId === event.id ? 'none' : 'auto' }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleEventClick(event);
+                    }}
+                  />
 
-                  <div className="relative z-10 text-white">
+                  <div className="relative z-10 text-white p-2 pointer-events-none">
                     <div className="font-semibold mb-0.5 truncate">{event.title}</div>
 
                     {showTime && (
                       <div className="text-white/70 flex items-center gap-1 mb-1 truncate text-[10px]">
-                        {format(event.start, 'p', { locale: dateFnsLocale })} - {format(addMinutes(event.start, event.durationMinutes), 'p', { locale: dateFnsLocale })}
+                        {format(toDisplayDate(event.start), 'p', { locale: dateFnsLocale })} - {format(toDisplayDate(addMinutes(event.start, event.durationMinutes)), 'p', { locale: dateFnsLocale })}
                       </div>
                     )}
 
@@ -576,7 +863,7 @@ export function Calendar({ owner }: CalendarProps) {
                       </div>
                     )}
                   </div>
-                </div>
+                </Rnd>
               );
             })}
           </div>
@@ -592,14 +879,17 @@ export function Calendar({ owner }: CalendarProps) {
     return (
       <div className="flex h-full w-full text-white animate-in fade-in duration-500 overflow-hidden">
         {/* Sidebar */}
-        <div className={cn(
-          "flex flex-col border-r border-white/5 bg-white/5 gap-6 shrink-0 backdrop-blur-md transition-all duration-300",
-          isSidebarCompact ? "w-16 p-2 items-center" : "w-64 p-4"
-        )}>
+        <div
+          className={cn(
+            "flex flex-col border-r border-white/5 gap-6 shrink-0 backdrop-blur-md transition-all duration-300",
+            isSidebarCompact ? "w-16 p-2 items-center" : "w-64 p-4"
+          )}
+          style={{ backgroundColor: sidebarBackground }}
+        >
           <div className="space-y-4 w-full">
             <Button
               className={cn(
-                "text-white transition-all hover:brightness-110",
+                "text-white transition-all hover:brightness-110 shadow-lg shadow-black/20",
                 isSidebarCompact ? "w-8 h-8 p-0 justify-center rounded-full" : "w-full justify-start gap-2"
               )}
               style={{ backgroundColor: accentColor }}
@@ -642,14 +932,22 @@ export function Calendar({ owner }: CalendarProps) {
           <div className={cn("space-y-6 overflow-y-auto pr-1 custom-scrollbar w-full", isSidebarCompact && "px-0 overflow-visible")}>
             <div className="space-y-3">
               {!isSidebarCompact && (
-                <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest px-2">{t('calendar.sidebar.myCalendars')}</h3>
+                <div className="flex items-center justify-between px-2">
+                  <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest">{t('calendar.sidebar.myCalendars')}</h3>
+                  <button 
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="text-white/40 hover:text-white transition-colors"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
               )}
               <div className={cn("space-y-1", isSidebarCompact && "flex flex-col items-center gap-2 space-y-0")}>
                 {categories.map(category => (
                   <div
                     key={category.id}
                     className={cn(
-                      "flex items-center transition-colors duration-200 cursor-pointer",
+                      "flex items-center justify-between transition-colors duration-200 cursor-pointer group/cat",
                       isSidebarCompact
                         ? "w-8 h-8 justify-center rounded-full hover:bg-white/10"
                         : "gap-2 text-sm px-3 py-2 rounded-lg",
@@ -658,14 +956,25 @@ export function Calendar({ owner }: CalendarProps) {
                         : "text-white/60 hover:text-white hover:bg-white/5"
                     )}
                     onClick={() => setSelectedCategory(category.id)}
-                    title={category.label}
+                    title={(category as any).label || t((category as any).labelKey)}
                   >
-                    <div className={cn(
-                      "rounded-full ring-2 ring-white/5",
-                      isSidebarCompact ? "w-3 h-3" : "w-3 h-3",
-                      getColorClass(category.color || 'white')
-                    )} />
-                    {!isSidebarCompact && category.label}
+                    <div className="flex items-center gap-2">
+                        <div className={cn(
+                        "rounded-full ring-2 ring-white/5",
+                        isSidebarCompact ? "w-3 h-3" : "w-3 h-3",
+                        getColorClass(category.color || 'white')
+                        )} />
+                        {!isSidebarCompact && ((category as any).label || t((category as any).labelKey))}
+                    </div>
+                    
+                    {!isSidebarCompact && !DEFAULT_CATEGORIES.some(c => c.id === category.id) && (
+                        <button
+                          onClick={(e) => handleDeleteCategory(category.id, e)}
+                          className="text-white/20 hover:text-white opacity-0 group-hover/cat:opacity-100 transition-all font-bold"
+                        >
+                            &times;
+                        </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -731,7 +1040,7 @@ export function Calendar({ owner }: CalendarProps) {
                   <ChevronLeft className={cn(isSmall ? "w-4 h-4" : "w-5 h-5")} />
                 </button>
                 <button
-                  onClick={() => setCurrentDate(new Date())}
+                  onClick={() => setCurrentDate(new Date())} // Always resets to real "Now"
                   className={cn(
                     "font-medium text-white/80 hover:text-white hover:bg-white/5 rounded-md transition-colors border-x border-white/5 mx-0.5",
                     isSmall ? "px-2 py-1 text-xs" : "px-3 py-1 text-sm"
@@ -751,7 +1060,7 @@ export function Calendar({ owner }: CalendarProps) {
                 "font-bold text-white tracking-tight truncate min-w-0 transition-all text-nowrap",
                 isSmall ? "text-xl flex-1 text-right" : "text-3xl"
               )}>
-                {format(currentDate, 'MMMM yyyy', { locale: dateFnsLocale })}
+                {format(toDisplayDate(currentDate), 'MMMM yyyy', { locale: dateFnsLocale })}
               </h2>
             </div>
 
@@ -783,7 +1092,10 @@ export function Calendar({ owner }: CalendarProps) {
           </div>
 
           {/* View Content */}
-          <div className="flex-1 min-h-0 min-w-0 bg-black/20 rounded-2xl border border-white/5 backdrop-blur-sm overflow-hidden relative">
+          <div
+            className="flex-1 min-h-0 min-w-0 rounded-2xl border border-white/5 backdrop-blur-sm overflow-hidden relative"
+            style={{ backgroundColor: windowBackground }}
+          >
             {isLoading ? (
               <div className="absolute inset-0 flex items-center justify-center text-white/40">
                 <div className="animate-pulse">{t('calendar.loadingEvents')}</div>
@@ -809,7 +1121,14 @@ export function Calendar({ owner }: CalendarProps) {
       {/* Wait, my previous replacement put Dialog INSIDE AppTemplate? No, it was outside in my mental model but inside the return. */}
       {/* Standard practice: Dialogs can be anywhere. */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-[#1E1E1E]/95 border-white/10 text-white backdrop-blur-2xl shadow-2xl">
+        <DialogContent 
+          overlayClassName="bg-black/20 backdrop-blur-[12px]"
+          className="sm:max-w-[425px] border-white/10 text-white shadow-2xl bg-transparent"
+          style={{
+            background: windowBackground,
+            ...blurStyle
+          }}
+        >
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">{editingEvent.id ? t('calendar.modal.editEvent') : t('calendar.modal.newEvent')}</DialogTitle>
             <DialogDescription className="text-white/50">
@@ -1216,6 +1535,51 @@ export function Calendar({ owner }: CalendarProps) {
             >
               {t('calendar.actions.saveEvent')}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+
+      </Dialog>
+      
+      <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-[#1E1E1E]/95 border-white/10 text-white backdrop-blur-2xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('calendar.actions.createCategory')}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="cat-name" className="text-right text-white/70">
+                {t('common.name')}
+              </Label>
+              <Input
+                id="cat-name"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                className="col-span-3 bg-white/5 border-white/10 text-white"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right text-white/70">
+                {t('common.color')}
+              </Label>
+              <div className="col-span-3 flex gap-2">
+                {colors.filter(c => c.value !== 'white').map(color => (
+                    <button
+                        key={color.value}
+                        type="button"
+                        onClick={() => setNewCategoryColor(color.value)}
+                        className={cn(
+                            "w-6 h-6 rounded-full transition-transform ring-offset-2 ring-offset-black",
+                            color.tw,
+                            newCategoryColor === color.value ? "scale-110 ring-2 ring-white" : "hover:scale-105"
+                        )}
+                    />
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+             <Button variant="outline" onClick={() => setIsCategoryModalOpen(false)} className="border-white/10 text-white hover:bg-white/10">{t('common.cancel')}</Button>
+            <Button onClick={handleAddCategory} style={{ backgroundColor: accentColor }} className="text-white hover:brightness-110 border-0">{t('common.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

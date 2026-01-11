@@ -1,20 +1,20 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Desktop, DesktopIcon } from './Desktop';
-import { MenuBar } from './MenuBar';
-import { Dock } from './Dock';
-import { Window } from './Window';
-import { FileManager } from './FileManager';
-import { Settings } from './Settings';
-import { Photos } from './apps/Photos';
-import { Music } from './apps/Music';
-import { Messages } from './apps/Messages';
-import { Browser } from './apps/Browser';
-import { Terminal } from './apps/Terminal';
-import { DevCenter } from './apps/DevCenter';
-import { Notepad } from './apps/Notepad';
-import { Calendar } from './apps/Calendar';
-import { PlaceholderApp } from './apps/PlaceholderApp';
-import { AppStore } from './apps/AppStore';
+import { Desktop, DesktopIcon } from '@/components/Desktop';
+import { MenuBar } from '@/components/MenuBar';
+import { Dock } from '@/components/Dock';
+import { Window } from '@/components/Window';
+import { FileManager } from '@/components/FileManager';
+import { Settings } from '@/components/Settings';
+import { Photos } from '@/components/apps/Photos';
+import { Music } from '@/components/apps/Music';
+import { Messages } from '@/components/apps/Messages';
+import { Browser } from '@/components/apps/Browser';
+import { Terminal } from '@/components/apps/Terminal';
+import { DevCenter } from '@/components/apps/DevCenter';
+import { Notepad } from '@/components/apps/Notepad';
+import { Calendar } from '@/components/apps/Calendar';
+import { PlaceholderApp } from '@/components/apps/PlaceholderApp';
+import { AppStore } from '@/components/apps/AppStore';
 import { useAppContext } from '@/components/AppContext';
 import { useFileSystem, type FileSystemContextType } from '@/components/FileSystemContext';
 import { Toaster } from '@/components/ui/sonner';
@@ -174,7 +174,7 @@ export default function OS() {
         switch (type) {
             case 'finder':
                 title = 'Finder';
-                content = <FileManager id="template" owner={owner} initialPath={data?.path} onOpenApp={openWindowRef.current} />;
+                content = <FileManager id="template" owner={owner} initialPath={data?.path} onOpenApp={(...args) => openWindowRef.current(...args)} />;
                 break;
             case 'settings':
                 title = 'System Settings';
@@ -182,12 +182,12 @@ export default function OS() {
                 break;
             case 'photos':
                 title = 'Photos';
-                content = <Photos owner={owner} />;
+                content = <Photos owner={owner} onOpenApp={(...args) => openWindowRef.current(...args)} />;
                 break;
             case 'music':
                 title = 'Music';
                 content = (
-                    <Music owner={owner} initialPath={data?.path} onOpenApp={openWindowRef.current} />
+                    <Music id="template" owner={owner} initialPath={data?.path} onOpenApp={(...args) => openWindowRef.current(...args)} />
                 );
                 break;
             case 'messages':
@@ -205,11 +205,11 @@ export default function OS() {
             case 'terminal':
                 title = 'Terminal';
                 // Need to forward the ref logic if terminal is special
-                content = <Terminal id="template" onLaunchApp={(id, args, owner) => openWindowRef.current(id, { path: args?.[0] }, owner)} owner={owner} />;
+                content = <Terminal id="template" onLaunchApp={(id, args, owner) => openWindowRef.current(id, { path: args?.[0], timestamp: Date.now() }, owner)} owner={owner} />;
                 break;
             case 'trash':
                 title = 'Trash';
-                content = <FileManager id="template" owner={owner} initialPath="~/.Trash" onOpenApp={openWindowRef.current} />;
+                content = <FileManager id="template" owner={owner} initialPath="~/.Trash" onOpenApp={(...args) => openWindowRef.current(...args)} />;
                 break;
             case 'dev-center':
                 title = 'DEV Center';
@@ -347,6 +347,7 @@ export default function OS() {
             // Check file extension to determine which app to use
             const isMusic = /\.(mp3|wav|flac|ogg|m4a)$/i.test(icon.name);
             const isText = /\.(txt|md|json|js|ts|tsx|css|html|sh)$/i.test(icon.name);
+            const isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(icon.name);
 
             if (isMusic) {
                 // Check if music app is installed by checking /usr/bin
@@ -361,9 +362,16 @@ export default function OS() {
                 // Check if notepad app is installed by checking /usr/bin
                 const notepadBinary = getNodeAtPath('/usr/bin/notepad');
                 if (notepadBinary) {
-                    openWindow('notepad', { path });
+                    openWindow('notepad', { path, timestamp: Date.now() });
                 } else {
                     notify.system('error', 'OS', t('os.toasts.notepadNotInstalled'), t('notifications.subtitles.appMissing'));
+                }
+            } else if (isImage) {
+                const photosBinary = getNodeAtPath('/usr/bin/photos');
+                if (photosBinary) {
+                    openWindow('photos', { path, timestamp: Date.now() });
+                } else {
+                    notify.system('error', 'OS', t('os.toasts.photosNotInstalled'), t('notifications.subtitles.appMissing'));
                 }
             }
         }

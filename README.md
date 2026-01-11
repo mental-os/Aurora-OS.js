@@ -1,6 +1,6 @@
 # Aurora OS.js
 
-[![Version](https://img.shields.io/badge/Version-v0.8.3-blue)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Status](<https://img.shields.io/badge/Roadmap-Stage%200%20(OS%20Foundation)-blue>) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![Build (Nightly)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=nightly&label=Build%20(Nightly)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
+[![Version](https://img.shields.io/badge/Version-v0.8.4-blue)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Status](<https://img.shields.io/badge/Roadmap-Stage%200%20(OS%20Foundation)-blue>) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![Build (Nightly)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=nightly&label=Build%20(Nightly)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
 
 ![Social media image for Aurora OS.js hacking simulator game project](.github/openGraph.png)
 
@@ -13,12 +13,24 @@ It’s not a finished game, yet. It’s the foundation: a playable, extensible v
 
 Even in its current proof‑of‑concept state, Aurora OS already solves the hard problems:
 
-- 🗂 Virtual filesystem (persistent, sandboxed)
-- 🧠 App lifecycle & OS‑level user flow
-- 💻 Functional bash‑like terminal
-- 🧩 Modular app architecture with context-aware Menu Bar system
-- 📝 Notepad app with syntax highlighting for: .txt, .md, .js, .jsx, .css, .html, .sh, and more
-- 🎛 Window management & desktop UX
+- 🗂 **Virtual User Space**: Persistent `localStorage` filesystem with real user permissions (`rwx`), user homes, and multi-user isolation (`root`, `guest`, custom users).
+- 🧠 **App Engine**: Window management, z-indexing, process lifecycle, and a global context-aware Menu Bar.
+- 💻 **Terminal**: Bash-like environment with pipes, IO redirection, history, and internal commands (`ls`, `cat`, `grep`, `sudo`, `su`).
+- � **System Apps**:
+  - **Finder**: Drag & drop file management, list/grid views, and trash can.
+  - **App Store**: Install/uninstall apps with permission checks (`sudo` support).
+  - **Settings**: System configuration, user management, and personalization.
+  - **DevCenter**: System diagnostics and logs.
+- 🎨 **Creative & Media**:
+  - **Photos**: Full gallery with albums, favorites, lightbox, and reactive library scanning.
+  - **Music**: Playlist management, background playback, and binary ID3 metadata parsing.
+- 📝 **Productivity & Internet**:
+  - **Notepad**: Monaco-like editor with syntax highlighting for 10+ languages.
+  - **Browser**: Functional web browser simulation with history and tabs.
+  - **Mail**: Email client simulation with attachments and multiple mailboxes.
+  - **Calendar**: Event management with drag & drop support.
+  - **Messages**: Chat interface simulation.
+- � **Localization**: Fully translated in English, German, Spanish, French, Portuguese, Romanian, and Chinese.
 
 ## 🧭 Where This Is Going
 
@@ -103,35 +115,38 @@ npm run dev
 
 Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
-## Release Notes (v0.8.3)
+## Release Notes (v0.8.4)
 
 ### Added
 
-- **Context menu**: Each APP feeds context menu information the same way they feed Menu Bar items. Some apps may not have/require context menu items.
-- **Finder**: Recursive search functionality aware of the current location.
-- **Music**: Added support for scanning real metadata for files in `/src/assets/sounds` (was relying on filename before).
+- **Photos App**: Full-featured gallery with albums, favorites, lightbox, and background library scanning.
+- **Mock Content**: Initial set of high-quality mock images seeded to `~/Pictures`.
+- **Simulated Cloud Services**: Added initial support for simulated cloud services (e.g., TrustMail accounts DB).
+- **TrustMail**: Added Account Recovery system with secret key generation and storage.
+
+### Removed
+
+- **TrustMail and Mail**: Dependency on local inbox and outbox.
+- **TrustMail**: Removed single-account limitation (multi-account support).
 
 ### Improved
 
-- **Standardized System Notifications**: All feedback notifications (errors, warnings, etc.) now use the same system notification component `notification.tsx`. These are different than App notifications that will go into the notification center (applet).
-- **Finder**: Show item count in the sidebar for Favorites and for Locations sections.
-  debar is aware of the existing folders in user's home directory.
-- **Finder/Desktop**: Context menu copy/paste functionality.
-- **Finder/Desktop**: Improved "Get Info" diagnostic display with rich, internationalized details (Permissions, Owner, Modified, Size).
-- **All APPs**: Benefit from optimizations, especially in terms of React drawing and memory usage.
-- **Notepad**: Opens with an empty state that propts user to open a file, instead of the clasic "first tab already open" - this gives the posibility to close all tabs.
-- **Translation System**: `.scripts/check-i18n.js` script find automatically missing or extra keys in translations as well as all the files in `/src/i18n/locales`. Aditional workflow for translations is added in [TRANSLATION.md](TRANSLATION.md).
+- **Architecture**: Standardized internal imports to use absolute `@/` alias.
+- **Multi-User**: Enhanced app isolation (local providers) for `sudo`/`su` sessions.
+- **Localization**: Achieved 100% translation parity across all 7 supported languages.
+- **Calendar**: Added drag & drop support.
+- **Calendar**: Added dynamic categories support `(.config/calendar.json)`.
+- **Calendar first event**: aka. "Loop Started" event is now set to follow the onboarding complition time.
+- **Time source**: now influence Calendar app (local time vs. server time).
+- **Modals**: such as "Open File" or "Create/Edit Event" blurs the background.
+- **Main Services & Mail**: Trash functionality and permanent deletion.
 
 ### Fixed
 
-- **Finder**: Drag-to-move to same location bug.
-- **Finder**: Drag-to-move from one window to another now corectly checks for permissions (applies to Desktop too).
-- **Finder**: Drop highlight issue when it stayed active in some cases.
-- **Finder**: Terminal not passing the correct home path to Finder (eg. `su guest` > `finder ~` should open Finder as guest in `/home/guest`, but it opened in `/home/[user]`).
-- **Notepad**: Tabs now remain active when closing and opening Notepad. Unsaved files prevent the app from closing.
-- **Notepad**: Tabs now remember the mode of each tab (edit / preview) to prevent unwanted preview mode where it is not supported.
-- **Music**: Ghost keys issue that appeared even if the app was not installed is now fixed.
-- **Music**: The subsystem of scanning metadata, handleling Sound applet, etc. is tied to the actual launch of the Music app, avoiding issues like not having the Music app installed but still producing effects.
+- **System Stability**: Resolved "System Critical Error" caused by React Context duplication.
+- **Drag & Drop**: Fixed drag-and-drop support system-wide (Finder, Calendar, etc.) avoiding double-click triggers (browsers limitation).
+- **Finder**: Fixed double-click launch reliability and "Open Folder" case-sensitivity issues.
+- **Session**: Prevented apps from auto-playing/opening content when restoring old sessions.
 
 ### [View full version history](HISTORY.md)
 

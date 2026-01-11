@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { useFileSystem, User } from './FileSystemContext';
-import { cn } from './ui/utils';
+import { useFileSystem, User } from '@/components/FileSystemContext';
+import { cn } from '@/components/ui/utils';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import { GameScreenLayout } from './Game/GameScreenLayout';
-import { feedback } from '../services/soundFeedback';
-import { hasSavedSession, clearSession, softReset } from '../utils/memory';
+import { GameScreenLayout } from '@/components/Game/GameScreenLayout';
+import { feedback } from '@/services/soundFeedback';
+import { hasSavedSession, clearSession, softReset } from '@/utils/memory';
 
-import { useAppContext } from './AppContext';
-import { useI18n } from '../i18n/index';
+import { useAppContext } from '@/components/AppContext';
+import { useI18n } from '@/i18n/index';
 
 export function LoginScreen() {
     const { users, login, currentUser, logout, resetFileSystem } = useFileSystem();

@@ -118,7 +118,7 @@ export function FileIcon({ name, type, accentColor = '#3b82f6', className = "w-f
         return renderIconWithGradient(Music);
     }
     if (lowerName.endsWith('.jpg') || lowerName.endsWith('.png') || lowerName.endsWith('.gif') || lowerName.endsWith('.webp')) {
-        return renderIconWithGradient(Image, 'text-green-400');
+        return renderIconWithGradient(Image);
     }
     if (lowerName.endsWith('.mp4') || lowerName.endsWith('.mov') || lowerName.endsWith('.avi')) {
         return renderIconWithGradient(Film, 'text-purple-400');

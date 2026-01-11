@@ -514,6 +514,7 @@ export const zh: TranslationDict = {
 		toasts: {
 			musicNotInstalled: '音乐应用未安装。请从应用商店安装。',
 			notepadNotInstalled: '记事本未安装。请从应用商店安装。',
+			photosNotInstalled: '照片应用未安装。请从应用商店安装。',
 		},
 	},
 	fileManager: {
@@ -548,6 +549,7 @@ export const zh: TranslationDict = {
 			permissionDenied: '权限被拒绝：{{name}}',
 			musicNotInstalled: '音乐应用未安装。请从应用商店安装。',
 			notepadNotInstalled: '记事本未安装。请从应用商店安装。',
+			photosNotInstalled: '照片应用未安装。请从应用商店安装。',
 			movedItem: '已移动 1 个项目',
 			movedItems: '已移动 {{count}} 个项目',
 			movedItemTo: '已将 1 个项目移动到 {{target}}',
@@ -582,29 +584,53 @@ export const zh: TranslationDict = {
 			muteNotifications: '静音通知',
 		},
 	},
-	photos: {
-		sidebar: {
-			libraryTitle: '资料库',
-			albumsTitle: '相册',
-		},
-		library: {
-			allPhotos: '所有照片',
-			favorites: '收藏',
-			recent: '最近',
-			people: '人物',
-			places: '地点',
-		},
-		albums: {
-			vacation2024: '2024 假期',
-			family: '家庭',
-			nature: '自然',
-		},
-		menu: {
-			slideshow: '幻灯片',
-			rotateClockwise: '顺时针旋转',
-			rotateCounterClockwise: '逆时针旋转',
-		},
-	},
+    photos: {
+      sidebar: {
+        libraryTitle: '资料库',
+        albumsTitle: '相册',
+      },
+      library: {
+        allPhotos: '所有照片',
+        favorites: '收藏',
+        recent: '最近',
+        people: '人物',
+        places: '地点',
+      },
+      albums: {
+        vacation2024: '2024 假期',
+        family: '家庭',
+        nature: '自然',
+      },
+      menu: {
+        slideshow: '幻灯片',
+        rotateClockwise: '顺时针旋转',
+        rotateCounterClockwise: '逆时针旋转',
+      },
+      empty: {
+        recent: {
+          title: '没有最近查看的照片',
+          description: '你最近打开的照片将显示在这里。',
+        },
+        favorites: {
+          title: '尚无收藏',
+          description: '将照片标记为收藏即可在此处查看。',
+        },
+        library: {
+          title: '未找到照片',
+          description: '在你的图片文件夹中未找到照片文件。',
+          openFolder: '打开 {{folder}} 文件夹',
+        },
+        noFolder: {
+          title: "未找到 {{user}} 的资料库",
+          description: '找不到该用户的文件夹 {{path}}。',
+        },
+        openHome: '打开主目录',
+      },
+      folders: {
+        pictures: '图片',
+        home: '主目录',
+      },
+    },
 	mail: {
 		login: {
 			title: '邮件',
@@ -645,6 +671,8 @@ export const zh: TranslationDict = {
 			archive: '归档',
 			unarchive: '取消归档',
 			delete: '删除',
+			restore: '恢复',
+			deleteForever: '永久删除',
 		},
 		time: {
 			minutesAgo: '{{minutes}} 分钟前',
@@ -756,6 +784,7 @@ export const zh: TranslationDict = {
 		},
 		actions: {
 			createEvent: '创建事件',
+			createCategory: '创建类别',
 			clear: '清除',
 			delete: '删除',
 			cancel: '取消',
@@ -763,6 +792,7 @@ export const zh: TranslationDict = {
 		},
 		loadingEvents: '正在加载事件...',
 		toasts: {
+			cannotDeleteSystemCategory: '系统类别无法删除',
 			eventDeleted: '事件已删除',
 			eventSaved: '事件已保存',
 			requiredFields: '请填写必填字段',

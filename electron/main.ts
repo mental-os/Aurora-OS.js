@@ -51,7 +51,10 @@ function createWindow() {
 
     // Windowed Fullscreen: Maximize before showing
     mainWindow.maximize();
-    mainWindow.show();
+
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+    });
 
     // Development or Production
     if (process.env.VITE_DEV_SERVER_URL) {

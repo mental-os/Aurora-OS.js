@@ -4,8 +4,8 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 
-import { cn } from "./utils";
-import { useI18n } from "../../i18n";
+import { cn } from "@/components/ui/utils";
+import { useI18n } from "@/i18n";
 
 function Dialog({
   ...props
@@ -49,13 +49,14 @@ function DialogOverlay({
 
 function DialogContent({
   className,
+  overlayClassName,
   children,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content>) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & { overlayClassName?: string }) {
   const { t } = useI18n();
   return (
     <DialogPortal data-slot="dialog-portal">
-      <DialogOverlay />
+      <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(

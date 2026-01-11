@@ -1,17 +1,17 @@
 import { Battery, BatteryCharging, BatteryFull, BatteryMedium, BatteryLow, Zap, Thermometer, Activity, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
-import { useBattery } from '../hooks/useBattery';
-import { useThemeColors } from '../hooks/useThemeColors';
-import { useAppContext } from './AppContext';
-import { CustomSwitch } from './ui/custom-switch';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { cn } from './ui/utils';
-import { useI18n } from '../i18n';
+import { useBattery } from '@/hooks/useBattery';
+import { useThemeColors } from '@/hooks/useThemeColors';
+import { useAppContext } from '@/components/AppContext';
+import { CustomSwitch } from '@/components/ui/custom-switch';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/components/ui/utils';
+import { useI18n } from '@/i18n';
 
-import { STORAGE_KEYS } from '../utils/memory';
+import { STORAGE_KEYS } from '@/utils/memory';
 
-import { useFileSystem } from './FileSystemContext';
+import { useFileSystem } from '@/components/FileSystemContext';
 
 // Component to select the correct Lucide icon based on state
 const BatteryStatusIcon = ({ level, charging, className, style }: { level: number, charging: boolean, className?: string, style?: React.CSSProperties }) => {

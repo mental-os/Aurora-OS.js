@@ -1,14 +1,14 @@
 import { Trash, Trash2, Grid, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect, useMemo, memo } from 'react';
-import type { WindowState } from '../hooks/useWindowManager';
-import { useThemeColors } from '../hooks/useThemeColors';
-import { useAppContext } from './AppContext';
-import { useFileSystem } from './FileSystemContext';
-import { useI18n } from '../i18n/index';
-import { cn } from './ui/utils';
-import { getDockApps } from '../config/appRegistry';
-import { AppIcon } from './ui/AppIcon';
+import type { WindowState } from '@/hooks/useWindowManager';
+import { useThemeColors } from '@/hooks/useThemeColors';
+import { useAppContext } from '@/components/AppContext';
+import { useFileSystem } from '@/components/FileSystemContext';
+import { useI18n } from '@/i18n/index';
+import { cn } from '@/components/ui/utils';
+import { getDockApps } from '@/config/appRegistry';
+import { AppIcon } from '@/components/ui/AppIcon';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
 interface DockProps {

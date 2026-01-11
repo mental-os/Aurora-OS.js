@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Volume2, Monitor, RefreshCw, Trash2, X, VolumeX } from 'lucide-react';
-import pkg from '../../../package.json';
-import { cn } from '../ui/utils';
-import { feedback } from '../../services/soundFeedback';
-import { soundManager } from '../../services/sound';
-import { useFileSystem } from '../FileSystemContext';
-import { useI18n } from '../../i18n/index';
-import { useFullscreen } from '../../hooks/useFullscreen';
+import pkg from '@/../package.json';
+import { cn } from '@/components/ui/utils';
+import { feedback } from '@/services/soundFeedback';
+import { soundManager } from '@/services/sound';
+import { useFileSystem } from '@/components/FileSystemContext';
+import { useI18n } from '@/i18n/index';
+import { useFullscreen } from '@/hooks/useFullscreen';
 
 interface SettingsModalProps {
     onClose: () => void;

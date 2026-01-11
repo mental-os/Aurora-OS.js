@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # AURORA OS.JS SYSTEM CONTEXT
 
 <!-- OPTIMIZED_FOR: GEMINI_3_PRO_HIGH -->
@@ -34,7 +38,8 @@
     - **Home**: `/home/<user>` created via `createUserHome()`.
 
 3.  **App Engine**:
-    - **Registry**: `src/config/appRegistry.ts` (Definition source of truth). 
+
+    - **Registry**: `src/config/appRegistry.ts` (Definition source of truth).
     - **Runtime**: Apps render in `WindowContext`.
     - **ContextMenu**: Can be global (registry `contextMenu`) or localized (wrapping specific UI areas with `ContextMenuTrigger` in the app component).
     - **Persistence**: Per-app storage via `useAppStorage` (key: `app-user`) or manual `localStorage` with `getAppStateKey`.
@@ -42,6 +47,7 @@
 4.  **Terminal Architecture**: - **PATH**: `["/bin", "/usr/bin"]`. - **`/bin`**: Contains **system commands** (e.g., `ls`, `cat`). - Implemented as **Internal Commands** in `src/utils/terminal/registry`. - Represented in VFS as files containing `#command <name>`. - **`/usr/bin`**: Contains **App Launchers** (e.g., `chrome`, `code`). - Implemented as **App IDs** in `src/config/appRegistry.ts`. - Represented in VFS as files containing `#!app <appId>`. - **Execution**: - `useTerminalLogic` resolves input -> checks built-ins -> checks PATH. - If `#!app ...` -> Launches Window. - If `#command ...` -> Executes internal function. - If other text -> Parses as Shell Script (supports `$VAR`, `VAR=val`).
 
 5.  **Notification & UI System**:
+
     - **Usage**: `notify.system(type, source, message, subtitle)`.
     - **Formatting**: `message` prop accepts `React.ReactNode`, allowing for rich grid/list layouts in toasts (e.g., "Get Info" dialogs).
     - **Empty States**: Use `EmptyState` component (`src/components/ui/empty-state.tsx`) for standardizing empty folders, empty search results, and initial app states.
@@ -71,24 +77,25 @@
 
 <codebase_map>
 
-| Path | Component | Description |
-| :--- | :--- | :--- |
-| `src/components/FileSystemContext.tsx` | **VFS Core** | Context for all FS operations. |
-| `src/utils/fileSystemUtils.ts` | **VFS Utils** | `FileNode` types, `initialFileSystem`, permission logic. |
-| `src/components/AppContext.tsx` | **Session** | Theme, Wallpapers, Physical User session. |
-| `src/config/appRegistry.ts` | **Registry** | Installed Apps configuration. |
-| `src/services/notifications.tsx` | **Notifications** | Central service for rich system toasts. |
-| `src/services/sound.ts` | **Sound Manager** | Global audio state and Howler integration. |
-| `src/utils/id3Parser.ts` | **ID3 Parser** | Binary metadata extractor for MP3 files. |
-| `src/components/apps/*` | **Apps** | Individual App components (Notepad, Terminal, etc). |
+| Path                                   | Component         | Description                                              |
+| :------------------------------------- | :---------------- | :------------------------------------------------------- |
+| `src/components/FileSystemContext.tsx` | **VFS Core**      | Context for all FS operations.                           |
+| `src/utils/fileSystemUtils.ts`         | **VFS Utils**     | `FileNode` types, `initialFileSystem`, permission logic. |
+| `src/components/AppContext.tsx`        | **Session**       | Theme, Wallpapers, Physical User session.                |
+| `src/config/appRegistry.ts`            | **Registry**      | Installed Apps configuration.                            |
+| `src/services/notifications.tsx`       | **Notifications** | Central service for rich system toasts.                  |
+| `src/services/sound.ts`                | **Sound Manager** | Global audio state and Howler integration.               |
+| `src/utils/id3Parser.ts`               | **ID3 Parser**    | Binary metadata extractor for MP3 files.                 |
+| `src/components/apps/*`                | **Apps**          | Individual App components (Notepad, Terminal, etc).      |
 
 </codebase_map>
 
 <ai_context>
 
 **External Alignment**:
--   `public/llms.txt`: Standard entry point for external AI agents (summary + links).
--   `public/llms-full.txt`: Full system context (mirror of this file) for deep understanding.
+
+- `public/llms.txt`: Standard entry point for external AI agents (summary + links).
+- `public/llms-full.txt`: Full system context (mirror of this file) for deep understanding.
 
 </ai_context>
 
@@ -98,11 +105,12 @@
 **Source**: `mental-os/Aurora-OS.js` via `gitmcp.io`.
 **Purpose**: Retrieval Augmented Generation (RAG) for codebase documentation.
 **When to use**:
--   When you need deep context on specific functions or architecture not covered in this summary.
--   To search for usage patterns across the entire repository without manual grepping.
-**Tools**:
--   `search_Aurora_OS_js_documentation(query)`: Semantic search over docs.
--   `fetch_Aurora_OS_js_documentation()`: Fetch full README/Docs.
--   `search_Aurora_OS_js_code(query)`: Search code via GitHub API.
+
+- When you need deep context on specific functions or architecture not covered in this summary.
+- To search for usage patterns across the entire repository without manual grepping.
+  **Tools**:
+- `search_Aurora_OS_js_documentation(query)`: Semantic search over docs.
+- `fetch_Aurora_OS_js_documentation()`: Fetch full README/Docs.
+- `search_Aurora_OS_js_code(query)`: Search code via GitHub API.
 
 </mcp_usage>

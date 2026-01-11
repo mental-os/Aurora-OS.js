@@ -4,6 +4,7 @@
         "useDefineForClassFields": true,
         "lib": [
             "ESNext",
+            "ESNext.AsyncIterable",
             "DOM",
             "DOM.Iterable"
         ],

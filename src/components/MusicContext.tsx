@@ -1,14 +1,14 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { Howl } from 'howler';
-import { soundManager } from '../services/sound';
-import { useFileSystem } from './FileSystemContext';
-import { useAppContext } from './AppContext';
-import { useSessionStorage } from '../hooks/useSessionStorage';
-import { useI18n } from '../i18n';
+import { soundManager } from '@/services/sound';
+import { useFileSystem } from '@/components/FileSystemContext';
+import { useAppContext } from '@/components/AppContext';
+import { useSessionStorage } from '@/hooks/useSessionStorage';
+import { useI18n } from '@/i18n';
 
 
-import { STORAGE_KEYS } from '../utils/memory';
-import { parseID3, base64ToUint8Array } from '../utils/id3Parser';
+import { STORAGE_KEYS } from '@/utils/memory';
+import { parseID3, base64ToUint8Array } from '@/utils/id3Parser';
 
 export interface Song {
     id: string;

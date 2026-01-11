@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Check, User, Globe, Palette, Loader2, Search } from "lucide-react";
-import { GameScreenLayout } from "./GameScreenLayout";
-import { useFileSystem } from "../FileSystemContext";
-import { useAppContext } from "../AppContext";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../ui/card";
-import { GlassInput } from "../ui/GlassInput";
-import { GlassButton } from "../ui/GlassButton";
-import { cn } from "../ui/utils";
-import { SUPPORTED_LOCALES } from "../../i18n/translations";
-import { useI18n } from "../../i18n/index";
-import { STORAGE_KEYS } from "../../utils/memory";
+import { GameScreenLayout } from "@/components/Game/GameScreenLayout";
+import { useFileSystem } from "@/components/FileSystemContext";
+import { useAppContext } from "@/components/AppContext";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { GlassInput } from "@/components/ui/GlassInput";
+import { GlassButton } from "@/components/ui/GlassButton";
+import { cn } from "@/components/ui/utils";
+import { SUPPORTED_LOCALES } from "@/i18n/translations";
+import { useI18n } from "@/i18n/index";
+import { STORAGE_KEYS } from "@/utils/memory";
 
-import { updateStoredVersion } from "../../utils/migrations";
+import { updateStoredVersion } from "@/utils/migrations";
 
 interface OnboardingProps {
     onContinue: () => void;
@@ -145,6 +145,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                  // 5. Mark Complete & Save
                  try {
                      localStorage.setItem(STORAGE_KEYS.LANGUAGE, locale);
+                     localStorage.setItem(STORAGE_KEYS.INSTALL_DATE, new Date().toISOString());
                  } catch (e) { console.warn(e) }
                  
                  setOnboardingComplete(true);

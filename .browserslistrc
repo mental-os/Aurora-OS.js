@@ -1,7 +1,6 @@
 defaults
-safari >= 14
-edge >= 79
-chrome >= 54
-firefox >= 50
-last 2 versions
-not dead
+Chrome >= 120
+Safari >= 17
+Firefox >= 120
+Edge >= 120
+Electron >= 28

@@ -33,6 +33,7 @@ interface AppTemplateProps {
   onItemClick?: (id: string) => void;
   sidebarCollapseBreakpoint?: number;
   minContentWidth?: number;
+  style?: React.CSSProperties;
 }
 
 export function AppTemplate({
@@ -46,7 +47,8 @@ export function AppTemplate({
   activeItem,
   onItemClick,
   sidebarCollapseBreakpoint,
-  minContentWidth
+  minContentWidth,
+  style
 }: AppTemplateProps) {
   const { accentColor } = useAppContext();
   const { windowBackground, sidebarBackground, titleBarBackground, blurStyle } = useThemeColors();
@@ -72,7 +74,7 @@ export function AppTemplate({
     <div
       ref={containerRef}
       className={cn("flex flex-col h-full select-none", className)}
-      style={{ background: windowBackground, ...blurStyle }}
+      style={{ background: windowBackground, ...blurStyle, ...style }}
     >
       {/* Toolbar */}
       {toolbar && (

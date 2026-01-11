@@ -21,6 +21,8 @@ interface AppContextType {
   setDisableGradients: (enabled: boolean) => void;
   wallpaper: string;
   setWallpaper: (id: string) => void;
+  timeMode: 'server' | 'local';
+  setTimeMode: (mode: 'server' | 'local') => void;
   devMode: boolean;
   setDevMode: (enabled: boolean) => void;
   exposeRoot: boolean;
@@ -56,6 +58,7 @@ interface UserPreferences {
   disableShadows: boolean;
   disableGradients: boolean;
   wallpaper: string;
+  timeMode: 'server' | 'local';
 }
 
 interface SystemConfig {
@@ -73,6 +76,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   disableShadows: false,
   disableGradients: false,
   wallpaper: 'default',
+  timeMode: 'server',
 };
 
 function getBestSupportedLocale(candidate: string | undefined): AppLocale {
@@ -237,6 +241,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setDisableShadows = (enabled: boolean) => setPreferences(s => ({ ...s, disableShadows: enabled }));
   const setDisableGradients = (enabled: boolean) => setPreferences(s => ({ ...s, disableGradients: enabled }));
   const setWallpaper = (id: string) => setPreferences(s => ({ ...s, wallpaper: id }));
+  const setTimeMode = (mode: 'server' | 'local') => setPreferences(s => ({ ...s, timeMode: mode }));
 
   // Setters for System Config
   const setDevMode = (enabled: boolean) => setSystemConfig(s => ({ ...s, devMode: enabled }));
@@ -316,6 +321,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDisableGradients,
       wallpaper,
       setWallpaper,
+      timeMode: preferences.timeMode,
+      setTimeMode,
       devMode,
       setDevMode,
       exposeRoot,

@@ -1,17 +1,17 @@
 import { Palette, Monitor, Bell, Shield, Wifi, User, HardDrive, Zap, Info, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 import React, { useState, useMemo, useEffect } from 'react';
-import { useAppContext } from './AppContext';
-import { useFileSystem } from './FileSystemContext';
-import { Checkbox } from './ui/checkbox';
-import { AppTemplate } from './apps/AppTemplate';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './ui/accordion';
-import { softReset, hardReset, getStorageStats, formatBytes } from '../utils/memory';
-import { getComplementaryColor } from '../utils/colors';
-import { cn } from './ui/utils';
-import { GlassButton } from './ui/GlassButton';
-import { GlassInput } from './ui/GlassInput';
-import { EmptyState } from './ui/empty-state';
-import { useSessionStorage } from '../hooks/useSessionStorage';
+import { useAppContext } from '@/components/AppContext';
+import { useFileSystem } from '@/components/FileSystemContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AppTemplate } from '@/components/apps/AppTemplate';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { softReset, hardReset, getStorageStats, formatBytes } from '@/utils/memory';
+import { getComplementaryColor } from '@/utils/colors';
+import { cn } from '@/components/ui/utils';
+import { GlassButton } from '@/components/ui/GlassButton';
+import { GlassInput } from '@/components/ui/GlassInput';
+import { EmptyState } from '@/components/ui/empty-state';
+import { useSessionStorage } from '@/hooks/useSessionStorage';
 import {
   Select,
   SelectContent,
