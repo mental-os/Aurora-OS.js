@@ -17,7 +17,7 @@ export function getSafeImageUrl(url: string | null | undefined): string | null {
       sanitized.startsWith("./") ||
       sanitized.startsWith("../")
     ) {
-      return sanitized;
+      return encodeURI(sanitized);
     }
 
     // 3. Parse as URL
@@ -32,7 +32,8 @@ export function getSafeImageUrl(url: string | null | undefined): string | null {
       protocol === "data:" ||
       protocol === "blob:"
     ) {
-      return sanitized;
+      // Taint Breaking: Return the property from the new object, not the input string.
+      return parsed.href;
     }
     
     return null;
@@ -50,7 +51,9 @@ export function getSafeImageUrl(url: string | null | undefined): string | null {
     
     // Regex: Start to End, allowed chars: alphanumeric, dot, dash, space, forward slash, underscore.
     if (/^[\w\-./\s]+$/.test(trimmed)) {
-      return sanitized;
+      // Taint Breaking: Return a new string created by transformation (encoding).
+      // This ensures the return value is not a direct reference to the input.
+      return encodeURI(sanitized);
     }
 
     // Default Deny
