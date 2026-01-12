@@ -632,11 +632,14 @@ export const fr: TranslationDict = {
     sidebar: {
       conversationsTitle: 'Conversations',
       allMessages: 'Tous les messages',
+      unread: 'Non lus',
       groups: 'Groupes',
       starred: 'Favoris',
       archived: 'Archivés',
     },
-    searchPlaceholder: 'Rechercher des conversations...',
+    search: {
+      placeholder: 'Rechercher...',
+    },
     typePlaceholder: 'Écrire un message...',
     menu: {
       newMessage: 'Nouveau message',

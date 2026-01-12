@@ -630,11 +630,14 @@ export const es: TranslationDict = {
     sidebar: {
       conversationsTitle: 'Conversaciones',
       allMessages: 'Todos los mensajes',
+      unread: 'No leídos',
       groups: 'Grupos',
       starred: 'Destacados',
       archived: 'Archivados',
     },
-    searchPlaceholder: 'Buscar conversaciones...',
+    search: {
+      placeholder: 'Buscar conversaciones...',
+    },
     typePlaceholder: 'Escribe un mensaje...',
     menu: {
       newMessage: 'Nuevo mensaje',

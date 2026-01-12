@@ -570,12 +570,15 @@ export const pt: TranslationDict = {
   messages: {
     sidebar: {
       conversationsTitle: 'Conversas',
-      allMessages: 'Todas as Mensagens',
+      allMessages: 'Todas as mensagens',
+      unread: 'Não lidas',
       groups: 'Grupos',
       starred: 'Favoritas',
       archived: 'Arquivadas',
     },
-    searchPlaceholder: 'Buscar conversas...',
+    search: {
+      placeholder: 'Pesquisar conversas...',
+    },
     typePlaceholder: 'Digite uma mensagem...',
     menu: {
       newMessage: 'Nova mensagem',

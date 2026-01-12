@@ -629,11 +629,14 @@ export const ro: TranslationDict = {
         sidebar: {
             conversationsTitle: 'Conversații',
             allMessages: 'Toate mesajele',
+            unread: 'Necitite',
             groups: 'Grupuri',
             starred: 'Marcate conversațiile',
             archived: 'Arhivate',
         },
-        searchPlaceholder: 'Caută conversații...',
+        search: {
+            placeholder: 'Caută conversații...',
+        },
         typePlaceholder: 'Scrie un mesaj...',
         menu: {
             newMessage: 'Mesaj Nou',

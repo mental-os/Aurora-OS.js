@@ -121,8 +121,9 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
 - **Photos App**: Full-featured gallery with albums, favorites, lightbox, and background library scanning.
 - **Mock Content**: Initial set of high-quality mock images seeded to `~/Pictures`.
-- **Simulated Cloud Services**: Added initial support for simulated cloud services (e.g., TrustMail accounts DB).
+- **Simulated Cloud Services**: Added initial support for simulated cloud services (e.g., TrustMail accounts DB, messages DB).
 - **TrustMail**: Added Account Recovery system with secret key generation and storage.
+- **Fully functional Messages App**: with support for multiple accounts, bidirectional chat, and more.
 
 ### Removed
 
@@ -140,12 +141,14 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 - **Time source**: now influence Calendar app (local time vs. server time).
 - **Modals**: such as "Open File" or "Create/Edit Event" blurs the background.
 - **Main Services & Mail**: Trash functionality and permanent deletion.
+- **Mail App**: Improved UI and responsive design to match Messages App.
 
 ### Fixed
 
 - **System Stability**: Resolved "System Critical Error" caused by React Context duplication.
 - **Drag & Drop**: Fixed drag-and-drop support system-wide (Finder, Calendar, etc.) avoiding double-click triggers (browsers limitation).
 - **Finder**: Fixed double-click launch reliability and "Open Folder" case-sensitivity issues.
+- **Mail App**: Fixed remembering opened tabs after app close, or relogin.
 - **Session**: Prevented apps from auto-playing/opening content when restoring old sessions.
 
 ### [View full version history](HISTORY.md)

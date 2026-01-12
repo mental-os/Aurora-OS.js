@@ -563,14 +563,17 @@ export const de: TranslationDict = {
   },
   messages: {
     sidebar: {
-      conversationsTitle: 'Unterhaltungen',
+      conversationsTitle: 'Konversationen',
       allMessages: 'Alle Nachrichten',
+      unread: 'Ungelesen',
       groups: 'Gruppen',
       starred: 'Markiert',
       archived: 'Archiviert',
     },
-    searchPlaceholder: 'Unterhaltungen suchen...',
-    typePlaceholder: 'Nachricht schreiben...',
+    search: {
+      placeholder: 'Konversationen suchen...',
+    },
+    typePlaceholder: 'Nachricht eingeben...',
     menu: {
       newMessage: 'Neue Nachricht',
       deleteConversation: 'Unterhaltung löschen',

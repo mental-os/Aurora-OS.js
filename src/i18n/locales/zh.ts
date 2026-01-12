@@ -572,11 +572,14 @@ export const zh: TranslationDict = {
 		sidebar: {
 			conversationsTitle: '对话',
 			allMessages: '所有消息',
+			unread: '未读',
 			groups: '群组',
 			starred: '星标',
 			archived: '已归档',
 		},
-		searchPlaceholder: '搜索对话...',
+		search: {
+			placeholder: '搜索对话...',
+		},
 		typePlaceholder: '输入消息...',
 		menu: {
 			newMessage: '新消息',

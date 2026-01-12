@@ -30,10 +30,8 @@ export const STORAGE_KEYS = {
     INSTALLED_APPS: 'aurora-installed-apps', // App Store installed apps
 
     // Website specific memory
-    TRUSTMAIL_ACCOUNTS: 'trustmail_accounts', // Database of created accounts
-    TRUSTMAIL_CURRENT: 'global_mail_account', // Currently logged in user for the website
-    GLOBAL_MAILBOX: 'global_mailbox', // Legacy mailbox backup
     MAIL_SERVER_DB: 'aurora_mail_server_db', // Simulated Cloud Mail Server DB
+    MESSAGES_DB: 'aurora_messages_db', // Simulated Cloud Messages DB
 } as const;
 
 const MEMORY_CONFIG = {
@@ -46,7 +44,6 @@ const MEMORY_CONFIG = {
             STORAGE_KEYS.BATTERY, // Battery settings
             STORAGE_KEYS.TIME_MODE, // Time preference
             STORAGE_KEYS.INSTALL_DATE, // Installation timestamp
-            STORAGE_KEYS.TRUSTMAIL_CURRENT // Website login is "soft"
         ] as string[],
         prefixes: [
             STORAGE_KEYS.SETTINGS,
@@ -63,9 +60,8 @@ const MEMORY_CONFIG = {
             STORAGE_KEYS.USERS,
             STORAGE_KEYS.VERSION,
             STORAGE_KEYS.INSTALLED_APPS,
-            STORAGE_KEYS.TRUSTMAIL_ACCOUNTS, // Account DB is "hard"
-            STORAGE_KEYS.GLOBAL_MAILBOX, // Legacy data is "hard"
-            STORAGE_KEYS.MAIL_SERVER_DB // Simulated Cloud DB
+            STORAGE_KEYS.MAIL_SERVER_DB, // Simulated Cloud DB
+            STORAGE_KEYS.MESSAGES_DB // Simulated Cloud Messages DB
         ] as string[],
         prefixes: [] // Future proofing
     }
@@ -101,6 +97,7 @@ export function softReset(): void {
     }
 
     keysToRemove.forEach(key => localStorage.removeItem(key));
+
     console.log(`Soft reset: Cleared ${keysToRemove.length} preference keys`);
 }
 
@@ -199,6 +196,7 @@ export function clearSession(username: string): void {
         }
     }
 
+    // Clean up localStorage
     keysToRemove.forEach(k => localStorage.removeItem(k));
 
     // 3. Clear Terminal History for this user

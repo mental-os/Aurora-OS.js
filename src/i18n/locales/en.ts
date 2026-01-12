@@ -1,4 +1,4 @@
-import type { TranslationDict } from '../types';
+import type { TranslationDict } from '@/i18n/types';
 
 // THIS IS THE MAIN TEMPLATE [EN]
 // other languages should be synced with this file.
@@ -575,12 +575,14 @@ export const en: TranslationDict = {
     sidebar: {
       conversationsTitle: 'Conversations',
       allMessages: 'All Messages',
+      unread: 'Unread',
       groups: 'Groups',
       starred: 'Starred',
       archived: 'Archived',
     },
-    searchPlaceholder: 'Search conversations...',
-    typePlaceholder: 'Type a message...',
+    search: {
+        placeholder: 'Search conversations...',
+    },
     menu: {
       newMessage: 'New Message',
       deleteConversation: 'Delete Conversation',

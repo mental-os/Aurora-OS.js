@@ -43,6 +43,7 @@ trigger: always_on
     - **Runtime**: Apps render in `WindowContext`.
     - **ContextMenu**: Can be global (registry `contextMenu`) or localized (wrapping specific UI areas with `ContextMenuTrigger` in the app component).
     - **Persistence**: Per-app storage via `useAppStorage` (key: `app-user`) or manual `localStorage` with `getAppStateKey`.
+    - **Config**: Simulation apps (Mail, Messages) use `~/.Config/<app>.json` for encrypted credentials, enabling "hacking" gameplay mechanisms.
 
 4.  **Terminal Architecture**: - **PATH**: `["/bin", "/usr/bin"]`. - **`/bin`**: Contains **system commands** (e.g., `ls`, `cat`). - Implemented as **Internal Commands** in `src/utils/terminal/registry`. - Represented in VFS as files containing `#command <name>`. - **`/usr/bin`**: Contains **App Launchers** (e.g., `chrome`, `code`). - Implemented as **App IDs** in `src/config/appRegistry.ts`. - Represented in VFS as files containing `#!app <appId>`. - **Execution**: - `useTerminalLogic` resolves input -> checks built-ins -> checks PATH. - If `#!app ...` -> Launches Window. - If `#command ...` -> Executes internal function. - If other text -> Parses as Shell Script (supports `$VAR`, `VAR=val`).
 
