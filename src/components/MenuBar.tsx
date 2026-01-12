@@ -8,7 +8,7 @@ import { cn } from '@/components/ui/utils';
 import { useAppContext } from '@/components/AppContext';
 import { useFileSystem } from '@/components/FileSystemContext';
 import { AudioApplet } from '@/components/AudioApplet';
-import { NotificationCenter } from '@/components/NotificationCenter';
+import { NotificationsApplet } from '@/components/NotificationsApplet';
 import { BatteryApplet } from '@/components/BatteryApplet';
 import { MemoryApplet } from '@/components/MemoryApplet';
 import { hardReset, clearSession } from '@/utils/memory';
@@ -388,7 +388,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
           <Wifi className="w-4 h-4" />
         </button>
         <AudioApplet />
-        <NotificationCenter onOpenApp={onOpenApp} />
+        <NotificationsApplet onOpenApp={onOpenApp} />
 
         <button 
           onClick={() => setTimeMode(timeMode === 'server' ? 'local' : 'server')}

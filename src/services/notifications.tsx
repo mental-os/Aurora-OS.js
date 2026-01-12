@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { soundManager } from '@/services/sound';
 import { SystemToast } from '@/components/ui/notifications/SystemToast';
@@ -6,7 +6,7 @@ import { SystemToast } from '@/components/ui/notifications/SystemToast';
 type NotificationType = 'success' | 'warning' | 'error';
 
 export const notify = {
-    system: (type: NotificationType, source: string, message: React.ReactNode, subtitle?: string, appId?: string, onOpenApp?: (appId: string) => void) => {
+    system: (type: NotificationType, source: string, message: ReactNode, subtitle?: string, appId?: string, onOpenApp?: (appId: string) => void) => {
         // Play sound
         soundManager.play(type);
 

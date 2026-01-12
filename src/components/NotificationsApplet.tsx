@@ -1,27 +1,26 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { X, Bell } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { useAppContext } from './AppContext';
-import { useThemeColors } from '../hooks/useThemeColors';
 import { useState } from 'react';
-import { useI18n } from '../i18n/index';
-import { useAppNotifications } from '@/components/AppNotificationsContext';
+import { Bell, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { useThemeColors } from '../hooks/useThemeColors';
+import { useAppContext } from './AppContext';
+import { useI18n } from '../i18n';
+import { useAppNotifications } from './AppNotificationsContext';
 
-
-interface NotificationCenterProps {
+interface NotificationsAppletProps {
   onOpenApp?: (appId: string, data?: Record<string, unknown>, owner?: string) => void;
 }
 
-export function NotificationCenter({ onOpenApp }: NotificationCenterProps) {
+export function NotificationsApplet({ onOpenApp }: NotificationsAppletProps) {
   const { accentColor, reduceMotion, disableShadows } = useAppContext();
   const { blurStyle, getBackgroundColor } = useThemeColors();
-  const [isOpen, setIsOpen] = useState(false);
   const { t } = useI18n();
   const { notifications, unreadCount, markRead, clearAll } = useAppNotifications();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleNotificationClick = (appId: string, data: Record<string, unknown> | undefined, owner: string | undefined) => {
     if (appId && onOpenApp) {
-      markRead(appId); // Note: in practice, would mark specific notification, not by appId
+      markRead(appId);
       onOpenApp(appId, data, owner);
       setIsOpen(false);
     }
