@@ -585,6 +585,7 @@ export const en: TranslationDict = {
     emptyFolder: 'This folder is empty',
   },
   messages: {
+    title: 'Messages', // App Title
     sidebar: {
       conversationsTitle: 'Conversations',
       allMessages: 'All Messages',
@@ -938,14 +939,17 @@ export const en: TranslationDict = {
       fileSystem: 'File System',
       systemLogs: 'System Logs',
       toolsTitle: 'Tools',
+      appsTitle: 'Apps', // New title
       editor: 'Editor',
       performance: 'Performance',
     },
     dashboard: {
-      title: 'Developer Dashboard',
-      description: 'Welcome to the {{productName}} Developer Center.',
+      title: 'Dashboard',
+      description: 'System overview coming soon.',
     },
     ui: {
+      title: 'User Interface & Feedback',
+      notificationsTitle: 'Notifications',
       systemNotifications: 'System Notifications',
       successToast: 'Success Toast',
       successDescription: 'Triggers a success notification with sound',
@@ -962,6 +966,14 @@ export const en: TranslationDict = {
       folderOpen: 'Folder Open',
       windowOpen: 'Window Open',
       windowClose: 'Window Close',
+      buttons: {
+        success: 'Success',
+        warning: 'Warning',
+        error: 'Error',
+        app: 'App Notification',
+        open: 'Open',
+        close: 'Close',
+      },
     },
     storage: {
       title: 'Storage Inspector',
@@ -1014,6 +1026,38 @@ export const en: TranslationDict = {
       resetFilesystem: 'Reset Filesystem',
       clearLogs: 'Clear Logs',
       runDiagnostics: 'Run Diagnostics',
+    },
+
+    messages: {
+      title: 'Messages Debugger',
+      accounts: '{{count}} Accounts',
+      messages: '{{count}} Messages',
+      createValues: {
+        title: 'Create / Reset Account',
+        username: 'Username',
+        password: 'Password',
+        button: 'Create Account',
+        success: 'Account {{username}} created',
+      },
+      registry: {
+        title: 'Accounts Registry',
+        empty: 'No accounts found',
+        useInSender: 'Use in Sender',
+        delete: 'Delete Account',
+        deleteConfirm: 'Delete account {{username}}? This cannot be undone.',
+        deleteSuccess: 'Account {{username}} deleted',
+        deleteError: 'Failed to delete account',
+      },
+      sendMessage: {
+        title: 'Send Inter-User Message',
+        from: 'Sender (From)',
+        to: 'Recipient (To)',
+        selectAccount: 'Select Account...',
+        content: 'Content',
+        placeholder: 'Type a message...',
+        button: 'Send Message',
+        success: 'Message sent',
+      },
     },
   },
   settings: {

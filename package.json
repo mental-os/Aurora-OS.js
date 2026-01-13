@@ -1,6 +1,6 @@
 {
       "name": "aurora-os-js",
-      "version": "0.8.4",
+      "version": "0.8.4-alpha2",
       "private": true,
       "type": "module",
       "author": "Cătălin-Robert Drăgoiu",

@@ -35,6 +35,7 @@ trigger: always_on
 
     - **Ids**: `root` (0), `guest` (1001), `activeUser` (physical), `currentUser` (logical).
     - **Auth**: `useAuth()` hook. Logic synced to `/etc/passwd` & `/etc/group`.
+    - **Persistence**: `useAppStorage` uses `activeUser` to scope keys (e.g., `aurora-os-settings-user`).
     - **Home**: `/home/<user>` created via `createUserHome()`.
 
 3.  **App Engine**:
@@ -75,10 +76,24 @@ trigger: always_on
     - **Provider**: Handled via `Sonner` (system) and `AppNotificationsContext` (app-level).
 
 6.  **Audio & Metadata System**:
+
     - **Howler Core**: All system audio is managed via `soundManager` (`src/services/sound.ts`).
     - **Realism**: Global mute (`Howler.mute(true)`) silences the system without stopping background processes (e.g., music keep "playing" silently).
     - **Binary Metadata**: Custom ID3 parser (`src/utils/id3Parser.ts`) extracts professional tags (TIT2, TPE1, TALB) from MP3 files.
     - **Asset Fetching**: Metadata resolution for local assets uses `fetch` with `Range: bytes=0-512KB` to efficiently read headers without full downloads.
+
+7.  **Reference Implementations**:
+
+    - **Finder (`FileManager.tsx`)**:
+
+      - **Pattern**: Recursive directory traversal via `useFileSystem`.
+      - **UI**: Dynamic breadcrumbs with drag-and-drop support.
+      - **State**: Persists `viewMode` via `useAppStorage`.
+
+    - **Terminal**:
+      - **Pattern**: Command Pattern Registry (`registry.ts`).
+      - **State**: Custom crash-proof history persistence (HTML-preserving).
+      - **UI**: "Ghost Text" autocomplete overlay.
 
 </architecture_mechanics>
 
@@ -92,6 +107,7 @@ trigger: always_on
 - **I18n**: All UI strings MUST use `useI18n()`. definition: `src/i18n/locales/en.ts`.
 - **I18n Sync**: Maintain strict sync across all 7 locales (`en`, `de`, `es`, `fr`, `pt`, `ro`, `zh`). Run `/update-translations` after changes.
 - **Accessibility**: All `Dialog` or `AlertDialog` components MUST include a `Title` and `Description`. Use `sr-only` class to hide them if they clash with visual design but are required for A11y.
+- **Standards**: All imports should user the @ alias for the /src folder and ALL FEATURES added should have a matching debug way in Dev Center.
 - **Docs Sync**: On architecture changes, update `.agent/rules/context.md` & `public/llms-full.txt`.
 - **URL Security**: User-provided URLs (images, media) MUST be sanitized via `getSafeImageUrl(url)` to prevent XSS and satisfy CodeQL taint tracking.
 
