@@ -16,25 +16,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { decodePassword } from "@/utils/authUtils";
 
 // Helper to format time
-const formatTime = (isoString: string) => {
+const formatTime = (isoString: string, t: (key: string, options?: any) => string, timeMode: 'server' | 'local' = 'local') => {
   const date = new Date(isoString);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  const timeZone = timeMode === 'server' ? 'UTC' : undefined;
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone });
   } else if (diffDays === 1) {
-    return 'Yesterday';
+    return t('time.yesterday');
   } else if (diffDays < 7) {
-    return date.toLocaleDateString([], { weekday: 'short' });
+    return date.toLocaleDateString([], { weekday: 'short', timeZone });
   } else {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', timeZone });
   }
 };
 
-export function Messages({ owner }: { owner?: string }) {
+export function Messages({ owner, initialPartner }: { owner?: string; initialPartner?: string }) {
   const { t } = useI18n();
-  const { accentColor, activeUser: desktopUser } = useAppContext();
+  const { accentColor, activeUser: desktopUser, timeMode } = useAppContext();
   const { getBackgroundColor, blurStyle } = useThemeColors();
   const { createFile, createDirectory, readFile, deleteNode } = useFileSystem();
   
@@ -58,7 +59,7 @@ export function Messages({ owner }: { owner?: string }) {
 
   // App State
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
+  const [selectedPartner, setSelectedPartner] = useState<string | null>(initialPartner || null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageText, setMessageText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +73,9 @@ export function Messages({ owner }: { owner?: string }) {
   // Refs
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [containerRef] = useElementSize();
+  // Fix: Use useState lazy initializer to safely get initial timestamp
+  const [initialTime] = useState(() => Date.now());
+  const lastCheckRef = useRef<number>(initialTime);
 
   // --- Persistence Helper ---
   const saveConfig = (user: string) => {
@@ -220,12 +224,44 @@ export function Messages({ owner }: { owner?: string }) {
           // Need to refresh conversations badge next tick or immediately
         }
     }
-  }, [sessionUser, selectedPartner]);
+    // Check for new messages since last check
+    const lastCheck = lastCheckRef.current;
+    let maxTimestamp = lastCheck;
+    const newMessages: Message[] = [];
+
+    convs.forEach(conv => {
+       const msg = conv.lastMessage;
+       const msgTime = new Date(msg.timestamp).getTime();
+       
+       if (msgTime > lastCheck && msg.recipient === sessionUser && !msg.read) {
+           newMessages.push(msg);
+           if (msgTime > maxTimestamp) maxTimestamp = msgTime;
+       }
+    });
+
+    if (newMessages.length > 0) {
+        // Sort by time, oldest first, so notifications appear in order
+        newMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        
+        // Notify
+        newMessages.forEach(msg => {
+            notify.app(
+                'messages',
+                effectiveUser, // The "owner" of the notification (system user) to target correct window
+                `Message from ${msg.sender}`,
+                msg.content,
+                { partner: msg.sender } // Data to open the conversation
+            );
+        });
+        
+        lastCheckRef.current = maxTimestamp;
+    }
+  }, [sessionUser, selectedPartner, effectiveUser]);
 
   // Initial Sync
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    refreshData();
+    const timer = setTimeout(() => refreshData(), 0);
+    return () => clearTimeout(timer);
   }, [refreshData]);
 
   // Polling
@@ -261,7 +297,7 @@ export function Messages({ owner }: { owner?: string }) {
         }
       }, 50);
     } else {
-      notify.system('error', 'Message Failed', result.error);
+      notify.system('error', t('messages.ui.messageFailed'), result.error);
     }
   };
 
@@ -269,12 +305,12 @@ export function Messages({ owner }: { owner?: string }) {
     if (!newRecipient.trim() || !sessionUser) return;
     
     if (newRecipient === sessionUser) {
-        setNewMessageError("You can't message yourself (yet)");
+        setNewMessageError(t('messages.ui.cantMessageSelf'));
         return;
     }
 
     if (!MessagesService.userExists(newRecipient)) {
-        setNewMessageError("User not found");
+        setNewMessageError(t('messages.ui.userNotFound'));
         return;
     }
 
@@ -294,9 +330,9 @@ export function Messages({ owner }: { owner?: string }) {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      notify.system("success", "Copied", "Recovery key copied to clipboard");
+      notify.system("success", t('messages.auth.copied'), t('messages.auth.recoveryKeyCopied'));
     } catch {
-      notify.system("error", "Error", "Failed to copy key");
+      notify.system("error", t('messages.auth.error'), t('messages.auth.failedCopy'));
     }
   };
 
@@ -347,10 +383,10 @@ export function Messages({ owner }: { owner?: string }) {
                         <Check className="w-8 h-8" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-white mb-2">Account Created!</h2>
+                        <h2 className="text-xl font-bold text-white mb-2">{t('messages.auth.accountCreated')}</h2>
                         <p className="text-sm text-gray-300">
-                            Please save your recovery key. You will need it if you ever forget your password.
-                            <br/><span className="text-red-400 font-medium">This is the only time it will be shown.</span>
+                            {t('messages.auth.saveRecoveryKey')}
+                            <br/><span className="text-red-400 font-medium">{t('messages.auth.oneTimeShow')}</span>
                         </p>
                     </div>
 
@@ -372,7 +408,7 @@ export function Messages({ owner }: { owner?: string }) {
                         className="w-full justify-center"
                         style={{ backgroundColor: accentColor }}
                     >
-                        I've Saved It - Continue
+                        {t('messages.auth.savedContinue')}
                     </GlassButton>
                  </div>
              ) : (
@@ -388,29 +424,29 @@ export function Messages({ owner }: { owner?: string }) {
                     >
                         <div className="text-center mb-6">
                             <h1 className="text-lg font-bold text-white">
-                                {authView === 'login' ? 'Welcome Back' : 
-                                 authView === 'register' ? 'Create Account' : 
-                                 'Recover Account'}
+                                {authView === 'login' ? t('messages.auth.welcomeBack') : 
+                                 authView === 'register' ? t('messages.auth.createAccount') : 
+                                 t('messages.auth.recoverAccount')}
                             </h1>
                             <p className="text-xs text-gray-400 mt-1">
-                                {authView === 'login' ? 'Sign in to continue to Messages' : 
-                                 authView === 'register' ? 'Join the secure network' :
-                                 'Enter your recovery key to retrieve access'}
+                                {authView === 'login' ? t('messages.auth.signInToContinue') : 
+                                 authView === 'register' ? t('messages.auth.joinSecureNetwork') :
+                                 t('messages.auth.enterRecoveryKey')}
                             </p>
                         </div>
 
                         {authError && (
                             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-400">
-                                {authError}
+                                {t('messages.auth.invalidCredentials')}
                             </div>
                         )}
                         
                         {/* Recovery Result Success */}
                         {authView === 'recover' && recoveryResult && (
                              <div className="mb-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center animate-in fade-in slide-in-from-top-2">
-                                <p className="text-xs text-green-400 mb-2">Credentials Retrieved:</p>
+                                <p className="text-xs text-green-400 mb-2">{t('messages.auth.credentialsRetrieved')}:</p>
                                 <div className="bg-black/40 p-2 rounded border border-green-500/20 mb-3">
-                                    <p className="text-xs text-gray-400">Password:</p>
+                                    <p className="text-xs text-gray-400">{t('messages.auth.password')}:</p>
                                     <p className="text-sm font-mono text-white font-bold tracking-wide select-all">{recoveryResult.password}</p>
                                 </div>
                                 <GlassButton 
@@ -423,7 +459,7 @@ export function Messages({ owner }: { owner?: string }) {
                                     }}
                                     className="w-full justify-center"
                                 >
-                                    Return to Login
+                                    {t('messages.auth.returnToLogin')}
                                 </GlassButton>
                              </div>
                         )}
@@ -432,7 +468,7 @@ export function Messages({ owner }: { owner?: string }) {
                             <form onSubmit={authView === 'recover' ? handleRecovery : (authView === 'login' ? handleLogin : handleRegister)} className="space-y-3">
                                 {authView === 'recover' ? (
                                     <div>
-                                        <label className="text-xs text-gray-500 ml-1 mb-1 block">Recovery Key</label>
+                                        <label className="text-xs text-gray-500 ml-1 mb-1 block">{t('messages.auth.recoveryKey')}</label>
                                         <GlassInput
                                             value={recoveryInput}
                                             onChange={(e) => setRecoveryInput(e.target.value)}
@@ -445,23 +481,23 @@ export function Messages({ owner }: { owner?: string }) {
                                 ) : (
                                     <>
                                         <div>
-                                            <label className="text-xs text-gray-500 ml-1 mb-1 block">Username</label>
+                                            <label className="text-xs text-gray-500 ml-1 mb-1 block">{t('messages.auth.username')}</label>
                                             <GlassInput
                                                 value={username}
                                                 onChange={(e) => setUsername(e.target.value)}
-                                                placeholder="Enter username..."
+                                                placeholder={t('messages.auth.username')}
                                                 required
                                                 className="w-full"
                                                 autoComplete="off"
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500 ml-1 mb-1 block">Password</label>
+                                            <label className="text-xs text-gray-500 ml-1 mb-1 block">{t('messages.auth.password')}</label>
                                             <GlassInput
                                                 type="password"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
-                                                placeholder="Enter password..."
+                                                placeholder={t('messages.auth.password')}
                                                 required
                                                 className="w-full"
                                             />
@@ -475,10 +511,10 @@ export function Messages({ owner }: { owner?: string }) {
                                     className="w-full justify-center font-medium mt-2"
                                     style={{ backgroundColor: accentColor }}
                                 >
-                                    {isAuthLoading ? 'Processing...' : (
-                                        authView === 'login' ? 'Sign In' : 
-                                        authView === 'register' ? 'Create Account' :
-                                        'Recover Password'
+                                    {isAuthLoading ? t('messages.auth.processing') : (
+                                        authView === 'login' ? t('messages.auth.signIn') : 
+                                        authView === 'register' ? t('messages.auth.create') :
+                                        t('messages.auth.recover')
                                     )}
                                 </GlassButton>
                             </form>
@@ -496,7 +532,7 @@ export function Messages({ owner }: { owner?: string }) {
                                     }}
                                     className="text-xs text-blue-400 hover:text-blue-300 hover:underline transition-colors"
                                 >
-                                    {authView === 'login' ? "Don't have an account? Create one" : "Already have an account? Sign in"}
+                                    {authView === 'login' ? t('messages.auth.noAccount') : t('messages.auth.haveAccount')}
                                 </button>
                              )}
                             
@@ -509,7 +545,7 @@ export function Messages({ owner }: { owner?: string }) {
                                 }}
                                 className="text-[10px] text-gray-500 hover:text-gray-300 hover:underline transition-colors"
                             >
-                                {authView === 'recover' ? "Back to Login" : "Forgot Password?"}
+                                {authView === 'recover' ? t('messages.auth.backToLogin') : t('messages.auth.forgotPassword')}
                             </button>
                         </div>
                     </div>
@@ -563,7 +599,7 @@ export function Messages({ owner }: { owner?: string }) {
                 <div className="flex-1 overflow-y-auto p-2 space-y-1">
                     {filteredConversations.length === 0 ? (
                         <div className="text-center text-white/40 text-sm py-8">
-                             {conversations.length === 0 ? "No conversations" : "No results found"}
+                             {conversations.length === 0 ? t('messages.ui.noConversations') : t('messages.ui.noResults')}
                         </div>
                     ) : (
                         filteredConversations.map(conv => (
@@ -593,7 +629,7 @@ export function Messages({ owner }: { owner?: string }) {
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] text-gray-500">
-                                            {formatTime(conv.lastMessage.timestamp)}
+                                            {formatTime(conv.lastMessage.timestamp, t, timeMode)}
                                         </span>
                                     </div>
                                 </div>
@@ -643,7 +679,7 @@ export function Messages({ owner }: { owner?: string }) {
                                 <h3 className="text-sm font-bold text-white leading-none tracking-tight">{selectedPartner}</h3>
                                 <span className="text-[10px] text-green-400 font-medium flex items-center gap-1 mt-0.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                                    Online
+                                    {t('messages.ui.online')}
                                 </span>
                             </div>
                         </div>
@@ -651,7 +687,7 @@ export function Messages({ owner }: { owner?: string }) {
                              <button
                                 onClick={(e) => selectedPartner && handleToggleStar(e, selectedPartner)}
                                 className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-yellow-400 transition-colors"
-                                title={conversations.find(c => c.partner === selectedPartner)?.starred ? "Unstar" : "Star"}
+                                title={conversations.find(c => c.partner === selectedPartner)?.starred ? t('messages.ui.unstar') : t('messages.ui.star')}
                             >
                                 <Star className={cn("w-5 h-5", conversations.find(c => c.partner === selectedPartner)?.starred && "fill-yellow-400 text-yellow-400")} />
                             </button>
@@ -669,7 +705,7 @@ export function Messages({ owner }: { owner?: string }) {
                                 <div key={msg.id} className={cn("flex flex-col", isMe ? "items-end" : "items-start")}>
                                     {showTime && (
                                         <div className="text-[10px] text-white/20 text-center w-full mb-4 font-medium uppercase tracking-wider">
-                                            {formatTime(msg.timestamp)}
+                                            {formatTime(msg.timestamp, t, timeMode)}
                                         </div>
                                     )}
                                     <div 
@@ -707,7 +743,7 @@ export function Messages({ owner }: { owner?: string }) {
                                 <GlassInput 
                                     value={messageText}
                                     onChange={(e) => setMessageText(e.target.value)}
-                                    placeholder={`Message ${selectedPartner}...`}
+                                    placeholder={t('messages.ui.typeMessage', { partner: selectedPartner })}
                                     className="w-full rounded-2xl px-5 py-3 h-11 border-white/10 bg-black/20 focus:bg-black/40 transition-all font-medium text-sm"
                                     autoFocus
                                 />
@@ -729,14 +765,14 @@ export function Messages({ owner }: { owner?: string }) {
                ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                         <MessageSquare className="w-16 h-16 mb-4 opacity-20 text-white" />
-                        <h3 className="text-lg font-medium text-white/40 mb-2">No Chat Selected</h3>
-                        <p className="text-sm text-white/30 max-w-xs mb-6">Choose a conversation or start a fresh one.</p>
+                        <h3 className="text-lg font-medium text-white/40 mb-2">{t('messages.ui.noChatSelected')}</h3>
+                        <p className="text-sm text-white/30 max-w-xs mb-6">{t('messages.ui.chooseConversation')}</p>
                         <GlassButton 
                             onClick={() => setIsNewMessageOpen(true)}
                             className="gap-2 bg-white/5 hover:bg-white/10 border-white/10 px-6 py-2 rounded-xl transition-all"
                         >
                             <Plus className="w-4 h-4" />
-                            Start New Message
+                            {t('messages.ui.startNewMessage')}
                         </GlassButton>
                     </div>
                )}

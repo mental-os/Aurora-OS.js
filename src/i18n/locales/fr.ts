@@ -1,6 +1,9 @@
 import type { TranslationDict } from '../types';
 
 export const fr: TranslationDict = {
+  time: {
+    yesterday: 'Hier',
+  },
   game: {
     mainMenu: {
       continue: {
@@ -266,6 +269,9 @@ export const fr: TranslationDict = {
     },
   },
   notifications: {
+    new: 'Nouveau',
+    empty: 'Aucune notification',
+    clearApp: 'Tout effacer de cette application',
     title: 'Notifications',
     clearAll: 'Tout effacer',
     time: {
@@ -647,7 +653,50 @@ export const fr: TranslationDict = {
     search: {
       placeholder: 'Rechercher...',
     },
-    typePlaceholder: 'Écrire un message...',
+    auth: {
+        welcomeBack: 'Bon retour',
+        createAccount: 'Créer un compte',
+        recoverAccount: 'Récupérer le compte',
+        signInToContinue: 'Connectez-vous pour continuer vers Messages',
+        joinSecureNetwork: 'Rejoignez le réseau sécurisé',
+        enterRecoveryKey: "Entrez votre clé de récupération pour retrouver l'accès",
+        invalidCredentials: "Nom d'utilisateur ou mot de passe invalide",
+        credentialsRetrieved: 'Identifiants récupérés',
+        password: 'Mot de passe',
+        returnToLogin: 'Retour à la connexion',
+        recoveryKey: 'Clé de récupération',
+        username: "Nom d'utilisateur",
+        processing: 'Traitement...',
+        signIn: 'Se connecter',
+        create: 'Créer',
+        recover: 'Récupérer',
+        noAccount: "Pas de compte ? Créez-en un",
+        haveAccount: "Déjà un compte ? Connectez-vous",
+        forgotPassword: "Mot de passe oublié ?",
+        backToLogin: "Retour à la connexion",
+        accountCreated: 'Compte créé !',
+        saveRecoveryKey: "Veuillez enregistrer votre clé de récupération. Vous en aurez besoin si jamais vous oubliez votre mot de passe.",
+        oneTimeShow: "C'est la seule fois qu'elle sera affichée.",
+        savedContinue: "C'est enregistré - Continuer",
+        copied: 'Copié',
+        recoveryKeyCopied: 'Clé de récupération copiée dans le presse-papiers',
+        failedCopy: 'Échec de la copie de la clé',
+        error: 'Erreur',
+    },
+    ui: {
+        noConversations: 'Aucune conversation',
+        noResults: 'Aucun résultat trouvé',
+        noChatSelected: 'Aucun chat sélectionné',
+        chooseConversation: 'Choisissez une conversation ou commencez-en une nouvelle.',
+        startNewMessage: 'Nouveau message',
+        online: 'En ligne',
+        typeMessage: 'Message à {{partner}}...',
+        unstar: 'Retirer des favoris',
+        star: 'Favori',
+        cantMessageSelf: "Vous ne pouvez pas vous envoyer de message (pour l'instant)",
+        userNotFound: 'Utilisateur introuvable',
+        messageFailed: "Échec de l'envoi",
+    },
     menu: {
       newMessage: 'Nouveau message',
       deleteConversation: 'Supprimer la conversation',

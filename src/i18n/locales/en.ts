@@ -8,6 +8,9 @@ import type { TranslationDict } from '@/i18n/types';
 // but the websites of the Browser (except home page) and the content of the messages/emails should not be translated.
 
 export const en: TranslationDict = {
+  time: {
+    yesterday: 'Yesterday',
+  },
   game: {
     mainMenu: {
       continue: {
@@ -219,6 +222,7 @@ export const en: TranslationDict = {
       minutesAgo: '{{minutes}}m ago',
       hoursAgo: '{{hours}}h ago',
     },
+    new: 'New',
     items: {
       newEmail: {
         title: 'New Email',
@@ -256,6 +260,8 @@ export const en: TranslationDict = {
       warning: 'Warning',
       fileError: 'File Error',
     },
+    empty: 'No notifications',
+    clearApp: 'Clear all from this app',
   },
   memory: {
     title: 'Memory',
@@ -595,6 +601,50 @@ export const en: TranslationDict = {
       deleteConversation: 'Delete Conversation',
       muteNotifications: 'Mute Notifications',
     },
+    auth: {
+        welcomeBack: 'Welcome Back',
+        createAccount: 'Create Account',
+        recoverAccount: 'Recover Account',
+        signInToContinue: 'Sign in to continue to Messages',
+        joinSecureNetwork: 'Join the secure network',
+        enterRecoveryKey: 'Enter your recovery key to retrieve access',
+        invalidCredentials: 'Invalid username or password',
+        credentialsRetrieved: 'Credentials Retrieved',
+        password: 'Password',
+        returnToLogin: 'Return to Login',
+        recoveryKey: 'Recovery Key',
+        username: 'Username',
+        processing: 'Processing...',
+        signIn: 'Sign In',
+        create: 'Create Account',
+        recover: 'Recover Password',
+        noAccount: "Don't have an account? Create one",
+        haveAccount: "Already have an account? Sign in",
+        forgotPassword: "Forgot Password?",
+        backToLogin: "Back to Login",
+        accountCreated: 'Account Created!',
+        saveRecoveryKey: 'Please save your recovery key. You will need it if you ever forget your password.',
+        oneTimeShow: 'This is the only time it will be shown.',
+        savedContinue: "I've Saved It - Continue",
+        copied: 'Copied',
+        recoveryKeyCopied: 'Recovery key copied to clipboard',
+        failedCopy: 'Failed to copy key',
+        error: 'Error',
+    },
+    ui: {
+        noConversations: 'No conversations',
+        noResults: 'No results found',
+        noChatSelected: 'No Chat Selected',
+        chooseConversation: 'Choose a conversation or start a fresh one.',
+        startNewMessage: 'Start New Message',
+        online: 'Online',
+        typeMessage: 'Message {{partner}}...',
+        unstar: 'Unstar',
+        star: 'Star',
+        cantMessageSelf: "You can't message yourself (yet)",
+        userNotFound: 'User not found',
+        messageFailed: 'Message Failed',
+    }
   },
   photos: {
     sidebar: {

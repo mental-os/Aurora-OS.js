@@ -24,6 +24,7 @@ import { feedback } from '@/services/soundFeedback';
 import { STORAGE_KEYS } from '@/utils/memory';
 import { useWindowManager } from '@/hooks/useWindowManager';
 import { useI18n } from '@/i18n/index';
+import { AppNotificationsProvider } from '@/components/AppNotificationsContext';
 
 import { Mail } from "@/components/apps/Mail.tsx";
 // Load icon positions (supports both pixel and grid formats with migration)
@@ -192,7 +193,7 @@ export default function OS() {
                 break;
             case 'messages':
                 title = 'Messages';
-                content = <Messages owner={owner} />;
+                content = <Messages owner={owner} initialPartner={data?.partner} />;
                 break;
             case 'mail':
                 title = 'Mail';
@@ -389,6 +390,7 @@ export default function OS() {
     }, [focusedWindowId]);
 
     return (
+        <AppNotificationsProvider onOpenApp={openWindow}>
         <div className="dark h-screen w-screen overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 relative">
             <div className="window-drag-boundary absolute top-7 left-0 right-0 bottom-0 pointer-events-none z-0" />
             <Desktop
@@ -425,9 +427,8 @@ export default function OS() {
                 />
             ))}
 
-
-
             <Toaster />
         </div>
+        </AppNotificationsProvider>
     );
 }

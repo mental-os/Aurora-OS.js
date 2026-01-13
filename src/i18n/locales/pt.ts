@@ -1,6 +1,9 @@
 import type { TranslationDict } from '../types';
 
 export const pt: TranslationDict = {
+  time: {
+    yesterday: 'Ontem',
+  },
   game: {
     mainMenu: {
       continue: {
@@ -206,6 +209,9 @@ export const pt: TranslationDict = {
     },
   },
   notifications: {
+    new: 'Novo',
+    empty: 'Sem notificações',
+    clearApp: 'Limpar tudo deste app',
     title: 'Notificações',
     clearAll: 'Limpar tudo',
     time: {
@@ -586,7 +592,50 @@ export const pt: TranslationDict = {
     search: {
       placeholder: 'Pesquisar conversas...',
     },
-    typePlaceholder: 'Digite uma mensagem...',
+    auth: {
+        welcomeBack: 'Bem-vindo de volta',
+        createAccount: 'Criar Conta',
+        recoverAccount: 'Recuperar Conta',
+        signInToContinue: 'Faça login para continuar no Mensagens',
+        joinSecureNetwork: 'Junte-se à rede segura',
+        enterRecoveryKey: 'Digite sua chave de recuperação para recuperar o acesso',
+        invalidCredentials: 'Nome de usuário ou senha inválidos',
+        credentialsRetrieved: 'Credenciais Recuperadas',
+        password: 'Senha',
+        returnToLogin: 'Voltar ao Login',
+        recoveryKey: 'Chave de Recuperação',
+        username: 'Nome de usuário',
+        processing: 'Processando...',
+        signIn: 'Entrar',
+        create: 'Criar',
+        recover: 'Recuperar',
+        noAccount: "Não tem uma conta? Crie uma",
+        haveAccount: "Já tem uma conta? Entrar",
+        forgotPassword: "Esqueceu a senha?",
+        backToLogin: "Voltar ao Login",
+        accountCreated: 'Conta Criada!',
+        saveRecoveryKey: 'Por favor, salve sua chave de recuperação. Você precisará dela se esquecer sua senha.',
+        oneTimeShow: 'Esta é a única vez que será mostrada.',
+        savedContinue: "Salvei - Continuar",
+        copied: 'Copiado',
+        recoveryKeyCopied: 'Chave de recuperação copiada para a área de transferência',
+        failedCopy: 'Falha ao copiar chave',
+        error: 'Erro',
+    },
+    ui: {
+        noConversations: 'Sem conversas',
+        noResults: 'Nenhum resultado encontrado',
+        noChatSelected: 'Nenhum chat selecionado',
+        chooseConversation: 'Escolha uma conversa ou inicie uma nova.',
+        startNewMessage: 'Nova Mensagem',
+        online: 'Online',
+        typeMessage: 'Mensagem para {{partner}}...',
+        unstar: 'Remover estrela',
+        star: 'Favoritar',
+        cantMessageSelf: "Você não pode enviar mensagens para si mesmo (ainda)",
+        userNotFound: 'Usuário não encontrado',
+        messageFailed: 'Falha no envio',
+    },
     menu: {
       newMessage: 'Nova mensagem',
       deleteConversation: 'Excluir conversa',

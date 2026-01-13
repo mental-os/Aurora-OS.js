@@ -1,6 +1,9 @@
 import type { TranslationDict } from '../types';
 
 export const ro: TranslationDict = {
+  time: {
+    yesterday: 'Ieri',
+  },
     game: {
         mainMenu: {
             continue: {
@@ -264,6 +267,9 @@ export const ro: TranslationDict = {
         },
     },
     notifications: {
+    new: 'Nou',
+    empty: 'Nu există notificări',
+    clearApp: 'Șterge tot de la această aplicație',
         title: 'Notificări',
         clearAll: 'Șterge Tot',
         time: {
@@ -644,7 +650,50 @@ export const ro: TranslationDict = {
         search: {
             placeholder: 'Caută conversații...',
         },
-        typePlaceholder: 'Scrie un mesaj...',
+        auth: {
+        welcomeBack: 'Bine ai revenit',
+        createAccount: 'Creează cont',
+        recoverAccount: 'Recuperează cont',
+        signInToContinue: 'Conectează-te pentru a continua către Mesaje',
+        joinSecureNetwork: 'Alătură-te rețelei securizate',
+        enterRecoveryKey: 'Introdu cheia de recuperare pentru a redobândi accesul',
+        invalidCredentials: 'Nume de utilizator sau parolă incorectă',
+        credentialsRetrieved: 'Acreditări recuperate',
+        password: 'Parolă',
+        returnToLogin: 'Înapoi la Autentificare',
+        recoveryKey: 'Cheie de Recuperare',
+        username: 'Nume de utilizator',
+        processing: 'Se procesează...',
+        signIn: 'Conectare',
+        create: 'Creează Cont',
+        recover: 'Recuperează Parola',
+        noAccount: "Nu ai un cont? Creează unul",
+        haveAccount: "Ai deja un cont? Conectează-te",
+        forgotPassword: "Ai uitat parola?",
+        backToLogin: "Înapoi la Autentificare",
+        accountCreated: 'Cont Creat!',
+        saveRecoveryKey: 'Te rugăm să salvezi cheia de recuperare. Vei avea nevoie de ea dacă îți uiți vreodată parola.',
+        oneTimeShow: 'Aceasta este singura dată când va fi afișată.',
+        savedContinue: "Am salvat-o - Continuă",
+        copied: 'Copiat',
+        recoveryKeyCopied: 'Cheia de recuperare a fost copiată în clipboard',
+        failedCopy: 'Copierea cheii a eșuat',
+        error: 'Eroare',
+    },
+    ui: {
+        noConversations: 'Nu există conversații',
+        noResults: 'Niciun rezultat găsit',
+        noChatSelected: 'Nicio conversație selectată',
+        chooseConversation: 'Alege o conversație sau începe una nouă.',
+        startNewMessage: 'Începe Mesaj Nou',
+        online: 'Online',
+        typeMessage: 'Scrie lui {{partner}}...',
+        unstar: 'Elimină stea',
+        star: 'Adaugă stea',
+        cantMessageSelf: "Nu îți poți trimite mesaje ție (încă)",
+        userNotFound: 'Utilizator negăsit',
+        messageFailed: 'Mesajul a eșuat',
+    },
         menu: {
             newMessage: 'Mesaj Nou',
             deleteConversation: 'Șterge Conversația',

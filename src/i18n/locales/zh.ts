@@ -7,6 +7,9 @@ import type { TranslationDict } from '../types';
 
 
 export const zh: TranslationDict = {
+	time: {
+		yesterday: '昨天',
+	},
 	game: {
 		mainMenu: {
 			continue: {
@@ -210,6 +213,9 @@ export const zh: TranslationDict = {
 		},
 	},
 	notifications: {
+		new: '新',
+		empty: '暂无通知',
+		clearApp: '清除此应用所有通知',
 		title: '通知',
 		clearAll: '全部清除',
 		time: {
@@ -587,7 +593,50 @@ export const zh: TranslationDict = {
 		search: {
 			placeholder: '搜索对话...',
 		},
-		typePlaceholder: '输入消息...',
+		auth: {
+			welcomeBack: '欢迎回来',
+			createAccount: '创建账户',
+			recoverAccount: '恢复账户',
+			signInToContinue: '登录以继续使用消息',
+			joinSecureNetwork: '加入安全网络',
+			enterRecoveryKey: '输入恢复密钥以重新获取访问权限',
+			invalidCredentials: '无效的用户名或密码',
+			credentialsRetrieved: '凭据已恢复',
+			password: '密码',
+			returnToLogin: '返回登录',
+			recoveryKey: '恢复密钥',
+			username: '用户名',
+			processing: '处理中...',
+			signIn: '登录',
+			create: '创建',
+			recover: '恢复',
+			noAccount: "没有账户？创建一个",
+			haveAccount: "已有账户？登录",
+			forgotPassword: "忘记密码？",
+			backToLogin: "返回登录",
+			accountCreated: '账户已创建！',
+			saveRecoveryKey: '请保存您的恢复密钥。如果您忘记密码，将需要它。',
+			oneTimeShow: '这将是唯一一次显示它的机会。',
+			savedContinue: "我已保存 - 继续",
+			copied: '已复制',
+			recoveryKeyCopied: '恢复密钥已复制到剪贴板',
+			failedCopy: '复制密钥失败',
+			error: '错误',
+		},
+		ui: {
+			noConversations: '暂无对话',
+			noResults: '未找到结果',
+			noChatSelected: '未选择聊天',
+			chooseConversation: '选择一个对话或开始新的对话。',
+			startNewMessage: '开始新消息',
+			online: '在线',
+			typeMessage: '发消息给 {{partner}}...',
+			unstar: '取消星标',
+			star: '星标',
+			cantMessageSelf: "您不能给自己发送消息（暂时）",
+			userNotFound: '用户未找到',
+			messageFailed: '发送失败',
+		},
 		menu: {
 			newMessage: '新消息',
 			deleteConversation: '删除对话',

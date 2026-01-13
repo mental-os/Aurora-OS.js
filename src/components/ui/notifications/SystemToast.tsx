@@ -7,9 +7,11 @@ interface SystemToastProps {
     source: string;
     message: React.ReactNode;
     subtitle?: string;
+    appId?: string;
+    onOpenApp?: (appId: string) => void;
 }
 
-export function SystemToast({ type, source, message, subtitle }: SystemToastProps) {
+export function SystemToast({ type, source, message, subtitle, appId, onOpenApp }: SystemToastProps) {
     const { notificationBackground, blurStyle } = useThemeColors();
 
     const icons = {
@@ -18,13 +20,22 @@ export function SystemToast({ type, source, message, subtitle }: SystemToastProp
         error: <FileWarning className="w-4 h-4 text-red-500" />, // Kept red-500 for visibility
     };
 
+    const handleClick = () => {
+        if (appId && onOpenApp) {
+            onOpenApp(appId);
+        }
+    };
+
     return (
         <div
-            className="w-full p-3 rounded-xl border border-white/10 shadow-2xl transition-all duration-300 pointer-events-auto select-none"
+            className={`w-full p-3 rounded-xl border border-white/10 shadow-2xl transition-all duration-300 pointer-events-auto select-none ${
+                appId && onOpenApp ? 'cursor-pointer hover:bg-white/5' : ''
+            }`}
             style={{
                 backgroundColor: notificationBackground,
                 ...blurStyle
             }}
+            onClick={handleClick}
         >
             <div className="flex items-center gap-2.5">
                 {icons[type]}

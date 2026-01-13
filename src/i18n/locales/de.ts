@@ -1,6 +1,9 @@
 import type { TranslationDict } from '../types';
 
 export const de: TranslationDict = {
+  time: {
+    yesterday: 'Gestern',
+  },
   game: {
     mainMenu: {
       continue: {
@@ -200,6 +203,9 @@ export const de: TranslationDict = {
     },
   },
   notifications: {
+    new: 'Neu',
+    empty: 'Keine Benachrichtigungen',
+    clearApp: 'Alle von dieser App löschen',
     title: 'Benachrichtigungen',
     clearAll: 'Alle löschen',
     time: {
@@ -580,7 +586,50 @@ export const de: TranslationDict = {
     search: {
       placeholder: 'Konversationen suchen...',
     },
-    typePlaceholder: 'Nachricht eingeben...',
+    auth: {
+        welcomeBack: 'Willkommen zurück',
+        createAccount: 'Konto erstellen',
+        recoverAccount: 'Konto wiederherstellen',
+        signInToContinue: 'Anmelden, um zu Messages fortzufahren',
+        joinSecureNetwork: 'Sicherem Netzwerk beitreten',
+        enterRecoveryKey: 'Wiederherstellungsschlüssel eingeben, um Zugriff zu erhalten',
+        invalidCredentials: 'Ungültiger Benutzername oder Passwort',
+        credentialsRetrieved: 'Zugangsdaten wiederhergestellt',
+        password: 'Passwort',
+        returnToLogin: 'Zurück zur Anmeldung',
+        recoveryKey: 'Wiederherstellungsschlüssel',
+        username: 'Benutzername',
+        processing: 'Verarbeitung...',
+        signIn: 'Anmelden',
+        create: 'Konto erstellen',
+        recover: 'Passwort wiederherstellen',
+        noAccount: "Kein Konto? Erstelle eins",
+        haveAccount: "Hast du schon ein Konto? Anmelden",
+        forgotPassword: "Passwort vergessen?",
+        backToLogin: "Zurück zur Anmeldung",
+        accountCreated: 'Konto erstellt!',
+        saveRecoveryKey: 'Bitte speichere deinen Wiederherstellungsschlüssel. Du wirst ihn brauchen, falls du dein Passwort vergisst.',
+        oneTimeShow: 'Dies wird nur einmal angezeigt.',
+        savedContinue: "Ich habe es gespeichert - Weiter",
+        copied: 'Kopiert',
+        recoveryKeyCopied: 'Wiederherstellungsschlüssel in die Zwischenablage kopiert',
+        failedCopy: 'Kopieren fehlgeschlagen',
+        error: 'Fehler',
+    },
+    ui: {
+        noConversations: 'Keine Unterhaltungen',
+        noResults: 'Keine Ergebnisse gefunden',
+        noChatSelected: 'Kein Chat ausgewählt',
+        chooseConversation: 'Wähle eine Unterhaltung oder starte eine neue.',
+        startNewMessage: 'Neue Nachricht starten',
+        online: 'Online',
+        typeMessage: 'Nachricht an {{partner}}...',
+        unstar: 'Markierung entfernen',
+        star: 'Markieren',
+        cantMessageSelf: "Du kannst dir (noch) keine Nachrichten selbst senden",
+        userNotFound: 'Benutzer nicht gefunden',
+        messageFailed: 'Nachricht fehlgeschlagen',
+    },
     menu: {
       newMessage: 'Neue Nachricht',
       deleteConversation: 'Unterhaltung löschen',

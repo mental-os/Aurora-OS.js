@@ -9,10 +9,12 @@ import { notify } from '@/services/notifications';
 import { feedback } from '@/services/soundFeedback';
 import { getStorageStats, formatBytes } from '@/utils/memory';
 import { useFileSystem } from '@/components/FileSystemContext';
+import { useAppContext } from '@/components/AppContext';
 import { useI18n } from '@/i18n/index';
 
 export function DevCenter() {
     const { fileSystem, resetFileSystem } = useFileSystem();
+    const { activeUser } = useAppContext();
     const [activeTab, setActiveTab] = useState('dashboard');
     const { t } = useI18n();
 
@@ -159,6 +161,16 @@ export function DevCenter() {
                                     >
                                         <div className="font-medium text-red-400 mb-1 group-hover:text-red-300">{t('devCenter.ui.errorToast')}</div>
                                         <div className="text-sm text-white/50 whitespace-normal">{t('devCenter.ui.errorDescription')}</div>
+                                    </GlassButton>
+                                    
+                                    {/* App Notification Test */}
+                                    <GlassButton
+                                        variant="default"
+                                        className="h-auto block p-4 text-left group border-blue-500/20 bg-blue-500/10 hover:bg-blue-500/20 col-span-full"
+                                        onClick={() => notify.app('dev-center', activeUser, 'Dev Center Test', 'This is a persistent app notification test.')}
+                                    >
+                                        <div className="font-medium text-blue-400 mb-1 group-hover:text-blue-300">{t('devCenter.ui.appNotification')}</div>
+                                        <div className="text-sm text-white/50 whitespace-normal">{t('devCenter.ui.appNotificationDesc') || 'Test persistent app notification'}</div>
                                     </GlassButton>
                                 </div>
                             </section>

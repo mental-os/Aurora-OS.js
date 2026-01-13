@@ -43,16 +43,36 @@ trigger: always_on
     - **Runtime**: Apps render in `WindowContext`.
     - **ContextMenu**: Can be global (registry `contextMenu`) or localized (wrapping specific UI areas with `ContextMenuTrigger` in the app component).
     - **Persistence**: Per-app storage via `useAppStorage` (key: `app-user`) or manual `localStorage` with `getAppStateKey`.
+    - **Installer**: `useAppInstaller` hook handles install/uninstall/restore with permission checks.
+    - **Config**: Simulation apps (Mail, Messages) use `~/.Config/<app>.json` for encrypted credentials, enabling "hacking" gameplay mechanisms.
 
-4.  **Terminal Architecture**: - **PATH**: `["/bin", "/usr/bin"]`. - **`/bin`**: Contains **system commands** (e.g., `ls`, `cat`). - Implemented as **Internal Commands** in `src/utils/terminal/registry`. - Represented in VFS as files containing `#command <name>`. - **`/usr/bin`**: Contains **App Launchers** (e.g., `chrome`, `code`). - Implemented as **App IDs** in `src/config/appRegistry.ts`. - Represented in VFS as files containing `#!app <appId>`. - **Execution**: - `useTerminalLogic` resolves input -> checks built-ins -> checks PATH. - If `#!app ...` -> Launches Window. - If `#command ...` -> Executes internal function. - If other text -> Parses as Shell Script (supports `$VAR`, `VAR=val`).
+4.  **Terminal Architecture**:
+
+    - **PATH**: `["/bin", "/usr/bin"]`.
+    - **`/bin`**: Contains **system commands** (e.g., `ls`, `cat`).
+      - Implemented as **Internal Commands** in `src/utils/terminal/registry`.
+      - Represented in VFS as files containing `#command <name>`.
+    - **`/usr/bin`**: Contains **App Launchers** (e.g., `chrome`, `code`).
+      - Implemented as **App IDs** in `src/config/appRegistry.ts`.
+      - Represented in VFS as files containing `#!app <appId>`.
+    - **Execution**:
+      - `useTerminalLogic` resolves input -> checks built-ins -> checks PATH.
+      - If `#!app ...` -> Launches Window.
+      - If `#command ...` -> Executes internal function.
+      - If other text -> Parses as Shell Script (supports `$VAR`, `VAR=val`).
+    - **Persistence**:
+      - **Strategy**: "Crash Proof". History survives refresh (`is_refreshing` flag) but clears on explicit Window Close or Logout.
+      - **Storage**: `localStorage` with custom serialization (preserving text content from React components to avoid `[Complex Output]`).
+      - **Hostname**: Fully dynamic. `hostname` command reads `/etc/hostname` from VFS.
 
 5.  **Notification & UI System**:
 
-    - **Usage**: `notify.system(type, source, message, subtitle)`.
-    - **Formatting**: `message` prop accepts `React.ReactNode`, allowing for rich grid/list layouts in toasts (e.g., "Get Info" dialogs).
-    - **Empty States**: Use `EmptyState` component (`src/components/ui/empty-state.tsx`) for standardizing empty folders, empty search results, and initial app states.
+    - **Usage**: `notify.system(type, source, message, subtitle)` or `notify.app(appId, title, message)` (via CustomEvent).
+    - **Architecture**: Event-based (`aurora-app-notification`). Applets listen via `useAppNotifications`.
+    - **Formatting**: `message` prop accepts `React.ReactNode`, allowing for rich grid/list layouts in toasts.
+    - **Display**: Stacking "Heads-Up" toasts (top-right, max 3) + Notification Center (sidebar).
     - **Performance**: High-traffic apps (like Notepad) MUST isolate re-renders by splitting the main editor/content logic into memoized sub-components.
-    - **Provider**: Handled via `Sonner` and `SystemToast` component.
+    - **Provider**: Handled via `Sonner` (system) and `AppNotificationsContext` (app-level).
 
 6.  **Audio & Metadata System**:
     - **Howler Core**: All system audio is managed via `soundManager` (`src/services/sound.ts`).
@@ -70,6 +90,7 @@ trigger: always_on
 - **Security**: Check permissions via `checkPermissions(node, user, 'read'|'write'|'execute')`.
 - **UI Integrity**: Use `forwardRef` for any component used with `<ContextMenuTrigger asChild>` to ensure Radix UI ref handling works.
 - **I18n**: All UI strings MUST use `useI18n()`. definition: `src/i18n/locales/en.ts`.
+- **I18n Sync**: Maintain strict sync across all 7 locales (`en`, `de`, `es`, `fr`, `pt`, `ro`, `zh`). Run `/update-translations` after changes.
 - **Accessibility**: All `Dialog` or `AlertDialog` components MUST include a `Title` and `Description`. Use `sr-only` class to hide them if they clash with visual design but are required for A11y.
 - **Docs Sync**: On architecture changes, update `.agent/rules/context.md` & `public/llms-full.txt`.
 - **URL Security**: User-provided URLs (images, media) MUST be sanitized via `getSafeImageUrl(url)` to prevent XSS and satisfy CodeQL taint tracking.
@@ -88,6 +109,8 @@ trigger: always_on
 | `src/services/sound.ts`                | **Sound Manager** | Global audio state and Howler integration.               |
 | `src/utils/id3Parser.ts`               | **ID3 Parser**    | Binary metadata extractor for MP3 files.                 |
 | `src/components/apps/*`                | **Apps**          | Individual App components (Notepad, Terminal, etc).      |
+| `src/hooks/useAppInstaller.ts`         | **Installer**     | Hook for app install/uninstall/restore logic.            |
+| `src/components/apps/AppStore/`        | **App Store**     | App Store components (AppCard, etc).                     |
 
 </codebase_map>
 

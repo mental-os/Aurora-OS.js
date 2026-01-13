@@ -1,6 +1,9 @@
 import type { TranslationDict } from '../types';
 
 export const es: TranslationDict = {
+  time: {
+    yesterday: 'Ayer',
+  },
   game: {
     mainMenu: {
       continue: {
@@ -265,6 +268,9 @@ export const es: TranslationDict = {
     },
   },
   notifications: {
+    new: 'Nuevo',
+    empty: 'No hay notificaciones',
+    clearApp: 'Borrar todo de esta app',
     title: 'Notificaciones',
     clearAll: 'Borrar todo',
     time: {
@@ -645,7 +651,50 @@ export const es: TranslationDict = {
     search: {
       placeholder: 'Buscar conversaciones...',
     },
-    typePlaceholder: 'Escribe un mensaje...',
+    auth: {
+        welcomeBack: 'Bienvenido de nuevo',
+        createAccount: 'Crear cuenta',
+        recoverAccount: 'Recuperar cuenta',
+        signInToContinue: 'Inicia sesión para continuar en Mensajes',
+        joinSecureNetwork: 'Únete a la red segura',
+        enterRecoveryKey: 'Introduce tu clave de recuperación para acceder',
+        invalidCredentials: 'Nombre de usuario o contraseña inválidos',
+        credentialsRetrieved: 'Credenciales recuperadas',
+        password: 'Contraseña',
+        returnToLogin: 'Volver al inicio de sesión',
+        recoveryKey: 'Clave de recuperación',
+        username: 'Nombre de usuario',
+        processing: 'Procesando...',
+        signIn: 'Iniciar sesión',
+        create: 'Crear cuenta',
+        recover: 'Recuperar contraseña',
+        noAccount: "¿No tienes una cuenta? Crea una",
+        haveAccount: "¿Ya tienes una cuenta? Inicia sesión",
+        forgotPassword: "¿Olvidaste tu contraseña?",
+        backToLogin: "Volver al inicio de sesión",
+        accountCreated: '¡Cuenta creada!',
+        saveRecoveryKey: 'Por favor guarda tu clave de recuperación. La necesitarás si olvidas tu contraseña.',
+        oneTimeShow: 'Esta es la única vez que se mostrará.',
+        savedContinue: "La he guardado - Continuar",
+        copied: 'Copiado',
+        recoveryKeyCopied: 'Clave de recuperación copiada al portapapeles',
+        failedCopy: 'Error al copiar la clave',
+        error: 'Error',
+    },
+    ui: {
+        noConversations: 'No hay conversaciones',
+        noResults: 'No se encontraron resultados',
+        noChatSelected: 'Ningún chat seleccionado',
+        chooseConversation: 'Elige una conversación o empieza una nueva.',
+        startNewMessage: 'Empezar nuevo mensaje',
+        online: 'En línea',
+        typeMessage: 'Mensaje a {{partner}}...',
+        unstar: 'Desmarcar',
+        star: 'Destacar',
+        cantMessageSelf: "No puedes enviarte mensajes a ti mismo (aún)",
+        userNotFound: 'Usuario no encontrado',
+        messageFailed: 'Mensaje fallido',
+    },
     menu: {
       newMessage: 'Nuevo mensaje',
       deleteConversation: 'Eliminar conversación',
