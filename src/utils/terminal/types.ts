@@ -26,6 +26,8 @@ export interface CommandContext {
     t: (key: string, options?: any) => string;
     getCommandHistory: () => string[];
     clearCommandHistory: () => void;
+    closeWindow?: () => void;
+    isRootSession: boolean;
 }
 
 export interface CommandResult {
