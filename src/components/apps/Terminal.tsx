@@ -7,9 +7,10 @@ export interface TerminalProps {
   id: string;
   onLaunchApp?: (appId: string, args: string[], owner?: string) => void;
   owner?: string;
+  onClose?: () => void;
 }
 
-export function Terminal({ id, onLaunchApp, owner }: TerminalProps) {
+export function Terminal({ id, onLaunchApp, owner, onClose }: TerminalProps) {
   const {
     input,
     setInput,
@@ -24,7 +25,7 @@ export function Terminal({ id, onLaunchApp, owner }: TerminalProps) {
     homePath,
     promptState,
     clearHistory
-  } = useTerminalLogic(onLaunchApp, owner);
+  } = useTerminalLogic(onLaunchApp, owner, onClose);
 
   // Handle Context Menu Actions
   useEffect(() => {

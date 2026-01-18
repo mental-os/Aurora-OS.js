@@ -101,7 +101,8 @@ const parseCommandInput = (
 
 export function useTerminalLogic(
   onLaunchApp?: (appId: string, args: string[], owner?: string) => void,
-  initialUser?: string
+  initialUser?: string,
+  onClose?: () => void
 ) {
   const { accentColor } = useAppContext();
   const { t } = useI18n();
@@ -141,6 +142,8 @@ export function useTerminalLogic(
       }
     }
   }, [currentUser, sessionStack.length, initialUser]);
+
+  const isRootSession = sessionStack.length <= 1;
 
   // Interactive Prompting
   const [promptState, setPromptState] = useState<{ message: string; type: 'text' | 'password'; callingHistoryId?: string } | null>(null);
@@ -824,6 +827,8 @@ export function useTerminalLogic(
                       terminalUser: activeTerminalUser,
                       spawnSession: pushSession,
                       closeSession: closeSession,
+                      closeWindow: onClose, 
+                      isRootSession: isRootSession,
                       onLaunchApp,
                       getNodeAtPath,
                       readFile,
@@ -886,6 +891,8 @@ export function useTerminalLogic(
             terminalUser: activeTerminalUser,
             spawnSession: pushSession,
             closeSession: closeSession,
+            closeWindow: onClose, 
+            isRootSession: isRootSession,
             getNodeAtPath: getNodeAtPath,
             readFile: readFile,
             prompt: (m, t) => prompt(m, t, historyId),

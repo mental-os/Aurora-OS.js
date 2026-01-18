@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { isValidElement, cloneElement } from 'react';
 import { Desktop, DesktopIcon } from '@/components/Desktop';
 import { MenuBar } from '@/components/MenuBar';
 import { Dock } from '@/components/Dock';
@@ -411,19 +412,28 @@ export default function OS() {
                 windows={windows}
             />
 
-            {windows.map(window => (
-                <Window
-                    key={window.id}
-                    window={window}
-                    onClose={() => closeWindow(window.id)}
-                    onMinimize={() => minimizeWindow(window.id)}
-                    onMaximize={() => maximizeWindow(window.id)}
-                    onFocus={() => focusWindow(window.id)}
-                    onUpdateState={(updates) => updateWindowState(window.id, updates)}
-                    isFocused={window.id === focusedWindowId}
-                    bounds=".window-drag-boundary"
-                />
-            ))}
+            {windows.map(window => {
+                const contentWithProps = isValidElement(window.content)
+                    ? cloneElement(window.content as React.ReactElement, {
+                        // @ts-ignore - Dynamic prop injection
+                        onClose: () => closeWindow(window.id)
+                    })
+                    : window.content;
+
+                return (
+                    <Window
+                        key={window.id}
+                        window={{ ...window, content: contentWithProps }}
+                        onClose={() => closeWindow(window.id)}
+                        onMinimize={() => minimizeWindow(window.id)}
+                        onMaximize={() => maximizeWindow(window.id)}
+                        onFocus={() => focusWindow(window.id)}
+                        onUpdateState={(updates) => updateWindowState(window.id, updates)}
+                        isFocused={window.id === focusedWindowId}
+                        bounds=".window-drag-boundary"
+                    />
+                );
+            })}
 
 
 
