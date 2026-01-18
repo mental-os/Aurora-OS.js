@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { ShieldCheck, AlertTriangle, Orbit } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import pkg from "../../../package.json";
 import { validateIntegrity } from "../../utils/integrity";
 import { useAppContext } from "../AppContext";
