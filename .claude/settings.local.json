@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_compound-engineering_context7__resolve-library-id",
+      "WebSearch",
+      "mcp__plugin_compound-engineering_context7__query-docs",
+      "Skill(compound-engineering:plan_review)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(config\\): centralize brand configuration\n\nExtract hardcoded brand values \\(accent colors, wallpapers\\) into a single\nconfig file for easier brand management. This creates a single source of\ntruth for brand identity.\n\n- Create src/config/brand.ts with BRAND constants\n- Update Settings.tsx to import colors/wallpapers from brand config\n- Update AppContext.tsx to use BRAND.accentColor as default\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)"
+    ]
+  }
+}

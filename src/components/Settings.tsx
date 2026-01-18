@@ -22,17 +22,7 @@ import {
 import { SUPPORTED_LOCALES } from '../i18n/translations';
 import { useI18n } from '../i18n/index';
 import pkg from '../../package.json';
-import defaultWallpaper from '../assets/images/background.png';
-import orbitWallpaper from '../assets/images/wallpaper-orbit.png';
-import meshWallpaper from '../assets/images/wallpaper-mesh.png';
-import dunesWallpaper from '../assets/images/wallpaper-dunes.png';
-
-const WALLPAPERS = [
-  { id: 'default', name: 'Nebula', src: defaultWallpaper },
-  { id: 'orbit', name: 'Orbit', src: orbitWallpaper },
-  { id: 'mesh', name: 'Flux', src: meshWallpaper },
-  { id: 'dunes', name: 'Midnight Dunes', src: dunesWallpaper },
-];
+import { BRAND } from '@/config/brand';
 
 const settingsSidebarIcons = {
   appearance: Palette,
@@ -46,16 +36,8 @@ const settingsSidebarIcons = {
   about: Info,
 } as const;
 
-const presetColors = [
-  { name: 'Crimson', value: '#e11d48' },  // Rose-600 (Vibrant Red)
-  { name: 'Carbon', value: '#fe5000' },   // MOONHOUND Studio
-  { name: 'Amber', value: '#f59e0b' },    // Amber-500 (Warm Gold)
-  { name: 'Emerald', value: '#10b981' },  // Emerald-500 (Crisp Green)
-  { name: 'Azure', value: '#3b82f6' },    // Blue-500 (Classic Tech Blue)
-  { name: 'Indigo', value: '#5755e4' },   // Indigo-500 (Deep Modern Blue)
-  { name: 'Violet', value: '#8b5cf6' },   // Violet-500 (Bright Purple)
-  { name: 'Fuchsia', value: '#d946ef' },  // Fuchsia-500 (Neon Pink)
-];
+const presetColors = BRAND.accentPalette;
+const WALLPAPERS = BRAND.wallpapers;
 
 export function Settings({ owner }: { owner?: string }) {
   const [activeSection, setActiveSection] = useSessionStorage('settings-active-section', 'appearance', owner);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { ChevronRight, Check, User, Globe, Palette, Loader2, Search } from "lucide-react";
 import { GameScreenLayout } from "@/components/Game/GameScreenLayout";
 import { useFileSystem } from "@/components/FileSystemContext";

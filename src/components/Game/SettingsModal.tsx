@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Volume2, Monitor, RefreshCw, Trash2, X, VolumeX } from 'lucide-react';
 import pkg from '@/../package.json';
 import { cn } from '@/components/ui/utils';
