@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { validateNetworkConfig } from '@/utils/networkValidation';
 
 interface NetworkSettingsProps {
   accentColor: string;
@@ -100,53 +101,17 @@ export function NetworkSettings({
     setTempDNS(newDNS);
   };
 
-  // Validate IP address format
-  const isValidIP = (ip: string): boolean => {
-    const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-    const match = ip.match(ipPattern);
-    if (!match) return false;
-
-    for (let i = 1; i <= 4; i++) {
-      const octet = parseInt(match[i]);
-      if (octet < 0 || octet > 255) return false;
-    }
-    return true;
-  };
-
-  // Validate network configuration coherence
-  const validateNetworkConfig = (): { valid: boolean; error?: string } => {
-    if (!isValidIP(tempIP)) {
-      return { valid: false, error: t('settings.network.invalidIP') };
-    }
-    if (!isValidIP(tempGateway)) {
-      return { valid: false, error: t('settings.network.invalidGateway') };
-    }
-    if (!isValidIP(tempSubnetMask)) {
-      return { valid: false, error: t('settings.network.invalidSubnetMask') };
-    }
-    if (!isValidIP(tempDNS)) {
-      return { valid: false, error: t('settings.network.invalidDNS') };
-    }
-
-    // Check if IP and gateway are in the same subnet
-    const ipParts = tempIP.split('.').map(Number);
-    const gatewayParts = tempGateway.split('.').map(Number);
-    const maskParts = tempSubnetMask.split('.').map(Number);
-
-    for (let i = 0; i < 4; i++) {
-      if ((ipParts[i] & maskParts[i]) !== (gatewayParts[i] & maskParts[i])) {
-        return { valid: false, error: t('settings.network.gatewayNotInSubnet') };
-      }
-    }
-
-    return { valid: true };
-  };
-
   // Handle manual configuration save
   const handleSaveManualConfig = () => {
-    const validation = validateNetworkConfig();
+    const validation = validateNetworkConfig({
+      ip: tempIP,
+      gateway: tempGateway,
+      subnetMask: tempSubnetMask,
+      dns: tempDNS
+    });
+
     if (!validation.valid) {
-      toast.error(validation.error);
+      toast.error(t(`settings.network.${validation.error}`));
       return;
     }
 
