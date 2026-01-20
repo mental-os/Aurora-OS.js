@@ -13,6 +13,7 @@ import { useI18n } from "@/i18n/index";
 import { STORAGE_KEYS } from "@/utils/memory";
 
 import { updateStoredVersion } from "@/utils/migrations";
+import { BRAND } from "@/config/systemConfig";
 
 interface OnboardingProps {
     onContinue: () => void;
@@ -206,14 +207,6 @@ export function Onboarding({ onContinue, onBack }: OnboardingProps) {
         }
     };
 
-    const presetColors = [
-        "#3b82f6", // Blue
-        "#e11d48", // Rose
-        "#f59e0b", // Amber
-        "#10b981", // Emerald
-        "#8b5cf6", // Violet
-    ];
-
     return (
         <GameScreenLayout zIndex={40000} mode="glass">
             {/* Modal Overlay matching SettingsModal */}
@@ -399,20 +392,21 @@ export function Onboarding({ onContinue, onBack }: OnboardingProps) {
 
                                     <div className="space-y-3">
                                         <label className="text-sm font-medium text-white/80">{t('onboarding.theme.accentColor')}</label>
-                                        <div className="flex gap-4">
-                                            {presetColors.map((color) => (
+                                        <div className="flex gap-2 flex-wrap items-center">
+                                            {BRAND.accentPalette.map((color) => (
                                                 <button
-                                                    key={color}
-                                                    onClick={() => setPreviewAccent(color)}
+                                                    key={color.value}
+                                                    onClick={() => setPreviewAccent(color.value)}
                                                     className={cn(
                                                         "w-10 h-10 rounded-full transition-all border-2 relative",
-                                                        previewAccent === color
+                                                        previewAccent === color.value
                                                             ? "border-white scale-110 shadow-lg shadow-white/10"
                                                             : "border-transparent hover:scale-105 opacity-80 hover:opacity-100"
                                                     )}
-                                                    style={{ backgroundColor: color }}
+                                                    style={{ backgroundColor: color.value }}
+                                                    title={color.name}
                                                 >
-                                                    {previewAccent === color && (
+                                                    {previewAccent === color.value && (
                                                         <motion.div
                                                             layoutId="active-check"
                                                             className="absolute inset-0 flex items-center justify-center"
@@ -422,7 +416,7 @@ export function Onboarding({ onContinue, onBack }: OnboardingProps) {
                                                     )}
                                                 </button>
                                             ))}
-                                            <div className="w-px h-10 bg-white/10 mx-2" />
+                                            <div className="w-px h-8 bg-white/10" />
                                             <div className="relative group">
                                                 <input
                                                     type="color"

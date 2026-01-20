@@ -138,6 +138,7 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 ### Improved
 
 - **Architecture**: Standardized internal imports to use absolute `@/` alias.
+- **Configuration**: Centralized all brand identity (colors, wallpapers, name) into `systemConfig.ts` for easier white-labeling and theming.
 - **Multi-User**: Enhanced app isolation (local providers) for `sudo`/`su` sessions.
 - **Localization**: Achieved 100% translation parity across all 12 supported languages (EN, DE, ES, FR, PT, RO, ZH, RU, JA, PL, KO, TR).
 - **Audio**: Added dedicated Ambiance channel with independent volume control and hierarchical settings persistence.

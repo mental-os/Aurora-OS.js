@@ -19,7 +19,7 @@ trigger: always_on
 **Core**: React 19, TypeScript, Vite, Tailwind CSS (v4), Radix UI.
 **Platform**: Web (PWA) + Desktop (Electron).
 **State**: React Context + `localStorage` persistence (Hierarchical: System Defaults + User Overrides).
-**Config**: `src/config/systemConfig.ts` defines core limits (e.g., Default RAM).
+**Config**: `src/config/systemConfig.ts` defines core limits (e.g., Default RAM) and **Brand Identity** (Name, Colors, Wallpapers).
 
 </tech_stack>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Volume2, Monitor, RefreshCw, Trash2, X, Speaker, Laptop, Settings, Check, Waves } from 'lucide-react';
 import pkg from '@/../package.json';
 import { cn } from '@/components/ui/utils';

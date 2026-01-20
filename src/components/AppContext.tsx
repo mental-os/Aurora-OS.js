@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { STORAGE_KEYS } from '../utils/memory';
-import { SUPPORTED_LOCALES } from '@/i18n/types.ts';
-import { DEFAULT_SYSTEM_MEMORY_GB } from '@/config/systemConfig';
+import { STORAGE_KEYS } from '@/utils/memory';
+import { SUPPORTED_LOCALES } from '@/i18n/translations';
+import { BRAND, DEFAULT_SYSTEM_MEMORY_GB } from '@/config/systemConfig';
 
 type ThemeMode = 'neutral' | 'shades' | 'contrast';
 
@@ -111,7 +111,7 @@ interface SystemConfig {
 }
 
 const DEFAULT_PREFERENCES: UserPreferences = {
-  accentColor: '#5755e4',
+  accentColor: BRAND.accentColor,
   themeMode: 'neutral',
   wallpaper: 'default',
   timeMode: 'server',

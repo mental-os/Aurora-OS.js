@@ -1,5 +1,5 @@
+import { motion, AnimatePresence } from 'motion/react';
 import { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Command, Power } from 'lucide-react';
 import { Howler } from 'howler';
 import { useI18n } from '@/i18n/index';

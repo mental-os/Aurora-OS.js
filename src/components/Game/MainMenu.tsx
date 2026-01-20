@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Settings, Power, Play, Disc } from 'lucide-react';
 import { cn } from '@/components/ui/utils';
 import { feedback } from '@/services/soundFeedback';
