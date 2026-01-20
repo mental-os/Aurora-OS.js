@@ -4,6 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    target-branch: "nightly"
     # User requested NO auto-updates, only security alerts.
     # We achieve this by finding packages but setting the PR limit to 0.
     # Security updates (triggered by GitHub Alerts) bypass this limit.

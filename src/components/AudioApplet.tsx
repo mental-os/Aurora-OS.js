@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Volume2, VolumeX, MousePointer2, Bell, AppWindow, Play, Pause, SkipBack, SkipForward, Music2 } from 'lucide-react';
+import { Volume2, VolumeX, MousePointer2, Bell, AppWindow, Play, Pause, SkipBack, SkipForward, Music2, Waves } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Slider } from './ui/slider';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './ui/accordion';
@@ -16,6 +16,7 @@ function useAudioMixer() {
         ui: soundManager.getVolume('ui'),
         feedback: soundManager.getVolume('feedback'),
         music: soundManager.getVolume('music'), // Add music
+        ambiance: soundManager.getVolume('ambiance'),
         isMuted: soundManager.getMuted(),
     });
 
@@ -27,6 +28,7 @@ function useAudioMixer() {
                 ui: soundManager.getVolume('ui'),
                 feedback: soundManager.getVolume('feedback'),
                 music: soundManager.getVolume('music'),
+                ambiance: soundManager.getVolume('ambiance'),
                 isMuted: soundManager.getMuted(),
             });
         });
@@ -37,7 +39,7 @@ function useAudioMixer() {
 }
 
 export function AudioApplet() {
-    const { master, system, ui, feedback, music, isMuted } = useAudioMixer(); // consume music
+    const { master, system, ui, feedback, music, ambiance, isMuted } = useAudioMixer(); // consume music
     const { blurStyle, getBackgroundColor } = useThemeColors();
     const { disableShadows, accentColor, reduceMotion } = useAppContext();
     const [isOpen, setIsOpen] = useState(false);
@@ -217,6 +219,24 @@ export function AudioApplet() {
                             </AccordionTrigger>
                             <AccordionContent className="px-6! pb-6 pt-3">
                                 <div className="space-y-6">
+                                    {/* Ambiance */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-white/90 flex items-center gap-2">
+                                                <Waves className="w-4 h-4 text-white/50" />
+                                                {t('audio.categories.ambiance')}
+                                            </span>
+                                            <span className="text-white/50">{Math.round(ambiance * 100)}%</span>
+                                        </div>
+                                        <Slider
+                                            value={[ambiance]}
+                                            max={1}
+                                            step={0.01}
+                                            onValueChange={(val) => handleVolumeChange('ambiance', val)}
+                                            className={sliderClass}
+                                        />
+                                    </div>
+
                                     {/* Music Stream */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between text-sm">

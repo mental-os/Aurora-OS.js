@@ -1,6 +1,6 @@
 {
       "name": "aurora-os-js",
-      "version": "0.8.4",
+      "version": "0.8.4-alpha5",
       "private": true,
       "type": "module",
       "author": "Cătălin-Robert Drăgoiu",
@@ -77,21 +77,21 @@
             "howler": "^2.2.4",
             "input-otp": "^1.4.2",
             "lucide-react": "^0.562.0",
-            "motion": "*",
+            "motion": "^12.26.1",
             "next-themes": "^0.4.6",
             "prismjs": "^1.30.0",
             "react": "^19.2.1",
             "react-day-picker": "8.10.1",
             "react-dom": "^19.2.1",
-            "react-hook-form": "^7.71.0",
+            "react-hook-form": "7.71.0",
             "react-markdown": "^10.1.0",
-            "react-resizable-panels": "^4.4.0",
+            "react-resizable-panels": "^4.4.1",
             "react-rnd": "^10.5.2",
             "react-simple-code-editor": "^0.14.1",
             "recharts": "^3.6.0",
             "remark-gfm": "^4.0.1",
             "sonner": "^2.0.3",
-            "systeminformation": "^5.30.2",
+            "systeminformation": "^5.30.5",
             "tailwind-merge": "*",
             "vaul": "^1.1.2"
       },
@@ -99,7 +99,7 @@
             "@eslint/js": "^9.39.1",
             "@testing-library/dom": "^10.4.1",
             "@testing-library/jest-dom": "^6.9.1",
-            "@testing-library/react": "^16.3.0",
+            "@testing-library/react": "^16.3.2",
             "@types/howler": "^2.2.12",
             "@types/node": "^25.0.7",
             "@types/prismjs": "^1.26.5",
@@ -120,7 +120,7 @@
             "tailwindcss-animate": "^1.0.7",
             "tsx": "^4.21.0",
             "typescript": "^5.9.3",
-            "typescript-eslint": "^8.52.0",
+            "typescript-eslint": "^8.53.1",
             "vite": "^7.3.1",
             "vitest": "^4.0.17",
             "wait-on": "^9.0.3"
@@ -142,7 +142,7 @@
       },
       "build": {
             "appId": "com.auroraos.app",
-            "productName": "Aurora OS",
+            "productName": "Aurora OS.js",
             "directories": {
                   "output": "release"
             },
@@ -170,13 +170,24 @@
                   "fr",
                   "pt",
                   "ro",
-                  "zh"
+                  "zh",
+                  "ru",
+                  "ja",
+                  "pl",
+                  "ko",
+                  "tr"
             ]
       },
       "overrides": {
             "react-day-picker": {
                   "react": "^19.0.0",
                   "react-dom": "^19.0.0"
+            },
+            "node-gyp": {
+                  "tar": "^7.5.3"
+            },
+            "cacache": {
+                  "tar": "^7.5.3"
             }
       }
 }

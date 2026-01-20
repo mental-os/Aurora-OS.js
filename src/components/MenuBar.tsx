@@ -8,7 +8,7 @@ import { cn } from '@/components/ui/utils';
 import { useAppContext } from '@/components/AppContext';
 import { useFileSystem } from '@/components/FileSystemContext';
 import { AudioApplet } from '@/components/AudioApplet';
-import { NotificationCenter } from '@/components/NotificationCenter';
+import { NotificationsApplet } from '@/components/NotificationsApplet';
 import { BatteryApplet } from '@/components/BatteryApplet';
 import { MemoryApplet } from '@/components/MemoryApplet';
 import { hardReset, clearSession } from '@/utils/memory';
@@ -20,12 +20,12 @@ import {
   MenubarItem,
   MenubarSeparator,
   MenubarShortcut,
-} from './ui/menubar';
-import { Badge } from './ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+} from '@/components/ui/menubar';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { getApp } from '../config/appRegistry';
-import { useI18n } from '../i18n/index';
+import { getApp } from '@/config/appRegistry';
+import { useI18n } from '@/i18n/index';
 
 interface MenuBarProps {
   focusedApp?: string | null;
@@ -45,6 +45,9 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
   const [showCredits, setShowCredits] = useState(false);
   const clickCountRef = useRef(0);
   const lastClickTimeRef = useRef(0);
+
+  // Panic Confirmation State
+  const [panicConfirm, setPanicConfirm] = useState(false);
 
   // Fullscreen management
   const { toggleFullscreen: toggleFullscreenBase } = useFullscreen();
@@ -221,7 +224,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
 
   return (
     <div
-      className={cn("absolute top-0 left-0 right-0 h-7 border-b border-white/10 flex items-center justify-between px-2 z-9999")}
+      className={cn("absolute top-0 left-0 right-0 h-7 border-b border-white/10 flex items-center justify-between px-2 z-9999 select-none")}
       style={{ background: menuBarBackground, ...blurStyle }}
     >
       {/* Left side */}
@@ -318,15 +321,32 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <MenubarItem
-                    onClick={() => {
-                      // Hard Reset -> PANIC
-                      hardReset();
-                      window.location.reload();
+                    onSelect={(e) => {
+                      if (!panicConfirm) {
+                        e.preventDefault();
+                      }
                     }}
-                    className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
+                    onClick={() => {
+                      if (!panicConfirm) {
+                        setPanicConfirm(true);
+                        setTimeout(() => setPanicConfirm(false), 3000);
+                      } else {
+                        // Hard Reset -> PANIC
+                        hardReset();
+                        window.location.reload();
+                      }
+                    }}
+                    className={cn(
+                      "text-red-500 focus:text-red-500 focus:bg-red-500/10",
+                      panicConfirm && "bg-red-500/10"
+                    )}
                   >
-                    <span className="flex-1 text-left">{t('menubar.system.panic')}</span>
-                    <Badge variant="destructive" className="ml-auto text-[10px] h-5 px-1.5">{t('menubar.system.hardReset')}</Badge>
+                    <span className="flex-1 text-left">
+                      {panicConfirm ? "Are you sure?" : t('menubar.system.panic')}
+                    </span>
+                    <Badge variant="destructive" className="ml-auto text-[10px] h-5 px-1.5">
+                      {panicConfirm ? "CONFIRM" : t('menubar.system.hardReset')}
+                    </Badge>
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
@@ -388,7 +408,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
           <Wifi className="w-4 h-4" />
         </button>
         <AudioApplet />
-        <NotificationCenter />
+        <NotificationsApplet onOpenApp={onOpenApp} />
 
         <button 
           onClick={() => setTimeMode(timeMode === 'server' ? 'local' : 'server')}

@@ -3,6 +3,7 @@ import { FileSystemContextType } from '../../components/FileSystemContext';
 
 export interface CommandContext {
     args: string[];
+    stdin?: string[]; // Input from pipe
     fileSystem: FileSystemContextType;
     currentPath: string;
     setCurrentPath: (path: string) => void;
@@ -25,6 +26,8 @@ export interface CommandContext {
     t: (key: string, options?: any) => string;
     getCommandHistory: () => string[];
     clearCommandHistory: () => void;
+    closeWindow?: () => void;
+    isRootSession: boolean;
 }
 
 export interface CommandResult {

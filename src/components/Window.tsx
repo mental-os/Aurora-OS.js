@@ -42,6 +42,7 @@ function WindowComponent({
   const appConfig = getApp(window.type);
   const contextMenuConfig = appConfig?.contextMenu;
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false); // Added state for smooth resizing
   const [beforeClose, setBeforeClose] = useState<(() => boolean | Promise<boolean>) | null>(null);
 
   // Drag threshold refs
@@ -76,7 +77,8 @@ function WindowComponent({
   // Calculate explicit dimensions for maximized state to ensure Rnd handles it correctly
   // Use globalThis to avoid shadowing the 'window' prop
   const maximizeWidth = typeof globalThis !== 'undefined' ? globalThis.innerWidth : 1000;
-  const maximizeHeight = typeof globalThis !== 'undefined' ? globalThis.innerHeight - 30 : 800; // 30px to be safe (28px bar + 2px border/shadow)
+  // Fixed: Removed the extra 2px safety margin so it touches the bottom (30 -> 28)
+  const maximizeHeight = typeof globalThis !== 'undefined' ? globalThis.innerHeight - 28 : 800; 
 
   const x = window.isMaximized ? 0 : window.position.x;
   const y = window.isMaximized ? 28 : window.position.y;
@@ -132,6 +134,7 @@ function WindowComponent({
         y: window.isMinimized ? minimizeTarget.y : y
       }}
       bounds={bounds}
+      cancel=".no-drag" // Add cancel prop to prevent dragging on specific elements
       onDragStart={(_e, d) => {
         // Don't set isDragging immediately to avoiding "lift" on click
         dragRef.current.startX = d.x;
@@ -158,7 +161,9 @@ function WindowComponent({
         setIsDragging(false);
         onUpdateState({ position: { x: d.x, y: d.y } });
       }}
+      onResizeStart={() => setIsResizing(true)}
       onResizeStop={(_e, _direction, ref, _delta, position) => {
+        setIsResizing(false);
         onUpdateState({
           size: {
             width: parseInt(ref.style.width),
@@ -177,11 +182,10 @@ function WindowComponent({
         zIndex: window.zIndex,
         display: 'flex',
         flexDirection: 'column',
-        // Transition for smooth maximize/minimize 
-        // We set to none for standard state to ensure resize/drag is instant
-        transition: window.isMaximized || window.isMinimized
-          ? 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)'
-          : 'none',
+        // Update transition logic: Only disable transition when user is actively dragging or resizing
+        transition: (isDragging || isResizing)
+          ? 'none'
+          : 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
         pointerEvents: window.isMinimized ? 'none' : 'auto',
       }}
       className="absolute"
@@ -212,7 +216,12 @@ function WindowComponent({
           )}
           style={{ background: titleBarBackground }}
         >
-          <div className="flex items-center gap-2 " onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            className="flex items-center gap-2 no-drag" // Add no-drag class here
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()} // Add pointer event stop
+          >
             {/* stopPropagation on controls */}
             <button
               className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"

@@ -35,6 +35,13 @@ Contribution: Code, Testing
 **[@Marcx5](https://github.com/Marcx5)**  
 Contribution: Code
 
+**0xGP // [@gaupoit](https://github.com/gaupoit)**  
+Contribution: Code  
+Website: [devbanhmi.com](https://devbanhmi.com/)
+
+**मृत्यु // [@mriityu](https://github.com/mriityu)**  
+Contribution: Code, Testing
+
 ## 🎨 Design & UX
 
 _(Visual systems, interaction concepts, UI explorations)_

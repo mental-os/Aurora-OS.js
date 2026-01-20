@@ -53,12 +53,12 @@ const SYSTEM_CONFIG_KEY = 'aurora-system-config';
 interface UserPreferences {
   accentColor: string;
   themeMode: ThemeMode;
-  blurEnabled: boolean;
-  reduceMotion: boolean;
-  disableShadows: boolean;
-  disableGradients: boolean;
   wallpaper: string;
   timeMode: 'server' | 'local';
+  blurEnabled?: boolean;
+  reduceMotion?: boolean;
+  disableShadows?: boolean;
+  disableGradients?: boolean;
 }
 
 interface SystemConfig {
@@ -66,15 +66,15 @@ interface SystemConfig {
   exposeRoot: boolean;
   locale: AppLocale;
   onboardingComplete: boolean;
+  blurEnabled: boolean;
+  reduceMotion: boolean;
+  disableShadows: boolean;
+  disableGradients: boolean;
 }
 
 const DEFAULT_PREFERENCES: UserPreferences = {
   accentColor: '#5755e4',
   themeMode: 'neutral',
-  blurEnabled: true,
-  reduceMotion: false,
-  disableShadows: false,
-  disableGradients: false,
   wallpaper: 'default',
   timeMode: 'server',
 };
@@ -116,18 +116,33 @@ const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   exposeRoot: false,
   locale: detectDefaultLocale(),
   onboardingComplete: false,
+  blurEnabled: true,
+  reduceMotion: false,
+  disableShadows: false,
+  disableGradients: false,
 };
 
 // Helper: Get key for specific user
 const getUserKey = (username: string) => `aurora-os-settings-${username}`;
 
-function loadUserPreferences(username: string): UserPreferences {
+function loadUserPreferences(username: string, systemDefaults: SystemConfig): UserPreferences {
   try {
     const key = getUserKey(username);
     const stored = localStorage.getItem(key);
 
     if (stored) {
-      return { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) };
+      // Merge: Defaults (System) -> Default (Static) -> Stored
+      // Note: We use system defaults for performance settings if explicit user override is missing
+      const parsed = JSON.parse(stored);
+      
+      return {
+        ...DEFAULT_PREFERENCES,
+        blurEnabled: systemDefaults.blurEnabled,
+        reduceMotion: systemDefaults.reduceMotion,
+        disableShadows: systemDefaults.disableShadows,
+        disableGradients: systemDefaults.disableGradients,
+        ...parsed 
+      };
     }
 
     // Migration Check: If loading for 'root' (system default) and no root settings exist,
@@ -144,7 +159,14 @@ function loadUserPreferences(username: string): UserPreferences {
           if (k in legacyParsed) migratedProps[k] = legacyParsed[k];
         });
 
-        const migrated = { ...DEFAULT_PREFERENCES, ...migratedProps };
+        const migrated = { 
+            ...DEFAULT_PREFERENCES, 
+            blurEnabled: systemDefaults.blurEnabled,
+            reduceMotion: systemDefaults.reduceMotion,
+            disableShadows: systemDefaults.disableShadows,
+            disableGradients: systemDefaults.disableGradients,
+            ...migratedProps 
+        };
         // Save immediately to new key
         localStorage.setItem(key, JSON.stringify(migrated));
         return migrated;
@@ -153,7 +175,15 @@ function loadUserPreferences(username: string): UserPreferences {
   } catch (e) {
     console.warn(`Failed to load settings for ${username}:`, e);
   }
-  return DEFAULT_PREFERENCES;
+  
+  // fallback to system defaults
+  return {
+      ...DEFAULT_PREFERENCES,
+      blurEnabled: systemDefaults.blurEnabled,
+      reduceMotion: systemDefaults.reduceMotion,
+      disableShadows: systemDefaults.disableShadows,
+      disableGradients: systemDefaults.disableGradients,
+  };
 }
 
 function loadSystemConfig(): SystemConfig {
@@ -174,6 +204,10 @@ function loadSystemConfig(): SystemConfig {
 
       if ('devMode' in legacyParsed) { migrated.devMode = legacyParsed.devMode; hasMigration = true; }
       if ('exposeRoot' in legacyParsed) { migrated.exposeRoot = legacyParsed.exposeRoot; hasMigration = true; }
+      if ('blurEnabled' in legacyParsed) { migrated.blurEnabled = legacyParsed.blurEnabled; hasMigration = true; }
+      if ('reduceMotion' in legacyParsed) { migrated.reduceMotion = legacyParsed.reduceMotion; hasMigration = true; }
+      if ('disableShadows' in legacyParsed) { migrated.disableShadows = legacyParsed.disableShadows; hasMigration = true; }
+      if ('disableGradients' in legacyParsed) { migrated.disableGradients = legacyParsed.disableGradients; hasMigration = true; }
 
       if (hasMigration) {
         console.log('Migrated system config from legacy storage');
@@ -194,25 +228,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Lock state
   const [isLocked, setIsLocked] = useState(false);
 
-  // User Preferences (Per User)
-  const [preferences, setPreferences] = useState<UserPreferences>(() => loadUserPreferences('root'));
-
   // System Config (Global)
+  // We load this FIRST so we can use it to seed user defaults
   const [systemConfig, setSystemConfig] = useState<SystemConfig>(() => loadSystemConfig());
 
-  // Destructure for easy access
-  const { accentColor, themeMode, blurEnabled, reduceMotion, disableShadows, disableGradients, wallpaper } = preferences;
+  // User Preferences (Per User)
+  // Initialize using the loaded systemConfig as current defaults
+  const [preferences, setPreferences] = useState<UserPreferences>(() => loadUserPreferences('root', systemConfig));
+
+  // Destructure for easy access (User preferences take precedence/contain the effective value)
+  const { accentColor, themeMode, wallpaper, blurEnabled, reduceMotion, disableShadows, disableGradients } = preferences;
   const { devMode, exposeRoot, locale, onboardingComplete } = systemConfig;
 
   // Function to switch context to a different user
   const switchUser = useCallback((username: string) => {
     setActiveUser(prev => {
       if (prev === username) return prev;
-      const newPrefs = loadUserPreferences(username);
+      const newPrefs = loadUserPreferences(username, systemConfig);
       setPreferences(newPrefs);
       return username;
     });
-  }, []);
+  }, [systemConfig]);
 
   // Persistence: User Preferences
   useEffect(() => {
@@ -236,10 +272,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Setters for Preferences
   const setAccentColor = (color: string) => setPreferences(s => ({ ...s, accentColor: color }));
   const setThemeMode = (mode: ThemeMode) => setPreferences(s => ({ ...s, themeMode: mode }));
-  const setBlurEnabled = (enabled: boolean) => setPreferences(s => ({ ...s, blurEnabled: enabled }));
-  const setReduceMotion = (enabled: boolean) => setPreferences(s => ({ ...s, reduceMotion: enabled }));
-  const setDisableShadows = (enabled: boolean) => setPreferences(s => ({ ...s, disableShadows: enabled }));
-  const setDisableGradients = (enabled: boolean) => setPreferences(s => ({ ...s, disableGradients: enabled }));
+  const setBlurEnabled = (enabled: boolean) => {
+      setPreferences(s => ({ ...s, blurEnabled: enabled }));
+      if (activeUser === 'root') setSystemConfig(s => ({ ...s, blurEnabled: enabled }));
+  };
+  const setReduceMotion = (enabled: boolean) => {
+      setPreferences(s => ({ ...s, reduceMotion: enabled }));
+      if (activeUser === 'root') setSystemConfig(s => ({ ...s, reduceMotion: enabled }));
+  };
+  const setDisableShadows = (enabled: boolean) => {
+      setPreferences(s => ({ ...s, disableShadows: enabled }));
+      if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableShadows: enabled }));
+  };
+  const setDisableGradients = (enabled: boolean) => {
+      setPreferences(s => ({ ...s, disableGradients: enabled }));
+      if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableGradients: enabled }));
+  };
   const setWallpaper = (id: string) => setPreferences(s => ({ ...s, wallpaper: id }));
   const setTimeMode = (mode: 'server' | 'local') => setPreferences(s => ({ ...s, timeMode: mode }));
 
@@ -311,13 +359,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAccentColor,
       themeMode,
       setThemeMode,
-      blurEnabled,
+      blurEnabled: blurEnabled ?? systemConfig.blurEnabled,
       setBlurEnabled,
-      reduceMotion,
+      reduceMotion: reduceMotion ?? systemConfig.reduceMotion,
       setReduceMotion,
-      disableShadows,
+      disableShadows: disableShadows ?? systemConfig.disableShadows,
       setDisableShadows,
-      disableGradients,
+      disableGradients: disableGradients ?? systemConfig.disableGradients,
       setDisableGradients,
       wallpaper,
       setWallpaper,

@@ -30,7 +30,7 @@ Even in its current proof‑of‑concept state, Aurora OS already solves the har
   - **Mail**: Email client simulation with attachments and multiple mailboxes.
   - **Calendar**: Event management with drag & drop support.
   - **Messages**: Chat interface simulation.
-- � **Localization**: Fully translated in English, German, Spanish, French, Portuguese, Romanian, and Chinese.
+- � **Localization**: Fully translated in English, German, Spanish, French, Portuguese, Romanian, Chinese, Russian, Japanese, Polish, Korean, and Turkish.
 
 ## 🧭 Where This Is Going
 
@@ -121,31 +121,54 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
 - **Photos App**: Full-featured gallery with albums, favorites, lightbox, and background library scanning.
 - **Mock Content**: Initial set of high-quality mock images seeded to `~/Pictures`.
-- **Simulated Cloud Services**: Added initial support for simulated cloud services (e.g., TrustMail accounts DB).
+- **Simulated Cloud Services**: Added initial support for simulated cloud services (e.g., TrustMail accounts DB, messages DB).
 - **TrustMail**: Added Account Recovery system with secret key generation and storage.
+- **Fully functional Messages App**: with support for multiple accounts, bidirectional chat, and more.
+- **Notifications Applet**: Added initial support for app notifications and HeadsUp notifications (implemented in the Messages app).
+- **App Store**: Uninstall confirmation and window closing block event if an app is still installing.
+- **DevCenter - Messages Debugger**: New debugging interface for Messages app with account creation, registry management, and message sending tools.
 
 ### Removed
 
 - **TrustMail and Mail**: Dependency on local inbox and outbox.
 - **TrustMail**: Removed single-account limitation (multi-account support).
+- **DevCenter**: Removed legacy System Logs tab in favor of more focused debugging tools.
 
 ### Improved
 
 - **Architecture**: Standardized internal imports to use absolute `@/` alias.
 - **Multi-User**: Enhanced app isolation (local providers) for `sudo`/`su` sessions.
-- **Localization**: Achieved 100% translation parity across all 7 supported languages.
+- **Localization**: Achieved 100% translation parity across all 12 supported languages (EN, DE, ES, FR, PT, RO, ZH, RU, JA, PL, KO, TR).
+- **Audio**: Added dedicated Ambiance channel with independent volume control and hierarchical settings persistence.
+- **Boot Sequence**: Improved startup sounds with high-quality assets for Intro (`computerStart`) and BIOS (`biosStart`).
+- **DevCenter**: Complete UI overhaul with new Apps debugging section, enhanced File System explorer with detailed file properties, and unified glassmorphism aesthetic with system accent colors.
+- **Internationalization**: All DevCenter UI strings are now fully localized with synchronized translations across all supported languages.
 - **Calendar**: Added drag & drop support.
 - **Calendar**: Added dynamic categories support `(.config/calendar.json)`.
-- **Calendar first event**: aka. "Loop Started" event is now set to follow the onboarding complition time.
-- **Time source**: now influence Calendar app (local time vs. server time).
+- **Calendar first event**: aka. "Loop Started" event is now set to follow the onboarding completion time.
+- **Time source**: now influences Calendar app (local time vs. server time).
 - **Modals**: such as "Open File" or "Create/Edit Event" blurs the background.
 - **Main Services & Mail**: Trash functionality and permanent deletion.
+- **Mail App**: Improved UI and responsive design to match Messages App.
+- **Terminal performance**: by switching to memos, the terminal is now much faster and more responsive.
+- **Notifications**: Clear distinction between system notifications (debug notifications in bottom right) and app notifications (app events notifications in top right and the Notifications applet).
+- **App Store**: Improved UI and responsive design to match other Apps.
+- **Main Menu**: Added "Contribute" tab and "Developer disclaimer" floating window.
+- **Modals**: Added `Escape` key close support and Arrow key navigation for tabs in `Settings` and `Credits` modals.
+- **Onboarding**: Improved user flow with `Escape` to cancel/go back and `Enter` to advance steps.
+- **BIOS Settings**: Complete overhaul with tabbed interface, graphics presets (Ultra/Performance), and granular audio controls.
+- **Pre-boot flow**: Improved support for keyboard navigation and user experience.
 
 ### Fixed
 
 - **System Stability**: Resolved "System Critical Error" caused by React Context duplication.
+- **Audio**: Fixed unwarranted "warning" sound during New Game initialization by silencing user-less system reset notifications.
+- **Login Screen**: Fixed password hint display bug where it would incorrectly default to "guest" for users with empty hints.
 - **Drag & Drop**: Fixed drag-and-drop support system-wide (Finder, Calendar, etc.) avoiding double-click triggers (browsers limitation).
 - **Finder**: Fixed double-click launch reliability and "Open Folder" case-sensitivity issues.
+- **Mail App**: Fixed remembering opened tabs after app close, or relogin.
+- **Terminal text selection**: Fixed text selection in Terminal app created by the "no text selection" settings across the app (input boxes should be fine).
+- **DevCenter**: Updated to include all current features in a unified testing environment with proper storage key usage and Messages DB integration.
 - **Session**: Prevented apps from auto-playing/opening content when restoring old sessions.
 
 ### [View full version history](HISTORY.md)

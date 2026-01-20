@@ -81,30 +81,20 @@ export const cp: TerminalCommand = {
         const success = createFile(parentPath, destName, content);
 
         if (!success) {
-            // Could be existing file that we can't overwrite? 
-            // Standard cp overwrites. Our createFile fails if exists.
-            // We should try to overwrite (or delete and recreate, or writeFile if exists)
-            // Ideally `createFile` should be `writeFile` if we want overwrite.
-            // But checking current impl of createFile: fails if exists.
-            // Let's implement overwrite logic: delete then create, OR use writeFile?
-            // `writeFile` exists in FileSystemContext!
-            // Let's assume we want to overwrite.
-            // context.fileSystem is the helper object. context.fileSystem.fileSystem is the root node.
-            const rootNode = fileSystem.fileSystem;
-            const existing = parentPath === '/' ? rootNode.children?.find(c => c.name === destName) : getNodeAtPath(parentPath)?.children?.find(c => c.name === destName);
-
-            if (existing) {
-                // Check write perm on existing file to overwrite it
-                if (!checkPermissions(existing, userObj, 'write')) {
-                    return { output: [`cp: cannot create regular file '${args[1]}': Permission denied`], error: true };
-                }
-                // Use writeFile
-                const writeSuccess = fileSystem.writeFile(`${parentPath === '/' ? '' : parentPath}/${destName}`, content);
-                if (!writeSuccess) {
-                    return { output: [`cp: cannot create regular file '${args[1]}': Operation failed`], error: true };
-                }
+            // Try to overwrite if it exists
+            const fullDestPath = parentPath === '/' ? `/${destName}` : `${parentPath}/${destName}`;
+            const existingNode = getNodeAtPath(fullDestPath);
+            
+            if (existingNode && existingNode.type === 'file') {
+                 if (!checkPermissions(existingNode, userObj, 'write')) {
+                    return { output: [`cp: cannot create regular file '${fullDestPath}': Permission denied`], error: true };
+                 }
+                 const writeSuccess = fileSystem.writeFile(fullDestPath, content);
+                 if (!writeSuccess) {
+                     return { output: [`cp: cannot create regular file '${args[1]}': Operation failed`], error: true };
+                 }
             } else {
-                return { output: [`cp: cannot create regular file '${args[1]}': Operation failed`], error: true };
+                 return { output: [`cp: cannot create regular file '${args[1]}': Operation failed`], error: true };
             }
         }
 

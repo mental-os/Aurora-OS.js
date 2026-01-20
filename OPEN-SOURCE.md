@@ -45,6 +45,7 @@ Aurora OS is built on the shoulders of giants. We gratefully acknowledge the fol
 | [Culori](https://culorijs.org/)                             |    MIT     | A versatile color manipulation library.                                |
 | [date-fns](https://date-fns.org/)                           |    MIT     | Modern JavaScript date utility library.                                |
 | [Remark GFM](https://github.com/remarkjs/remark-gfm)        |    MIT     | GFM support for Remark.                                                |
+| [systeminformation](https://systeminformation.io/)          |    MIT     | System Information Library for Node.JS.                                |
 
 ## Styling
 
@@ -53,7 +54,6 @@ Aurora OS is built on the shoulders of giants. We gratefully acknowledge the fol
 | [Tailwind CSS](https://tailwindcss.com/)                                   |   MIT   | A utility-first CSS framework for rapidly building custom designs. |
 | [Tailwind CSS Animate](https://github.com/jamiebuilds/tailwindcss-animate) |   MIT   | A Tailwind CSS plugin for creating beautiful animations.           |
 | [PostCSS](https://postcss.org/)                                            |   MIT   | A tool for transforming CSS with JavaScript.                       |
-| [Autoprefixer](https://github.com/postcss/autoprefixer)                    |   MIT   | PostCSS plugin to parse CSS and add vendor prefixes to CSS rules.  |
 
 ## Testing & Development
 

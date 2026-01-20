@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { ChevronRight, Check, User, Globe, Palette, Loader2, Search } from "lucide-react";
 import { GameScreenLayout } from "@/components/Game/GameScreenLayout";
 import { useFileSystem } from "@/components/FileSystemContext";
@@ -16,17 +16,18 @@ import { updateStoredVersion } from "@/utils/migrations";
 
 interface OnboardingProps {
     onContinue: () => void;
+    onBack?: () => void;
 }
 
 type Step = "language" | "account" | "theme" | "finishing";
 
-export function Onboarding({ onContinue }: OnboardingProps) {
+export function Onboarding({ onContinue, onBack }: OnboardingProps) {
     const [step, setStep] = useState<Step>("language");
     const { addUser, addUserToGroup, users, saveFileSystem } = useFileSystem();
-    const { 
-        setAccentColor, 
-        setThemeMode, 
-        accentColor, 
+    const {
+        setAccentColor,
+        setThemeMode,
+        accentColor,
         themeMode,
         locale,
         setLocale,
@@ -34,6 +35,8 @@ export function Onboarding({ onContinue }: OnboardingProps) {
         setOnboardingComplete
     } = useAppContext();
     const { t } = useI18n();
+
+
 
     // Step 2: Account
     const [fullName, setFullName] = useState("");
@@ -50,22 +53,22 @@ export function Onboarding({ onContinue }: OnboardingProps) {
     // Language Search
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filteredLocales = SUPPORTED_LOCALES.filter(lang => 
-        lang.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const filteredLocales = SUPPORTED_LOCALES.filter(lang =>
+        lang.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lang.locale.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    
-    // Handlers
-    const handleLanguageNext = () => {
-        setStep("account");
-    };
 
-    const handleAccountNext = async () => {
+    // Handlers
+    const handleLanguageNext = useCallback(() => {
+        setStep("account");
+    }, []);
+
+    const handleAccountNext = useCallback(async () => {
         if (!fullName || !username || !password) {
             setError(t('onboarding.validation.requiredFields'));
             return;
         }
-        
+
         // Password Validation
         if (password.length < 6) {
             setError(t('onboarding.validation.passwordLength'));
@@ -79,8 +82,8 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                 return;
             }
             if (password.includes(hint) || hint.includes(password)) {
-                 setError(t('onboarding.validation.hintSecurity'));
-                 return;
+                setError(t('onboarding.validation.hintSecurity'));
+                return;
             }
             // Sanitize Hint (prevent scripts/html just in case, though React escapes it)
             // Allow standard text punctuation
@@ -113,7 +116,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
         // We defer actual creation to the end to prevent partial saves
         setTimeout(() => {
             const userExists = users.some(u => u.username === username);
-            
+
             if (!userExists) {
                 setStep("theme");
             } else {
@@ -121,49 +124,78 @@ export function Onboarding({ onContinue }: OnboardingProps) {
             }
             setIsCreatingUser(false);
         }, 500);
-    };
+    }, [fullName, username, password, hint, t, users]);
 
-    const handleFinishOnboarding = () => {
+    const handleFinishOnboarding = useCallback(() => {
         setStep("finishing");
-        
+
         // Finalize: Create User and Save System State
         setTimeout(() => {
-             // 1. Create User (as root)
-             const success = addUser(username, fullName, password, hint, "root", true);
-             
-             if (success) {
-                 // 2. Add to groups
-                 addUserToGroup(username, "admin");
-                 addUserToGroup(username, "users");
+            // 1. Create User (as root)
+            const success = addUser(username, fullName, password, hint, "root", true);
 
-                 // 3. Switch Context
-                 switchUser(username);
+            if (success) {
+                // 2. Add to groups
+                addUserToGroup(username, "admin");
+                addUserToGroup(username, "users");
 
-                 // 4. Apply Preferences
-                 setAccentColor(previewAccent);
+                // 3. Switch Context
+                switchUser(username);
 
-                 // 5. Mark Complete & Save
-                 try {
-                     localStorage.setItem(STORAGE_KEYS.LANGUAGE, locale);
-                     localStorage.setItem(STORAGE_KEYS.INSTALL_DATE, new Date().toISOString());
-                 } catch (e) { console.warn(e) }
-                 
-                 setOnboardingComplete(true);
-                 updateStoredVersion(); // Commit session
-                 saveFileSystem(); // Force write to disk
+                // 4. Apply Preferences
+                setAccentColor(previewAccent);
 
-                 // 6. Continue to Game
-                 setTimeout(() => {
-                     onContinue();
-                 }, 1500);
-             } else {
-                 // Fallback error handling if creation fails at the last second
-                 // (Shouldn't happen given the check in previous step, unless race condition)
-                 setStep("account");
-                 setError(t('onboarding.validation.creationFailed'));
-             }
+                // 5. Mark Complete & Save
+                try {
+                    localStorage.setItem(STORAGE_KEYS.LANGUAGE, locale);
+                    localStorage.setItem(STORAGE_KEYS.INSTALL_DATE, new Date().toISOString());
+                } catch (e) { console.warn(e) }
+
+                setOnboardingComplete(true);
+                updateStoredVersion(); // Commit session
+                saveFileSystem(); // Force write to disk
+
+                // 6. Continue to Game
+                setTimeout(() => {
+                    onContinue();
+                }, 1500);
+            } else {
+                // Fallback error handling if creation fails at the last second
+                // (Shouldn't happen given the check in previous step, unless race condition)
+                setStep("account");
+                setError(t('onboarding.validation.creationFailed'));
+            }
         }, 500);
-    };
+    }, [username, fullName, password, hint, previewAccent, locale, addUser, addUserToGroup, switchUser, setAccentColor, setOnboardingComplete, saveFileSystem, onContinue, t]);
+
+    // Keyboard navigation
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                if (step === "language") {
+                    onBack?.();
+                } else if (step === "account") {
+                    setStep("language");
+                    setError("");
+                } else if (step === "theme") {
+                    setStep("account");
+                }
+            }
+
+            if (e.key === "Enter") {
+                e.preventDefault();
+                if (step === "language") {
+                    handleLanguageNext();
+                } else if (step === "account") {
+                    handleAccountNext();
+                } else if (step === "theme") {
+                    handleFinishOnboarding();
+                }
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [step, onBack, handleLanguageNext, handleAccountNext, handleFinishOnboarding]);
 
     // Auto-generate username from full name
     const handleNameChange = (val: string) => {
@@ -183,7 +215,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
     ];
 
     return (
-        <GameScreenLayout zIndex={40000}>
+        <GameScreenLayout zIndex={40000} mode="glass">
             {/* Modal Overlay matching SettingsModal */}
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200 p-4 md:p-0">
                 <Card className="w-full max-w-lg bg-zinc-900/90 backdrop-blur-xl border-white/10 shadow-2xl p-2 my-auto max-h-[90vh] flex flex-col">
@@ -196,7 +228,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                 {step === "finishing" && <Loader2 className="w-5 h-5 text-white animate-spin" />}
                             </div>
                             <div>
-                                    <CardTitle className="text-xl text-white font-bold tracking-wide">
+                                <CardTitle className="text-xl text-white font-bold tracking-wide">
                                     {step === "language" && t('onboarding.steps.language.title')}
                                     {step === "account" && t('onboarding.steps.account.title')}
                                     {step === "theme" && t('onboarding.steps.theme.title')}
@@ -210,7 +242,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                 </CardDescription>
                             </div>
                         </div>
-                        
+
                         {/* Progress Stepper */}
                         {step !== 'finishing' && (
                             <div className="flex gap-2 mt-4">
@@ -231,7 +263,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                     exit={{ opacity: 0, x: -10 }}
                                     className="space-y-4"
                                 >
-                                    <GlassInput 
+                                    <GlassInput
                                         icon={<Search className="w-4 h-4" />}
                                         placeholder={t('onboarding.search.placeholder')}
                                         value={searchQuery}
@@ -248,8 +280,8 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                                     onClick={() => setLocale(lang.locale)}
                                                     className={cn(
                                                         "w-full p-3 rounded-lg border text-left flex justify-between items-center transition-all group",
-                                                        locale === lang.locale 
-                                                            ? "bg-white/10 border-white/40 ring-1 ring-white/20" 
+                                                        locale === lang.locale
+                                                            ? "bg-white/10 border-white/40 ring-1 ring-white/20"
                                                             : "bg-transparent border-white/5 hover:bg-white/5 hover:border-white/10"
                                                     )}
                                                 >
@@ -277,7 +309,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                     <div className="grid gap-4">
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-white/80">{t('onboarding.account.fullName')}</label>
-                                            <GlassInput 
+                                            <GlassInput
                                                 placeholder={t('onboarding.account.fullNamePlaceholder')}
                                                 value={fullName}
                                                 onChange={(e) => handleNameChange(e.target.value)}
@@ -287,8 +319,8 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-white/80">{t('onboarding.account.username')}</label>
-                                            <GlassInput 
-                                                placeholder="johndoe" 
+                                            <GlassInput
+                                                placeholder="johndoe"
                                                 value={username}
                                                 onChange={(e) => {
                                                     setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""));
@@ -300,9 +332,9 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-white/80">{t('onboarding.account.password')}</label>
-                                            <GlassInput 
+                                            <GlassInput
                                                 type="password"
-                                                placeholder="••••••••" 
+                                                placeholder="••••••••"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 className="bg-black/20 focus:bg-black/40"
@@ -310,8 +342,8 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-white/80">{t('onboarding.account.passwordHint')}</label>
-                                            <GlassInput 
-                                                placeholder={t('onboarding.account.passwordHintPlaceholder')} 
+                                            <GlassInput
+                                                placeholder={t('onboarding.account.passwordHintPlaceholder')}
                                                 value={hint}
                                                 onChange={(e) => setHint(e.target.value)}
                                                 className="bg-black/20 focus:bg-black/40"
@@ -338,7 +370,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                     <div className="space-y-3">
                                         <label className="text-sm font-medium text-white/80">{t('onboarding.theme.mode')}</label>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <button 
+                                            <button
                                                 onClick={() => setThemeMode('neutral')} // Previewing
                                                 className={cn(
                                                     "p-4 rounded-xl border transition-all text-left group",
@@ -346,21 +378,21 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                                 )}
                                             >
                                                 <div className="w-full h-24 bg-[#09090b] rounded-lg mb-3 border border-white/10 relative overflow-hidden">
-                                                     <div className="absolute top-2 left-2 w-16 h-4 bg-white/10 rounded" />
-                                                     <div className="absolute top-8 left-2 w-8 h-8 bg-white/5 rounded-full" />
+                                                    <div className="absolute top-2 left-2 w-16 h-4 bg-white/10 rounded" />
+                                                    <div className="absolute top-8 left-2 w-8 h-8 bg-white/5 rounded-full" />
                                                 </div>
                                                 <div className="text-white font-medium group-hover:text-white/90">{t('onboarding.theme.darkMode')}</div>
                                             </button>
                                             <div className="relative opacity-50 cursor-not-allowed">
-                                                 <div className="p-4 rounded-xl border border-white/5 bg-white/5 text-left h-full">
+                                                <div className="p-4 rounded-xl border border-white/5 bg-white/5 text-left h-full">
                                                     <div className="w-full h-24 bg-gray-100 rounded-lg mb-3 border border-black/5 relative overflow-hidden">
-                                                         <div className="absolute top-2 left-2 w-16 h-4 bg-black/10 rounded" />
+                                                        <div className="absolute top-2 left-2 w-16 h-4 bg-black/10 rounded" />
                                                     </div>
                                                     <div className="text-white font-medium">{t('onboarding.theme.lightMode')}</div>
-                                                 </div>
-                                                 <div className="absolute inset-0 flex items-center justify-center">
-                                                     <span className="bg-black/80 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-xs text-white font-medium">{t('onboarding.theme.comingSoon')}</span>
-                                                 </div>
+                                                </div>
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <span className="bg-black/80 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-xs text-white font-medium">{t('onboarding.theme.comingSoon')}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -374,14 +406,14 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                                     onClick={() => setPreviewAccent(color)}
                                                     className={cn(
                                                         "w-10 h-10 rounded-full transition-all border-2 relative",
-                                                        previewAccent === color 
-                                                            ? "border-white scale-110 shadow-lg shadow-white/10" 
+                                                        previewAccent === color
+                                                            ? "border-white scale-110 shadow-lg shadow-white/10"
                                                             : "border-transparent hover:scale-105 opacity-80 hover:opacity-100"
                                                     )}
                                                     style={{ backgroundColor: color }}
                                                 >
                                                     {previewAccent === color && (
-                                                        <motion.div 
+                                                        <motion.div
                                                             layoutId="active-check"
                                                             className="absolute inset-0 flex items-center justify-center"
                                                         >
@@ -392,13 +424,13 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                             ))}
                                             <div className="w-px h-10 bg-white/10 mx-2" />
                                             <div className="relative group">
-                                                <input 
-                                                    type="color" 
+                                                <input
+                                                    type="color"
                                                     value={previewAccent}
                                                     onChange={(e) => setPreviewAccent(e.target.value)}
                                                     className="w-10 h-10 rounded-full opacity-0 cursor-pointer absolute inset-0 z-10"
                                                 />
-                                                <div 
+                                                <div
                                                     className="w-10 h-10 rounded-full border-2 border-white/20 flex items-center justify-center transition-transform group-hover:scale-105"
                                                     style={{ backgroundColor: previewAccent }}
                                                 >
@@ -422,7 +454,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                                         {t('onboarding.finishing.subtitle')}
                                     </p>
                                     <div className="w-64 bg-white/10 rounded-full h-1.5 overflow-hidden">
-                                        <motion.div 
+                                        <motion.div
                                             className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]"
                                             initial={{ width: "0%" }}
                                             animate={{ width: "100%" }}
@@ -437,10 +469,16 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                     {step !== 'finishing' && (
                         <CardFooter className="flex justify-between border-t border-white/5 pt-6 p-6 relative z-50">
                             {step === "language" ? (
-                                <div /> // Spacer
+                                <GlassButton
+                                    variant="ghost"
+                                    onClick={() => onBack?.()}
+                                    className="text-white/60 hover:text-white"
+                                >
+                                    {t('onboarding.buttons.back')}
+                                </GlassButton>
                             ) : (
-                                <GlassButton 
-                                    variant="ghost" 
+                                <GlassButton
+                                    variant="ghost"
                                     onClick={() => setStep(step === "theme" ? "account" : "language")}
                                     className="text-white/60 hover:text-white"
                                 >
@@ -449,20 +487,20 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                             )}
 
                             {step === "language" && (
-                                <GlassButton 
+                                <GlassButton
                                     type="button"
-                                    onClick={handleLanguageNext} 
+                                    onClick={handleLanguageNext}
                                     className="group relative z-50 pointer-events-auto"
                                     data-testid="onboarding-next-language"
                                 >
                                     {t('onboarding.buttons.next')} <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
                                 </GlassButton>
                             )}
-                            
+
                             {step === "account" && (
-                                <GlassButton 
+                                <GlassButton
                                     type="button"
-                                    onClick={handleAccountNext} 
+                                    onClick={handleAccountNext}
                                     disabled={isCreatingUser}
                                     className="min-w-[100px]"
                                 >
@@ -471,10 +509,10 @@ export function Onboarding({ onContinue }: OnboardingProps) {
                             )}
 
                             {step === "theme" && (
-                                <GlassButton 
-                                    type="button" 
-                                    onClick={handleFinishOnboarding} 
-                                    style={{ backgroundColor: previewAccent }} 
+                                <GlassButton
+                                    type="button"
+                                    onClick={handleFinishOnboarding}
+                                    style={{ backgroundColor: previewAccent }}
                                     className="px-6 shadow-lg shadow-black/20 hover:shadow-black/40"
                                 >
                                     {t('onboarding.buttons.startUsing')}

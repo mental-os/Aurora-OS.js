@@ -119,6 +119,7 @@ export function LoginScreen() {
     return (
         <GameScreenLayout
             zIndex={50000}
+            mode="glass"
             footerActions={
                 <>
                     <button
@@ -126,7 +127,7 @@ export function LoginScreen() {
                             softReset();
                             window.location.reload();
                         }}
-                        className="hover:text-white/40 transition-colors"
+                        className="hover:text-white transition-colors"
                     >
                         {t('login.softReset')}
                     </button>
@@ -138,7 +139,7 @@ export function LoginScreen() {
                                 window.location.reload();
                             }
                         }}
-                        className="hover:text-red-400/60 transition-colors"
+                        className="hover:text-red-400 transition-colors"
                     >
                         {t('login.hardReset')}
                     </button>
@@ -226,8 +227,13 @@ export function LoginScreen() {
                                 autoFocus
                             />
                             {error && (
-                                <p className="absolute -bottom-6 left-0 right-0 text-center text-red-300 text-xs animate-in fade-in slide-in-from-top-1">
-                                    {t('login.incorrectPasswordHintPrefix')} {selectedUser.passwordHint || (selectedUser.username === 'root' ? 'admin' : selectedUser.username === 'user' ? '1234' : 'guest')}
+                                <p className="absolute -bottom-6 left-0 right-0 text-center text-red-300 text-xs animate-in fade-in slide-in-from-top-1 whitespace-nowrap">
+                                    {t('login.incorrectPassword')}
+                                    {(selectedUser.passwordHint || selectedUser.username === 'root' || selectedUser.username === 'user' || selectedUser.username === 'guest') && (
+                                        <>
+                                            . {t('login.hint')}: {selectedUser.passwordHint || (selectedUser.username === 'root' ? 'admin' : selectedUser.username === 'user' ? '1234' : 'guest')}
+                                        </>
+                                    )}
                                 </p>
                             )}
                         </div>

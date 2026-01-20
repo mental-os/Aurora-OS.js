@@ -53,6 +53,26 @@ function AppContent() {
       };
     }
   }, [currentUser]);
+  
+  // Track page refresh/unload state to distinguish from app window closing
+  useEffect(() => {
+      const handleUnload = () => {
+          sessionStorage.setItem('is_refreshing', 'true');
+      };
+      
+      // Cleanup flag on mount (if we just refreshed, we are now fresh)
+      // But we should verify if we want to clear it immediately?
+      // Yes, if we are running, we are not refreshing anymore.
+      sessionStorage.removeItem('is_refreshing');
+
+      window.addEventListener('beforeunload', handleUnload);
+      return () => {
+          window.removeEventListener('beforeunload', handleUnload);
+      };
+  }, []);
+
+  // Global click sound (Persistent across all states)
+
 
   return (
     <PhotosProvider owner={currentUser || 'guest'}>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { isValidElement, cloneElement } from 'react';
 import { Desktop, DesktopIcon } from '@/components/Desktop';
 import { MenuBar } from '@/components/MenuBar';
 import { Dock } from '@/components/Dock';
@@ -20,10 +21,10 @@ import { useFileSystem, type FileSystemContextType } from '@/components/FileSyst
 import { Toaster } from '@/components/ui/sonner';
 import { notify } from '@/services/notifications';
 import { getGridConfig, gridToPixel, pixelToGrid, findNextFreeCell, gridPosToKey, rearrangeGrid, type GridPosition } from '@/utils/gridSystem';
-import { feedback } from '@/services/soundFeedback';
 import { STORAGE_KEYS } from '@/utils/memory';
 import { useWindowManager } from '@/hooks/useWindowManager';
 import { useI18n } from '@/i18n/index';
+import { AppNotificationsProvider } from '@/components/AppNotificationsContext';
 
 import { Mail } from "@/components/apps/Mail.tsx";
 // Load icon positions (supports both pixel and grid formats with migration)
@@ -71,14 +72,7 @@ export default function OS() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Global click sound
-    useEffect(() => {
-        const handleGlobalClick = () => {
-            feedback.click();
-        };
-        window.addEventListener('click', handleGlobalClick);
-        return () => window.removeEventListener('click', handleGlobalClick);
-    }, []);
+
 
     const { listDirectory, resolvePath, getNodeAtPath, moveNodeById } = useFileSystem() as unknown as FileSystemContextType;
 
@@ -192,7 +186,7 @@ export default function OS() {
                 break;
             case 'messages':
                 title = 'Messages';
-                content = <Messages owner={owner} />;
+                content = <Messages owner={owner} initialPartner={data?.partner} />;
                 break;
             case 'mail':
                 title = 'Mail';
@@ -225,7 +219,7 @@ export default function OS() {
                 break;
             case 'appstore':
                 title = 'App Store';
-                content = <AppStore owner={owner} />;
+                content = <AppStore owner={owner} onOpenApp={(...args) => openWindowRef.current(...args)} />;
                 break;
             default:
                 title = type.charAt(0).toUpperCase() + type.slice(1);
@@ -389,6 +383,7 @@ export default function OS() {
     }, [focusedWindowId]);
 
     return (
+        <AppNotificationsProvider onOpenApp={openWindow}>
         <div className="dark h-screen w-screen overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 relative">
             <div className="window-drag-boundary absolute top-7 left-0 right-0 bottom-0 pointer-events-none z-0" />
             <Desktop
@@ -411,23 +406,31 @@ export default function OS() {
                 windows={windows}
             />
 
-            {windows.map(window => (
-                <Window
-                    key={window.id}
-                    window={window}
-                    onClose={() => closeWindow(window.id)}
-                    onMinimize={() => minimizeWindow(window.id)}
-                    onMaximize={() => maximizeWindow(window.id)}
-                    onFocus={() => focusWindow(window.id)}
-                    onUpdateState={(updates) => updateWindowState(window.id, updates)}
-                    isFocused={window.id === focusedWindowId}
-                    bounds=".window-drag-boundary"
-                />
-            ))}
+            {windows.map(window => {
+                const contentWithProps = isValidElement(window.content)
+                    ? cloneElement(window.content as React.ReactElement, {
+                        // @ts-expect-error - Intentionally ignored for now - Dynamic prop injection
+                        onClose: () => closeWindow(window.id)
+                    })
+                    : window.content;
 
-
+                return (
+                    <Window
+                        key={window.id}
+                        window={{ ...window, content: contentWithProps }}
+                        onClose={() => closeWindow(window.id)}
+                        onMinimize={() => minimizeWindow(window.id)}
+                        onMaximize={() => maximizeWindow(window.id)}
+                        onFocus={() => focusWindow(window.id)}
+                        onUpdateState={(updates) => updateWindowState(window.id, updates)}
+                        isFocused={window.id === focusedWindowId}
+                        bounds=".window-drag-boundary"
+                    />
+                );
+            })}
 
             <Toaster />
         </div>
+        </AppNotificationsProvider>
     );
 }

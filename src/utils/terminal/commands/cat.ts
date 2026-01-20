@@ -6,8 +6,11 @@ export const cat: TerminalCommand = {
     descriptionKey: 'terminal.commands.cat.description',
     usage: 'cat <file>',
     usageKey: 'terminal.commands.cat.usage',
-    execute: ({ args, fileSystem, resolvePath }) => {
+    execute: ({ args, fileSystem, resolvePath, stdin }) => {
         if (args.length === 0) {
+            if (stdin && stdin.length > 0) {
+                return { output: stdin };
+            }
             return { output: ['cat: missing file operand'], error: true };
         }
 

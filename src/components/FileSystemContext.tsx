@@ -84,7 +84,7 @@ export interface FileSystemContextType {
   moveToTrash: (path: string, asUser?: string) => boolean;
   emptyTrash: () => void;
   resolvePath: (path: string, asUser?: string) => string;
-  resetFileSystem: () => void;
+  resetFileSystem: (silent?: boolean) => void;
   login: (username: string, password?: string) => boolean;
   logout: () => void;
   chmod: (path: string, mode: string, asUser?: string) => boolean;
@@ -384,7 +384,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
   );
 
   // 6. Reset Logic (Unified)
-  const resetFileSystem = useCallback(() => {
+  const resetFileSystem = useCallback((silent: boolean = false) => {
     // Reset installed apps to core apps only
     setInstalledApps(new Set(CORE_APP_IDS));
     localStorage.removeItem("aurora-installed-apps");
@@ -393,7 +393,9 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     resetFileSystemState();
     resetAuthState();
 
-    notify.system("success", "System", "System reset to factory defaults");
+    if (!silent) {
+      notify.system("success", "System", "System reset to factory defaults");
+    }
   }, [resetFileSystemState, resetAuthState]);
 
   // 7. Sync users State -> Filesystem (/etc/passwd)

@@ -1,15 +1,16 @@
 import { useRef, useEffect, ReactNode, useMemo, memo } from 'react';
 import { AppTemplate } from './AppTemplate';
-import pkg from '../../../package.json';
-import { useTerminalLogic } from '../../hooks/useTerminalLogic';
+import pkg from '@/../package.json';
+import { useTerminalLogic } from '@/hooks/useTerminalLogic';
 
 export interface TerminalProps {
   id: string;
   onLaunchApp?: (appId: string, args: string[], owner?: string) => void;
   owner?: string;
+  onClose?: () => void;
 }
 
-export function Terminal({ id, onLaunchApp, owner }: TerminalProps) {
+export function Terminal({ id, onLaunchApp, owner, onClose }: TerminalProps) {
   const {
     input,
     setInput,
@@ -24,7 +25,7 @@ export function Terminal({ id, onLaunchApp, owner }: TerminalProps) {
     homePath,
     promptState,
     clearHistory
-  } = useTerminalLogic(onLaunchApp, owner);
+  } = useTerminalLogic(onLaunchApp, owner, onClose);
 
   // Handle Context Menu Actions
   useEffect(() => {
@@ -47,7 +48,12 @@ export function Terminal({ id, onLaunchApp, owner }: TerminalProps) {
     };
 
     window.addEventListener('app-menu-action', handleMenuAction as EventListener);
-    return () => window.removeEventListener('app-menu-action', handleMenuAction as EventListener);
+    return () => {
+        window.removeEventListener('app-menu-action', handleMenuAction as EventListener);
+        
+        // Removed auto-clear history on unmount to prevent data loss on re-renders/spurious unmounts.
+        // History persistence is now handled solely by useTerminalLogic via localStorage.
+    };
   }, [clearHistory, setInput, id]);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -147,7 +153,8 @@ export function Terminal({ id, onLaunchApp, owner }: TerminalProps) {
       ref={terminalRef}
       onClick={() => {
         const selection = window.getSelection();
-        if (!selection || selection.toString().length === 0) {
+        // Only focus input if no text is selected
+        if (!selection || selection.type !== 'Range') {
           inputRef.current?.focus();
         }
       }}
@@ -225,7 +232,7 @@ const TerminalHistoryItem = memo(function TerminalHistoryItem({ item, homePath, 
         {item.output.map((line, lineIndex) => (
           <div
             key={lineIndex}
-            className={item.error ? 'text-red-400' : 'text-white/80'}
+            className={`${item.error ? 'text-red-400' : 'text-white/80'} select-text`}
           >
             {line}
           </div>
@@ -235,7 +242,7 @@ const TerminalHistoryItem = memo(function TerminalHistoryItem({ item, homePath, 
   );
 });
 
-import { AppMenuConfig, ContextMenuConfig } from '../../types';
+import { AppMenuConfig, ContextMenuConfig } from '@/types';
 
 export const terminalContextMenuConfig: ContextMenuConfig = {
   items: [

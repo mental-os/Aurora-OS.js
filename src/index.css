@@ -14,6 +14,13 @@
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.95 0.0058 264.53);
   --secondary-foreground: #030213;
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+
+  /* Terminal UI Specifics */
+  --terminal-border: 0 0 0 2px black, 0 0 0 4px white;
+  --terminal-shadow: 12px 12px 0 0 rgba(0, 0, 0, 0.5);
+
   --muted: #ececf0;
   --muted-foreground: #717182;
   --accent: #e9ebef;
@@ -195,9 +202,23 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  /* Terminal Card Utility */
+  .terminal-card {
+    background-color: black;
+    box-shadow: var(--terminal-border), var(--terminal-shadow);
+    border: 1px solid white; /* Fallback / Primary Stroke */
   }
+
+  body {
+    @apply bg-background text-foreground select-none;
+  }
+}
+
+/* Re-enable selection for inputs and text areas */
+input,
+textarea,
+[contenteditable="true"] {
+  @apply select-text;
 }
 
 /* Global Selection Style - Outside layer for max specificity */

@@ -1,6 +1,5 @@
 import { ReactNode, createElement } from 'react';
 import { TerminalCommand } from '../types';
-import { FileIcon } from '../../../components/ui/FileIcon';
 
 // We need a helper to render the FileIcon since we can't use hooks inside execute directly if it's not a component
 // But execute returns ReactNodes, so we can return a component structure.
@@ -40,9 +39,7 @@ export const ls: TerminalCommand = {
                         const owner = node.owner || 'root';
                         const group = node.group || (node.owner === 'root' ? 'root' : 'users'); // Fallback logic
                         const size = node.size?.toString().padStart(6) || '     0';
-                        // ANSI color for directories
-                        // Note: React might not render ANSI codes directly, Terminal.tsx handles mostly strings. 
-                        // But we return ReactNode[]. We can return spans.
+                        
                         const nameNode = node.type === 'directory'
                             ? createElement('span', { className: 'text-blue-400 font-bold' }, node.name)
                             : node.name;
@@ -54,27 +51,22 @@ export const ls: TerminalCommand = {
                     });
                     allOutputs.push(...lines);
                 } else {
-                    // Grid view
-                    // We need a wrapper component to access context or just use default colors
-                    // For now, we return a simple grid. The original used FileIcon.
-                    // We can import FileIcon.
-
-                    const grid = createElement('div', { key: lsPath, className: 'flex flex-wrap gap-x-4 gap-y-1' },
-                        contents.map(node => (
-                            createElement('div', { key: node.id, className: 'flex items-center gap-2' },
-                                createElement('div', { className: 'w-4 h-4 shrink-0 inline-flex items-center justify-center' },
-                                    createElement(FileIcon, {
-                                        name: node.name,
-                                        type: node.type,
-                                        accentColor: '#60a5fa', // Default blue, ideally passed from context
-                                        isEmpty: node.children?.length === 0
-                                    })
-                                ),
-                                createElement('span', { className: node.type === 'directory' ? 'font-bold text-blue-400' : '' }, node.name)
-                            )
-                        ))
+                    // Simplified Text View (Linux style)
+                    // We render a flex container with items that wrap
+                    const items = contents.map(node => {
+                         return createElement(
+                             'span', 
+                             {  
+                                 key: node.id,
+                                 className: node.type === 'directory' ? 'text-blue-400 font-bold mr-4' : 'mr-4' 
+                             }, 
+                             node.name
+                         );
+                    });
+                    
+                    allOutputs.push(
+                        createElement('div', { key: lsPath, className: 'flex flex-wrap' }, items)
                     );
-                    allOutputs.push(grid);
                 }
             } else {
                 // Determine if it's a permission error or not found
@@ -91,3 +83,4 @@ export const ls: TerminalCommand = {
         return { output: allOutputs, error };
     },
 };
+

@@ -1,6 +1,6 @@
 //Lets slowly move towards alias paths (@) for imports
 import { AppTemplate } from "@/components/apps/AppTemplate";
-import { Inbox, Trash2, Archive, Star, Search, Reply, Forward, Paperclip, Download, Eye, EyeOff, LogOut, RotateCcw } from "lucide-react";
+import { Inbox, Trash2, Archive, Star, Search, Reply, Forward, Paperclip, Download, Eye, EyeOff, LogOut, RotateCcw, ChevronLeft } from "lucide-react";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useAppContext } from "@/components/AppContext";
 import { useSessionStorage } from "@/hooks/useSessionStorage.ts";
@@ -124,6 +124,7 @@ export function Mail({ owner }: { owner?: string }) {
   const [authLoading, setAuthLoading] = useState(false);
 
   // Soft Memory (UI State)
+  // Soft Memory (UI State)
   const [activeMailbox, setActiveMailbox] = useSessionStorage(
     "mail-active-mailbox",
     "inbox",
@@ -179,15 +180,11 @@ export function Mail({ owner }: { owner?: string }) {
     // 1. Fetch from Mail Service (Cloud)
     const emails = MailService.getEmails(sessionUser);
     setStoredEmails(emails);
-    if (emails.length > 0 && !selectedEmailId) {
-       setSelectedEmailId(emails[0].id);
-    }
-    
     // Legacy support: We could merge with local inbox.json if we wanted, 
     // but MailService is the Single Source of Truth now.
     // We can ignore inbox.json reading here.
 
-  }, [sessionUser, selectedEmailId]);
+  }, [sessionUser]);
 
   // Load emails when user changes or mounts
   useEffect(() => {
@@ -588,170 +585,166 @@ export function Mail({ owner }: { owner?: string }) {
   };
 
   const content = ({ contentWidth }: { contentWidth: number }) => {
-    const isCompact = contentWidth < 400;
-    const emailListWidth = isCompact
-      ? 80
-      : Math.min(360, Math.floor(contentWidth * 0.35));
+    const isCompact = contentWidth < 600;
+    const showList = !isCompact || !selectedEmail;
+    const showDetail = !isCompact || selectedEmail;
 
     return (
-      <div className="flex h-full min-w-0">
+      <div className="flex h-full min-w-0 relative">
         {/* Email List */}
-        <div
-          className="border-r border-white/10 overflow-y-auto flex flex-col shrink-0"
-          style={{ width: `${emailListWidth}px` }}
-        >
-          {/* Search Bar */}
-          <div className={cn("p-2", isCompact && "flex justify-center")}>
-            {!isCompact ? (
-              <GlassInput
-                placeholder={t("mail.search.placeholder")}
-                icon={<Search className="w-4 h-4" />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-black/20"
-              />
-            ) : (
-              <button className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors">
-                <Search className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-
-          {/* Email List Items */}
-          <div className="space-y-1 px-1 flex-1">
-            {filteredEmails.length === 0 ? (
-              <div className="text-center text-white/40 text-sm py-8">
-                {searchQuery
-                  ? t("mail.empty.noEmailsFound")
-                  : t("mail.empty.noEmails")}
+        {showList && (
+            <div
+                className={cn(
+                    "border-r border-white/10 overflow-y-auto flex flex-col shrink-0",
+                    isCompact ? "w-full absolute inset-0 z-20" : "w-64 md:w-72"
+                )}
+            >
+              {/* Search Bar */}
+              <div className="p-2">
+                  <GlassInput
+                    placeholder={t("mail.search.placeholder")}
+                    icon={<Search className="w-4 h-4" />}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-black/20"
+                  />
               </div>
-            ) : (
-              filteredEmails.map((email) => (
-                <div
-                  key={email.id}
-                  onClick={() => handleSelectEmail(email.id)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      handleSelectEmail(email.id);
-                    }
-                  }}
-                  className={cn(
-                    "w-full flex items-start gap-2 p-3 rounded-lg transition-colors text-left",
-                    selectedEmailId === email.id
-                      ? "bg-white/10"
-                      : "hover:bg-white/5",
-                    isCompact && "justify-center px-2"
-                  )}
-                  title={isCompact ? email.subject : undefined}
-                >
-                  <div className="relative mt-1 shrink-0">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleStar(email.id, e);
-                      }}
-                      className="transition-transform active:scale-95"
-                    >
-                      <Star
-                        className={cn(
-                          "w-4 h-4 transition-colors",
-                          email.starred
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-white/30 hover:text-white/60"
-                        )}
-                      />
-                    </button>
-                    {isCompact && !email.read && (
-                      <div
-                        className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border-2 border-[#1E1E1E] pointer-events-none"
-                        style={{ backgroundColor: accentColor }}
-                      />
-                    )}
-                  </div>
 
-                  {!isCompact && (
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <span
-                          className={cn(
-                            "text-sm truncate",
-                            email.read
-                              ? "text-white/70"
-                              : "text-white font-semibold"
-                          )}
+              {/* Email List Items */}
+              <div className="space-y-1 px-1 flex-1">
+                {filteredEmails.length === 0 ? (
+                  <div className="text-center text-white/40 text-sm py-8">
+                    {searchQuery
+                      ? t("mail.empty.noEmailsFound")
+                      : t("mail.empty.noEmails")}
+                  </div>
+                ) : (
+                  filteredEmails.map((email) => (
+                    <div
+                      key={email.id}
+                      onClick={() => handleSelectEmail(email.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          handleSelectEmail(email.id);
+                        }
+                      }}
+                      className={cn(
+                        "w-full flex items-start gap-2 p-3 rounded-lg transition-colors text-left",
+                        selectedEmailId === email.id
+                          ? "bg-white/10"
+                          : "hover:bg-white/5"
+                      )}
+                    >
+                      <div className="relative mt-1 shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleStar(email.id, e);
+                          }}
+                          className="transition-transform active:scale-95"
                         >
-                          {email.from}
-                        </span>
-                        <span className="text-xs text-white/40 shrink-0">
-                          {formatTime(email.timestamp)}
-                        </span>
+                          <Star
+                            className={cn(
+                              "w-4 h-4 transition-colors",
+                              email.starred
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-white/30 hover:text-white/60"
+                            )}
+                          />
+                        </button>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <div
-                          className={cn(
-                            "text-sm truncate flex-1",
-                            email.read
-                              ? "text-white/50"
-                              : "text-white/80 font-medium"
-                          )}
-                        >
-                          {email.subject}
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span
+                              className={cn(
+                                "text-sm truncate",
+                                email.read
+                                  ? "text-white/70"
+                                  : "text-white font-semibold"
+                              )}
+                            >
+                              {email.from}
+                            </span>
+                            <span className="text-xs text-white/40 shrink-0">
+                              {formatTime(email.timestamp)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={cn(
+                                "text-sm truncate flex-1",
+                                email.read
+                                  ? "text-white/50"
+                                  : "text-white/80 font-medium"
+                              )}
+                            >
+                              {email.subject}
+                            </div>
+                            {email.attachments && email.attachments.length > 0 && (
+                              <Paperclip className="w-3.5 h-3.5 text-white/40 shrink-0" />
+                            )}
+                          </div>
+                          <div className="text-xs text-white/40 truncate">
+                            {stripHtml(email.body).substring(0, 60)}...
+                          </div>
                         </div>
-                        {email.attachments && email.attachments.length > 0 && (
-                          <Paperclip className="w-3.5 h-3.5 text-white/40 shrink-0" />
-                        )}
-                      </div>
-                      <div className="text-xs text-white/40 truncate">
-                        {stripHtml(email.body).substring(0, 60)}...
-                      </div>
                     </div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+                  ))
+                )}
+              </div>
+            </div>
+        )}
 
         {/* Email Viewer */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {selectedEmail ? (
-            <>
-              {/* Email Header */}
-              <div className="border-b border-white/10 p-4 shrink-0 bg-white/5 backdrop-blur-md">
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-white font-semibold text-lg mb-1 wrap-break-word">
-                      {selectedEmail.subject}
-                    </h2>
-                    <div className="text-sm text-white/70">
-                      <span className="font-medium">{selectedEmail.from}</span>
-                      <span className="text-white/40">
-                        {" "}
-                        &lt;{selectedEmail.fromEmail}&gt;
-                      </span>
+        {showDetail && (
+            <div className={cn("flex-1 flex flex-col min-w-0 bg-transparent", isCompact && "absolute inset-0 z-10 w-full")}>
+              {selectedEmail ? (
+                <>
+                  {/* Email Header */}
+                  <div className="border-b border-white/10 p-4 shrink-0 bg-white/5 backdrop-blur-md">
+                    <div className="flex items-start gap-3 mb-3">
+                        {isCompact && (
+                            <button 
+                                onClick={() => setSelectedEmailId(null)}
+                                className="mt-1 p-1 -ml-2 rounded-full hover:bg-white/10 transition-colors text-white/70"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                        )}
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-white font-semibold text-lg mb-1 wrap-break-word flex items-start justify-between gap-4">
+                          {selectedEmail.subject}
+                             <button
+                                onClick={() =>
+                                  handleToggleStar(selectedEmail.id, {} as React.MouseEvent)
+                                }
+                                className="shrink-0 pt-1"
+                              >
+                                <Star
+                                  className={cn(
+                                    "w-5 h-5 transition-colors",
+                                    selectedEmail.starred
+                                      ? "fill-yellow-400 text-yellow-400"
+                                      : "text-white/30 hover:text-white/60"
+                                  )}
+                                />
+                              </button>
+                        </h2>
+                        <div className="text-sm text-white/70">
+                          <span className="font-medium">{selectedEmail.from}</span>
+                          <span className="text-white/40">
+                            {" "}
+                            &lt;{selectedEmail.fromEmail}&gt;
+                          </span>
+                        </div>
+                        <div className="text-xs text-white/40 mt-1">
+                          {selectedEmail.timestamp.toLocaleString()}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-white/40 mt-1">
-                      {selectedEmail.timestamp.toLocaleString()}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() =>
-                      handleToggleStar(selectedEmail.id, {} as React.MouseEvent)
-                    }
-                    className="shrink-0"
-                  >
-                    <Star
-                      className={cn(
-                        "w-5 h-5 transition-colors",
-                        selectedEmail.starred
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-white/30 hover:text-white/60"
-                      )}
-                    />
-                  </button>
-                </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 flex-wrap">
@@ -898,6 +891,7 @@ export function Mail({ owner }: { owner?: string }) {
             </div>
           )}
         </div>
+        )}
       </div>
     );
   };
@@ -937,7 +931,7 @@ export function Mail({ owner }: { owner?: string }) {
       content={content}
       activeItem={activeMailbox}
       onItemClick={(id) => setActiveMailbox(id)}
-      minContentWidth={450}
+      sidebarCollapseBreakpoint={500}
     />
   );
 }

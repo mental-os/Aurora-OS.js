@@ -51,7 +51,7 @@ export function useSessionStorage<T>(key: string, initialState: T, owner?: strin
             console.warn(`Failed to save session state ${key}:`, e);
         }
     }, [state, storageKey, activeUser, key, initialState]);
-
+    
     // Wrapper for setState
     const setState = useCallback((value: T | ((prev: T) => T)) => {
         setStateInternal(prev => {
