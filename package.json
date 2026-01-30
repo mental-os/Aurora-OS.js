@@ -91,7 +91,7 @@
             "recharts": "^3.7.0",
             "remark-gfm": "^4.0.1",
             "sonner": "^2.0.3",
-            "systeminformation": "^5.30.5",
+            "systeminformation": "^5.30.6",
             "tailwind-merge": "*",
             "vaul": "^1.1.2"
       },
