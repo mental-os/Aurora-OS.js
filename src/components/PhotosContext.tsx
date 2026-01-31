@@ -144,7 +144,7 @@ export function PhotosProvider({ children, owner }: { children: React.ReactNode,
 
         const photos = scanRecursive(picturesPath, pathPrefix);
         setTimeout(() => setLibraryPhotos(photos), 0);
-    }, [isPhotosOpen, activeUser, fileSystem, favoriteIds, resolvePath, getNodeAtPath, listDirectory]);
+    }, [isPhotosOpen, activeUser, fileSystem, favoriteIds, resolvePath, getNodeAtPath, listDirectory, t]);
 
     const favorites = libraryPhotos.filter(p => favoriteIds.includes(p.id));
 
@@ -197,7 +197,7 @@ export function PhotosProvider({ children, owner }: { children: React.ReactNode,
             setStoredRecentPhotos(prev => prev.filter(p => p.path !== path));
         }
         return null;
-    }, [getNodeAtPath, activeUser, readFile, favoriteIds, addToRecent, setActiveCategory]);
+    }, [getNodeAtPath, activeUser, readFile, favoriteIds, addToRecent, setActiveCategory, t]);
 
     return (
         <PhotosContext.Provider value={{

@@ -110,9 +110,12 @@ trigger: always_on
 
 9.  **Build & Distribution (Electron)**:
     - **Config**: Enhanced `package.json` build config (`NSIS` for Win, `DMG` for Mac, `AppImage` for Linux).
+    - **Branding**: Derived from `productName` ("Aurora OS.js"), `copyright`, and `nsis.menuCategory` ("Dope Pixels").
+    - **Hardening**:
+      - **Electron Fuses**: Disabled `runAsNode`, enforced `enableEmbeddedAsarIntegrityValidation` and `onlyLoadAppFromAsar`.
+      - **Source Map**: Explicitly disabled for production (`tsconfig.electron.json`) to prevent code reversal.
+      - **DevTools**: Production lockout in `main.ts` (shortcuts blocked, auto-close on open).
     - **Signing**: Explicitly disabled (`identity: null`) for first release; Gatekeeper warnings expected.
-    - **Assets**: Requires `public/icon.png` (Linux), `.ico` (Win), and `.icns` (Mac).
-    - **Security**: `asar: true` enabled to package source code. `contextIsolation: true` enforced.
 
 10. **Display & Input Constraints**:
     - **Resolution**:
@@ -182,3 +185,4 @@ trigger: always_on
 - `search_Aurora_OS_js_code(query)`: Search code via GitHub API.
 
 </mcp_usage>
+

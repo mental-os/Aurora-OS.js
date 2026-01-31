@@ -256,7 +256,7 @@ export function Messages({ owner, initialPartner }: { owner?: string; initialPar
 
             lastCheckRef.current = maxTimestamp;
         }
-    }, [sessionUser, selectedPartner, effectiveUser]);
+    }, [sessionUser, selectedPartner, effectiveUser, t]);
 
     // Initial Sync
     useEffect(() => {
