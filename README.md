@@ -141,7 +141,7 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
 ### Community
 
-- Discord (soon)
+- [Discord](https://discord.gg/G4WktdX7eE)
 - [mental.os() Universe](https://instagram.com/mental.os)
 - [CONTRIBUTORS.md](CONTRIBUTORS.md)
 

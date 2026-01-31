@@ -16,5 +16,5 @@ Follow this workflow after adding or modifying UI components to ensure full inte
    // turbo
    - Run `node .scripts/check-i18n.js` to identify missing keys in non-English locale files (`es.ts`, `fr.ts`, etc.) compared to `en.ts`.
 6. **Localization Sync**:
-   - Update all missing keys in the respective locale files. If a translation is not yet available, use the English value as a temporary fallback, but ensure the key exists to satisfy the synchronization check.
+   - Update all missing keys in the respective locale files. If the English value is present as a temporary fallback make sure to translate it to the coresponding locale.
 7. **Final Verification**: Ensure no lint errors or missing translation warnings appear in the console during runtime.
