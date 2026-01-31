@@ -34,7 +34,7 @@ trigger: always_on
 2.  **User System**:
     - **Ids**: `root` (0), `guest` (1001), `activeUser` (physical), `currentUser` (logical).
     - **Auth**: `useAuth()` hook. Logic synced to `/etc/passwd` & `/etc/group`.
-    - **Persistence**: `useAppStorage` uses `activeUser` to scope keys (e.g., `aurora-os-settings-user`).
+    - **Persistent**: `useAppStorage` uses `activeUser` to scope keys (e.g., `aurora-os-settings-user`).
     - **Home**: `/home/<user>` created via `createUserHome()`.
 
 3.  **App Engine**:
@@ -42,7 +42,10 @@ trigger: always_on
     - **Runtime**: Apps render in `WindowContext`.
     - **ContextMenu**: Can be global (registry `contextMenu`) or localized (wrapping specific UI areas with `ContextMenuTrigger` in the app component).
     - **Persistence**: Per-app storage via `useAppStorage` (key: `app-user`) or manual `localStorage` with `getAppStateKey`.
-    - **Installer**: `useAppInstaller` hook handles install/uninstall/restore with permission checks.
+    - **Installer**: `useAppInstaller` hook.
+      - **Gates**: Requires **Active Network Connection** for installs. Checks active user permissions (`/usr/bin` write access).
+      - **Simulation**: Phased progress. **0-50% (Download)**: Speed depends on Network Bandwidth. **50-100% (Install)**: Jitter simulation.
+      - **Controls**: Supports cancelling downloads and viewing real-time speed.
     - **Launch Gates**: `useWindowManager` prevents app launch if `currentRamUsage + app.ramUsage > totalMemoryGB` (Default: 2GB).
     - **Config**: Simulation apps (Mail, Messages) use `~/.Config/<app>.json` for encrypted credentials, enabling "hacking" gameplay mechanisms.
 
@@ -125,6 +128,14 @@ trigger: always_on
     - **PWA**: `public/manifest.json` enforces `standalone` and `landscape` for Chromium OS/Tablets.
     - **ScreenGuard**: React component (`src/components/ui/ScreenGuard.tsx`) blocks execution on unsupported viewports (Phones/Portrait).
 
+11. **Network System**:
+    - **Context**: `NetworkContext` (`src/components/NetworkContext.tsx`) manages global network state (WiFi on/off, Available/Current Networks).
+    - **Simulation**:
+      - **Historical Speeds**: Speed tiers based on 802.11 eras: `OPEN` (<1Mbps) < `WEP` (1-5Mbps) < `WPA` (5-15Mbps) < `WPA2` (20-150Mbps) < `WPA3` (150-600+Mbps).
+      - **Signal Strength**: Realized speed = `MaxSpeed * (SignalStrength / 100)`. Strength fluctuates dynamically.
+    - **Persistence**: Managed via simulated Scan/Connect logic, but network list regenerates on reload (stateless simulation).
+    - **UI**: `InternetApplet` (Tray), `NetworkSettings` (App), and `AppStore` (Download Speed) all consume this context.
+
 </architecture_mechanics>
 
 <critical_rules>
@@ -158,6 +169,8 @@ trigger: always_on
 | `src/hooks/useAppInstaller.ts`         | **Installer**      | Hook for app install/uninstall/restore logic.            |
 | `src/components/apps/AppStore/`        | **App Store**      | App Store components (AppCard, etc).                     |
 | `src/hooks/useWindowManager.ts`        | **Window Manager** | Handles window state and memory usage gates.             |
+| `src/components/NetworkContext.tsx`    | **Network**        | Global network state and simulation logic.               |
+| `src/test/`                            | **Tests**          | Unit tests for utilities and logic.                      |
 
 </codebase_map>
 
@@ -185,4 +198,3 @@ trigger: always_on
 - `search_Aurora_OS_js_code(query)`: Search code via GitHub API.
 
 </mcp_usage>
-

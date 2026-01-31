@@ -2,7 +2,6 @@ import pkg from '../../package.json';
 import { getCoreApps } from '../config/appRegistry';
 
 /**
-import startupSound from '../assets/sounds/Runway Electric.mp3';
 import startupSound2 from '../assets/sounds/Lo-Fi Girl.mp3';
 import photo1 from '../assets/images/image-1.png';
 import photo2 from '../assets/images/image-2.jpg';
@@ -10,8 +9,10 @@ import photo3 from '../assets/images/image-3.jpg';
 import photo4 from '../assets/images/wallpaper-orbit.png';
 import photo5 from '../assets/images/wallpaper-dunes.png';
 import photo6 from '../assets/images/wallpaper-mesh.png';
-import photo7 from '../assets/images/background.png';
 */
+import startupSound from '../assets/sounds/Runway Electric.mp3';
+import photo7 from '../assets/images/background.png';
+
 
 export interface FileNode {
     id: string;
@@ -202,20 +203,20 @@ export function createUserHome(username: string, permissions: string = 'drwxr-x-
 
     if (withMockFiles) {
 
-        /**
 
-        // Populate Desktop
-        const desktop = home.children.find((c: any) => c.name === 'Desktop');
-        if (desktop) {
-            desktop.children.push({ name: 'TEST.txt', type: 'file', content: `NAME="${pkg.build.productName}"\nVERSION="${pkg.version}"\nID=${pkg.name}\nPRETTY_NAME="${pkg.build.productName}"`, size: 60, owner: username, permissions: '-rw-r--r--' });
-        }
+
+        //  Populate Desktop
+        //  const desktop = home.children.find((c: any) => c.name === 'Desktop');
+        //  if (desktop) {
+        //      desktop.children.push({ name: 'TEST.txt', type: 'file', content: `NAME="${pkg.build.productName}"\nVERSION="${pkg.version}"\nID=${pkg.name}\nPRETTY_NAME="${pkg.build.productName}"`, size: 60, owner: username, permissions: '-rw-r--r--' });
+        //  }
 
         // Populate Documents
         const documents = home.children.find((c: any) => c.name === 'Documents');
         if (documents) {
             documents.children.push(
                 { name: 'WELCOME.md', type: 'file', content: '# Welcome to Aurora OS\n\nYou are now using the most advanced web-based operating system simulation.\n\n## Getting Started\n1. Use the **Terminal** to explore the system at a deeper level.\n2. Check **Settings** to customize your experience.\n3. Explore `/var/log` if you are curious about system events.\n\n## Tips\n- Use `Ctrl+C` to interrupt running commands.\n- Use `sudo` for administrative tasks (root password: admin).\n', size: 300, owner: username, permissions: '-rw-r--r--' },
-                { name: 'PROJECT_NOTES.txt', type: 'file', content: 'TODO:\n- Fix the reality anchor stability glitch.\n- Investigate why /tmp is accumulating strange temp files.\n- Update the firewall rules.\n', size: 120, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'PROJECT_NOTES.txt', type: 'file', content: 'TODO:\n- Fix the reality anchor stability glitch.\n- Investigate why /tmp is accumulating strange temp files.\n- Update the firewall rules.\n', size: 120, owner: username, permissions: '-rw-r--r--' },
                 { name: 'Notes', type: 'directory', children: [], owner: username, permissions: 'drwxr-xr-x' }
             );
         }
@@ -224,7 +225,7 @@ export function createUserHome(username: string, permissions: string = 'drwxr-x-
         const music = home.children.find((c: any) => c.name === 'Music');
         if (music) {
             music.children.push(
-                //{ name: 'Runway Electric.mp3', type: 'file', content: startupSound, size: 2048, owner: username, permissions: '-rw-r--r--' },
+                { name: 'Runway Electric.mp3', type: 'file', content: startupSound, size: 2048, owner: username, permissions: '-rw-r--r--' },
                 //{ name: 'Lo-Fi Girl.mp3', type: 'file', content: startupSound2, size: 2048, owner: username, permissions: '-rw-r--r--' }
             );
         }
@@ -233,17 +234,16 @@ export function createUserHome(username: string, permissions: string = 'drwxr-x-
         const pictures = home.children.find((c: any) => c.name === 'Pictures');
         if (pictures) {
             pictures.children.push(
-                { name: 'Waterfall.png', type: 'file', content: photo1, size: 2048000, owner: username, permissions: '-rw-r--r--' },
-                { name: 'Mountain.jpg', type: 'file', content: photo2, size: 2048000, owner: username, permissions: '-rw-r--r--' },
-                { name: 'Skyline.jpg', type: 'file', content: photo3, size: 5242880, owner: username, permissions: '-rw-r--r--' },
-                { name: 'Abstract Orbit.png', type: 'file', content: photo4, size: 567414, owner: username, permissions: '-rw-r--r--' },
-                { name: 'Desert Dunes.png', type: 'file', content: photo5, size: 640422, owner: username, permissions: '-rw-r--r--' },
-                { name: 'Mesh Gradient.png', type: 'file', content: photo6, size: 762581, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Waterfall.png', type: 'file', content: photo1, size: 2048000, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Mountain.jpg', type: 'file', content: photo2, size: 2048000, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Skyline.jpg', type: 'file', content: photo3, size: 5242880, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Abstract Orbit.png', type: 'file', content: photo4, size: 567414, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Desert Dunes.png', type: 'file', content: photo5, size: 640422, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Mesh Gradient.png', type: 'file', content: photo6, size: 762581, owner: username, permissions: '-rw-r--r--' },
                 { name: 'System Background.png', type: 'file', content: photo7, size: 5071833, owner: username, permissions: '-rw-r--r--' }
             );
         }
 
-        */
     }
 
     return home;

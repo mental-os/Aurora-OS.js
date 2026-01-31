@@ -939,6 +939,7 @@ export const pt: TranslationDict = {
       "keysCount": "{{count}} chaves",
       "localStorageKeys": "Chaves do Local Storage"
     },
+
     "filesystem": {
       "title": "Debugger do sistema de arquivos"
     },
@@ -1033,6 +1034,37 @@ export const pt: TranslationDict = {
       "disableGradientsDescription": "Usar cores sólidas em vez de gradientes nos ícones",
       "gpuTitle": "Usar aceleração gráfica",
       "gpuDescription": "Usar aceleração de hardware quando disponível (após reinício)"
+    },
+    "network": {
+      "wifiTitle": "Wi-Fi",
+      "wifiConnected": "Conectado a {{network}}",
+      "wifiDisabled": "Wi-Fi desligado",
+      "bluetoothTitle": "Bluetooth",
+      "bluetoothConnected": "Conectado a {{device}}",
+      "bluetoothDisabled": "Bluetooth desligado",
+      "wifiNetworks": "Redes disponíveis",
+      "scanning": "Procurando...",
+      "enterPassword": "Introduzir senha",
+      "passwordPlaceholder": "Senha",
+      "connect": "Conectar",
+      "disconnect": "Desconectar",
+      "configurationMode": "Modo de configuração",
+      "automatic": "Automático (DHCP)",
+      "manual": "Manual",
+      "autoConfigTitle": "Configuração automática",
+      "manualConfigTitle": "Configuração manual",
+      "ipAddress": "Endereço IP",
+      "subnetMask": "Máscara de sub-rede",
+      "gateway": "Gateway",
+      "dns": "Servidor DNS",
+      "validateConfig": "Validar configuração",
+      "invalidIP": "Endereço IP inválido",
+      "invalidGateway": "Gateway inválido",
+      "invalidSubnetMask": "Máscara de sub-rede inválida",
+      "invalidDNS": "Servidor DNS inválido",
+      "gatewayNotInSubnet": "O gateway não está na mesma sub-rede que o endereço IP",
+      "configSaved": "Configuração de rede salva com sucesso",
+      "dhcpAttributionProgress": "Recuperando um endereço IP via DHCP"
     },
     "placeholders": {
       "displaysTitle": "Configurações de exibição",

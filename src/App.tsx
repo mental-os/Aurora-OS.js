@@ -99,16 +99,19 @@ function AppContent() {
 }
 
 import { ScreenGuard } from '@/components/ui/ScreenGuard';
+import { NetworkProvider } from '@/components/NetworkContext';
 
 export default function App() {
   return (
     <ScreenGuard>
       <AppProvider>
-        <FileSystemProvider>
-          <GameRoot>
-            <AppContent />
-          </GameRoot>
-        </FileSystemProvider>
+        <NetworkProvider>
+          <FileSystemProvider>
+            <GameRoot>
+              <AppContent />
+            </GameRoot>
+          </FileSystemProvider>
+        </NetworkProvider>
       </AppProvider>
     </ScreenGuard>
   );

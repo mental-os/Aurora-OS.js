@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSafeImageUrl, isValidImageUrl } from './urlUtils';
+import { getSafeImageUrl, isValidImageUrl } from '../utils/urlUtils';
 
 describe('getSafeImageUrl', () => {
   it('should return sanitized URL for valid http/https', () => {

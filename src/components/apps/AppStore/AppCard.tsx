@@ -3,10 +3,11 @@ import { type AppMetadata } from '@/config/appRegistry';
 import { Button } from '@/components/ui/button';
 import { AppIcon } from '@/components/ui/AppIcon';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Download, Trash2, ExternalLink, RefreshCw } from 'lucide-react';
+import { Download, Trash2, ExternalLink, RefreshCw, X } from 'lucide-react';
 import { useI18n } from '@/i18n/index';
 import { useAppContext } from '@/components/AppContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useNetworkContext } from '@/components/NetworkContext';
 
 interface AppCardProps {
     app: AppMetadata;
@@ -16,6 +17,7 @@ interface AppCardProps {
     isBroken?: boolean; // New prop for restore
     onInstall: (appId: string, size?: number) => void;
     onUninstall: (appId: string) => void;
+    onCancel?: (appId: string) => void;
     onRestore?: (appId: string) => void; // New callback
     onOpenApp?: (type: string, data?: any, owner?: string) => void;
 }
@@ -28,14 +30,20 @@ export function AppCard({
     isBroken = false,
     onInstall, 
     onUninstall,
+    onCancel,
     onRestore,
     onOpenApp
 }: AppCardProps) {
     const { t } = useI18n();
     const { accentColor } = useAppContext();
     const { getBackgroundColor, blurStyle } = useThemeColors();
+    const { currentNetwork, availableNetworks } = useNetworkContext();
     const [showUninstallConfirm, setShowUninstallConfirm] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+
+    const activeConnection = availableNetworks.find(n => n.ssid === currentNetwork);
+    // Speed in MB/s (approx). If no connection, 0.
+    const speedMBps = activeConnection ? (activeConnection.speed / 8).toFixed(1) : '0.0';
 
     const displayName = app.nameKey ? t(app.nameKey) : app.name;
     const displayDescription = app.descriptionKey ? t(app.descriptionKey) : app.description;
@@ -89,19 +97,30 @@ export function AppCard({
             {!app.isCore && (
                 <CardFooter className="p-3 pt-0 mt-auto">
                     {isInstalling ? (
-                        // Progress Bar
-                        <div className="w-full h-7 bg-white/5 rounded-md overflow-hidden relative border border-white/10">
-                            <div
-                                className="h-full transition-all duration-200 ease-out"
-                                style={{
-                                    width: `${progress}%`,
-                                    backgroundColor: accentColor,
-                                    opacity: 0.9
-                                }}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
-                                {progress}%
+                        // Progress Bar Container with Cancel Button
+                        <div className="flex items-center gap-2 w-full">
+                            <div className="flex-1 h-7 bg-white/5 rounded-md overflow-hidden relative border border-white/10 group">
+                                <div
+                                    className="h-full transition-all duration-200 ease-out"
+                                    style={{
+                                        width: `${progress}%`,
+                                        backgroundColor: accentColor,
+                                        opacity: 0.9
+                                    }}
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
+                                    {progress < 50 ? `${speedMBps} MB/s` : t('appStore.installing')}
+                                </div>
                             </div>
+                            <Button
+                                onClick={() => onCancel?.(app.id)}
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 shrink-0 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all rounded-md"
+                                title={t('appStore.cancel')}
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </Button>
                         </div>
                     ) : isInstalled ? (
                          isBroken ? (

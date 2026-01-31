@@ -51,6 +51,23 @@ interface AppContextType {
   // User Context Switching
   switchUser: (username: string) => void;
   activeUser: string;
+
+  // Network
+  wifiEnabled: boolean;
+  setWifiEnabled: (enabled: boolean) => void;
+
+  wifiNetwork: string;
+  setWifiNetwork: (network: string) => void;
+  networkConfigMode: 'auto' | 'manual';
+  setNetworkConfigMode: (mode: 'auto' | 'manual') => void;
+  networkIP: string;
+  setNetworkIP: (ip: string) => void;
+  networkGateway: string;
+  setNetworkGateway: (gateway: string) => void;
+  networkSubnetMask: string;
+  setNetworkSubnetMask: (mask: string) => void;
+  networkDNS: string;
+  setNetworkDNS: (dns: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -83,6 +100,14 @@ export interface SystemConfig {
   reduceMotion: boolean;
   disableShadows: boolean;
   disableGradients: boolean;
+  wifiEnabled: boolean;
+
+  wifiNetwork: string;
+  networkConfigMode: 'auto' | 'manual';
+  networkIP: string;
+  networkGateway: string;
+  networkSubnetMask: string;
+  networkDNS: string;
   gpuEnabled: boolean;
 }
 
@@ -135,6 +160,14 @@ const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   reduceMotion: false,
   disableShadows: false,
   disableGradients: false,
+  wifiEnabled: false,
+
+  wifiNetwork: 'FreeWifi-Secure',
+  networkConfigMode: 'auto',
+  networkIP: '192.168.1.100',
+  networkGateway: '192.168.1.1',
+  networkSubnetMask: '255.255.255.0',
+  networkDNS: '8.8.8.8',
   gpuEnabled: true,
 };
 
@@ -258,7 +291,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Destructure for easy access (User preferences take precedence/contain the effective value)
   const { accentColor, themeMode, wallpaper, blurEnabled, reduceMotion, disableShadows, disableGradients, gpuEnabled } = preferences;
-  const { devMode, exposeRoot, locale, onboardingComplete, totalMemoryGB } = systemConfig;
+  const { devMode, exposeRoot, locale, onboardingComplete, totalMemoryGB, wifiEnabled, wifiNetwork, networkConfigMode, networkIP, networkGateway, networkSubnetMask, networkDNS } = systemConfig;
 
   // Function to switch context to a different user
   const switchUser = useCallback((username: string) => {
@@ -321,6 +354,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setTotalMemoryGB = (gb: number) => setSystemConfig(s => ({ ...s, totalMemoryGB: gb }));
   const setLocale = useCallback((newLocale: AppLocale) => setSystemConfig(s => ({ ...s, locale: newLocale })), []);
   const setOnboardingComplete = (complete: boolean) => setSystemConfig(s => ({ ...s, onboardingComplete: complete }));
+  const setWifiEnabled = (enabled: boolean) => setSystemConfig(s => ({ ...s, wifiEnabled: enabled }));
+
+  const setWifiNetwork = (network: string) => setSystemConfig(s => ({ ...s, wifiNetwork: network }));
+
+  const setNetworkConfigMode = (mode: 'auto' | 'manual') => setSystemConfig(s => ({ ...s, networkConfigMode: mode }));
+  const setNetworkIP = (ip: string) => setSystemConfig(s => ({ ...s, networkIP: ip }));
+  const setNetworkGateway = (gateway: string) => setSystemConfig(s => ({ ...s, networkGateway: gateway }));
+  const setNetworkSubnetMask = (mask: string) => setSystemConfig(s => ({ ...s, networkSubnetMask: mask }));
+  const setNetworkDNS = (dns: string) => setSystemConfig(s => ({ ...s, networkDNS: dns }));
 
   const resetSystemConfig = useCallback((overrides?: Partial<SystemConfig>) => {
     setSystemConfig({ ...DEFAULT_SYSTEM_CONFIG, ...overrides });
@@ -420,6 +462,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLocale,
       onboardingComplete,
       setOnboardingComplete,
+      wifiEnabled,
+      setWifiEnabled,
+      wifiNetwork,
+      setWifiNetwork,
+      networkConfigMode,
+      setNetworkConfigMode,
+      networkIP,
+      setNetworkIP,
+      networkGateway,
+      setNetworkGateway,
+      networkSubnetMask,
+      setNetworkSubnetMask,
+      networkDNS,
+      setNetworkDNS,
       resetSystemConfig,
       switchUser,
       activeUser,

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { calculateTotalRamUsage } from './resourceMonitor';
-import { getAppStateKey, getWindowKey } from './memory';
+import { calculateTotalRamUsage } from '../utils/resourceMonitor';
+import { getAppStateKey, getWindowKey } from '../utils/memory';
 
 // Mock APP_REGISTRY by mocking the module
 vi.mock('../config/appRegistry', () => ({

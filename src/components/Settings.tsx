@@ -12,6 +12,7 @@ import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useSessionStorage } from '@/hooks/useSessionStorage';
+import { NetworkSettings } from '@/components/NetworkSettings';
 import {
   Select,
   SelectContent,
@@ -112,6 +113,20 @@ export function Settings({ owner }: { owner?: string }) {
     setLocale,
     wallpaper,
     setWallpaper,
+    wifiEnabled,
+    setWifiEnabled,
+    wifiNetwork,
+
+    networkConfigMode,
+    setNetworkConfigMode,
+    networkIP,
+    setNetworkIP,
+    networkGateway,
+    setNetworkGateway,
+    networkSubnetMask,
+    setNetworkSubnetMask,
+    networkDNS,
+    setNetworkDNS,
     gpuEnabled,
     setGpuEnabled
   } = useAppContext();
@@ -548,16 +563,23 @@ export function Settings({ owner }: { owner?: string }) {
         )}
 
         {activeSection === 'network' && (
-          <div>
-            <h2 className="text-2xl text-white mb-6">{t('settings.sections.network')}</h2>
-            <div className="bg-black/20 rounded-xl border border-white/5">
-              <EmptyState
-                icon={Wifi}
-                title={t('settings.placeholders.networkTitle')}
-                description={t('settings.placeholders.networkDescription')}
-              />
-            </div>
-          </div>
+          <NetworkSettings
+            accentColor={accentColor}
+            wifiEnabled={wifiEnabled}
+            setWifiEnabled={setWifiEnabled}
+            wifiNetwork={wifiNetwork}
+
+            networkConfigMode={networkConfigMode}
+            setNetworkConfigMode={setNetworkConfigMode}
+            networkIP={networkIP}
+            setNetworkIP={setNetworkIP}
+            networkGateway={networkGateway}
+            setNetworkGateway={setNetworkGateway}
+            networkSubnetMask={networkSubnetMask}
+            setNetworkSubnetMask={setNetworkSubnetMask}
+            networkDNS={networkDNS}
+            setNetworkDNS={setNetworkDNS}
+          />
         )}
 
         {activeSection === 'security' && (

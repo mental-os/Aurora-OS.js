@@ -26,7 +26,7 @@ export function AppStore({ owner, onOpenApp }: AppStoreProps) {
     const [selectedCategory, setSelectedCategory] = useState<'all' | AppMetadata['category']>('all');
 
     // Use custom installer hook
-    const { installingApps, handleInstall, handleUninstall, isAppInstalled, isAppBroken, handleRestore } = useAppInstaller({ owner });
+    const { installingApps, handleInstall, handleUninstall, cancelInstall, isAppInstalled, isAppBroken, handleRestore } = useAppInstaller({ owner });
     const windowContext = useWindow();
 
     // Prevent window close if installing
@@ -142,6 +142,7 @@ export function AppStore({ owner, onOpenApp }: AppStoreProps) {
                                     progress={installingApps[app.id]}
                                     onInstall={handleInstall}
                                     onUninstall={handleUninstall}
+                                    onCancel={cancelInstall} // Passing cancelInstall
                                     onRestore={handleRestore}
                                     onOpenApp={onOpenApp}
                                 />

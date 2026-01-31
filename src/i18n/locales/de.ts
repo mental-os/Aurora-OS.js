@@ -939,6 +939,7 @@ export const de: TranslationDict = {
       "keysCount": "{{count}} Schlüssel",
       "localStorageKeys": "Local Storage Schlüssel"
     },
+
     "filesystem": {
       "title": "Dateisystem-Debugger"
     },
@@ -1033,6 +1034,37 @@ export const de: TranslationDict = {
       "disableGradientsDescription": "Für Icons Volltonfarben statt Verläufe verwenden",
       "gpuTitle": "Grafikbeschleunigung verwenden",
       "gpuDescription": "Hardwarebeschleunigung verwenden, wenn verfügbar (Neustart erforderlich)"
+    },
+    "network": {
+      "wifiTitle": "WLAN",
+      "wifiConnected": "Verbunden mit {{network}}",
+      "wifiDisabled": "WLAN ist ausgeschaltet",
+      "bluetoothTitle": "Bluetooth",
+      "bluetoothConnected": "Verbunden mit {{device}}",
+      "bluetoothDisabled": "Bluetooth ist ausgeschaltet",
+      "wifiNetworks": "Verfügbare Netzwerke",
+      "scanning": "Suche läuft...",
+      "enterPassword": "Passwort eingeben",
+      "passwordPlaceholder": "Passwort",
+      "connect": "Verbinden",
+      "disconnect": "Trennen",
+      "configurationMode": "Konfigurationsmodus",
+      "automatic": "Automatisch (DHCP)",
+      "manual": "Manuell",
+      "autoConfigTitle": "Automatische Konfiguration",
+      "manualConfigTitle": "Manuelle Konfiguration",
+      "ipAddress": "IP-Adresse",
+      "subnetMask": "Subnetzmaske",
+      "gateway": "Gateway",
+      "dns": "DNS-Server",
+      "validateConfig": "Konfiguration validieren",
+      "invalidIP": "Ungültige IP-Adresse",
+      "invalidGateway": "Ungültiges Gateway",
+      "invalidSubnetMask": "Ungültige Subnetzmaske",
+      "invalidDNS": "Ungültiger DNS-Server",
+      "gatewayNotInSubnet": "Das Gateway befindet sich nicht im selben Subnetz wie die IP-Adresse",
+      "configSaved": "Netzwerkkonfiguration erfolgreich gespeichert",
+      "dhcpAttributionProgress": "IP-Adresse wird über DHCP abgerufen"
     },
     "placeholders": {
       "displaysTitle": "Anzeigeeinstellungen",
