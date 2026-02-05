@@ -6,6 +6,7 @@ import { ro } from './locales/ro';
 import { de } from './locales/de';
 import { pt } from './locales/pt';
 import { zh } from './locales/zh';
+import { hi } from './locales/hi';
 
 export { SUPPORTED_LOCALES, type SupportedLocale, type TranslationDict } from './types';
 export const translations: Record<string, TranslationDict> = {
@@ -16,5 +17,6 @@ export const translations: Record<string, TranslationDict> = {
   de,
   pt,
   zh,
+  hi,
 };
 
