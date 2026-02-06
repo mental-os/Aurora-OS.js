@@ -1,6 +1,6 @@
 # Aurora OS.js
 
-[![Version](https://img.shields.io/badge/Version-v0.8.5-blue)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Status](<https://img.shields.io/badge/Roadmap-Stage%200%20(OS%20Foundation)-blue>) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![Build (Nightly)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=nightly&label=Build%20(Nightly)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
+[![Version](https://img.shields.io/badge/Version-v0.8.5-blue)](https://github.com/mental-os/Aurora-OS.js) [![Discord](https://img.shields.io/discord/1455762640595980452?label=Discord&logo=discord&logoColor=white)](https://discord.gg/G4WktdX7eE) ![Roadmap Status](<https://img.shields.io/badge/Roadmap-Stage%200%20(OS%20Foundation)-blue>) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![Build (Nightly)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=nightly&label=Build%20(Nightly)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
 
 ![Social media image for Aurora OS.js hacking simulator game project](.github/openGraph.png)
 
@@ -121,7 +121,7 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
 - **GPU Capabilities**: Added hardware acceleration toggle in BIOS and Settings (High Fidelity vs Performance presets).
 - **Network Simulation**: with functional connection applet and password input. OS is responsive to the network state and react to the connection specifications (speed, signal, etc.): open/WEP/WPA/WPA2/WPA3 security that reflects the max. download speed of the network, signal strength that sets the percentage of the max. download speed, and more to come.
-- **Localization**: Full native translations for 12 languages (EN, DE, ES, FR, PT, RO, RU, JA, PL, KO, TR, ZH).
+- **Localization**: Full native translations for 12 languages (EN, DE, ES, FR, PT, RO, RU, JA, PL, KO, TR, ZH) and added Hindi language WIP.
 - **Persistence**: Graphics settings (BioS) now strictly survive "New Game" resets.
 
 ### Improved
