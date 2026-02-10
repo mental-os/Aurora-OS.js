@@ -1,5 +1,5 @@
 /**
- * Minimal ID3 v2.3 / v2.4 parser for Aurora OS.
+ * Minimal ID3 v2.3 / v2.4 parser for yAMI OS.
  * Specifically handles TIT2 (Title), TPE1 (Artist), and TALB (Album).
  */
 

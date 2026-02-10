@@ -133,7 +133,7 @@ export const ro: TranslationDict = {
         },
         finishing: {
             title: 'Ești gata!',
-            subtitle: 'Aurora OS este pregătit. Te redirecționăm către ecranul de autentificare...',
+            subtitle: 'yAMI OS este pregătit. Te redirecționăm către ecranul de autentificare...'
         },
         search: {
             placeholder: 'Caută limbă...',

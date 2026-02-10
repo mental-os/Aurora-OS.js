@@ -1088,7 +1088,7 @@ export const en: TranslationDict = {
     },
     finishing: {
       title: "You're all set!",
-      subtitle: 'Aurora OS is ready. Redirecting you to the login screen...',
+      subtitle: 'yAMI OS is ready. Redirecting you to the login screen...',
     },
     search: {
       placeholder: 'Search language...',

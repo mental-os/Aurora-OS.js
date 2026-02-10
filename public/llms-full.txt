@@ -1,9 +1,9 @@
-# AURORA OS.JS SYSTEM CONTEXT
+# yAMI OS.JS SYSTEM CONTEXT
 
 <!-- OPTIMIZED_FOR: GEMINI_3_PRO_HIGH -->
 
 <project_identity>
-**Aurora OS.js**: Ultra-realistic web-based OS simulator and hacking simulator game (React 19/Vite/Electron).
+**yAMI OS.js**: Ultra-realistic web-based OS simulator and hacking simulator game (React 19/Vite/Electron).
 **Goal**: High-fidelity hacking/sysadmin simulation (Linux/macOS hybrid).
 **Core Philosphy**: "Files-First". State acts as a view layer over the Virtual File System (VFS).
 </project_identity>

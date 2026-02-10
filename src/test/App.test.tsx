@@ -63,7 +63,7 @@ vi.mock('../components/Game/GameRoot', () => ({
     GameRoot: ({ children }: any) => <>{children}</>,
 }));
 
-describe('Aurora OS Integration', () => {
+describe('yAMI OS Integration', () => {
     beforeEach(() => {
         localStorageMock.clear();
         vi.clearAllMocks();

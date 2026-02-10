@@ -1,4 +1,4 @@
-# Aurora OS.js
+# yAMI OS.js
 > Ultra-realistic web-based OS simulator and hacking simulator game.
 
 ## Documentation

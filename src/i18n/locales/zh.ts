@@ -1082,7 +1082,7 @@ export const zh: TranslationDict = {
 		},
 		finishing: {
 			title: '一切就绪！',
-			subtitle: 'Aurora OS 已准备就绪。正在跳转到登录界面...',
+			subtitle: 'yAMI OS 已准备就绪。正在跳转到登录界面...'
 		},
 		search: {
 			placeholder: '搜索语言...',

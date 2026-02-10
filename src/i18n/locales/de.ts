@@ -1078,7 +1078,7 @@ export const de: TranslationDict = {
     },
     finishing: {
       title: 'Alles bereit!',
-      subtitle: 'Aurora OS ist bereit. Weiterleitung zum Anmeldebildschirm...',
+      subtitle: 'yAMI OS ist bereit. Weiterleitung zum Anmeldebildschirm...'
     },
     search: {
       placeholder: 'Search language...',

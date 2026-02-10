@@ -133,7 +133,7 @@ export const es: TranslationDict = {
     },
     finishing: {
       title: "¡Todo listo!",
-      subtitle: 'Aurora OS está listo. Redirigiéndote a la pantalla de inicio de sesión...',
+      subtitle: 'yAMI OS está listo. Redirigiéndote a la pantalla de inicio de sesión...'
     },
     search: {
       placeholder: 'Search language...',

@@ -1,7 +1,7 @@
 /**
  * Website Registry
  *
- * Central registry of all fake websites available in Aurora OS Browser.
+ * Central registry of all fake websites available in yAMI OS Browser.
  * Add new websites here to make them accessible via the browser.
  */
 

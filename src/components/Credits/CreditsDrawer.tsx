@@ -31,7 +31,7 @@ export function CreditsDrawer({ isOpen, onClose }: CreditsDrawerProps) {
                             <ConnectivityBadge />
                         </div>
                         <DrawerTitle className="text-2xl text-center font-bold text-white mb-2">
-                            {isSecure ? 'Aurora OS Insurance Policy' : 'System Integrity Compromised'}
+                            {isSecure ? 'yAMI OS Insurance Policy' : 'System Integrity Compromised'}
                         </DrawerTitle>
                         <DrawerDescription className="text-center text-zinc-400">
                             {isSecure ? 'Verification of Original Ownership' : 'Unauthorized Modifications Detected'}

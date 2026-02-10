@@ -134,7 +134,7 @@ export const fr: TranslationDict = {
     },
     finishing: {
       title: "Vous êtes prêt !",
-      subtitle: 'Aurora OS est prêt. Redirection vers l’écran de connexion...',
+      subtitle: 'yAMI OS est prêt. Redirection vers l’écran de connexion...',
     },
     search: {
       placeholder: 'Search language...',

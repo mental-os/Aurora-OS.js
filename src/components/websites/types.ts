@@ -1,7 +1,7 @@
 /**
  * Website System Types
  *
- * Defines the structure for fake websites in Aurora OS Browser.
+ * Defines the structure for fake websites in yAMI OS Browser.
  * Each website can have its own UI, logic, and behavior.
  */
 

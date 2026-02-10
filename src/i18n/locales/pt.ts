@@ -1084,7 +1084,7 @@ export const pt: TranslationDict = {
     },
     finishing: {
       title: 'Tudo pronto!',
-      subtitle: 'O Aurora OS está pronto. Redirecionando para a tela de login...',
+      subtitle: 'O yAMI OS está pronto. Redirecionando para a tela de login...'
     },
     search: {
       placeholder: 'Search language...',
