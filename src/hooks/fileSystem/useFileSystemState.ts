@@ -12,7 +12,7 @@ import {
 import { validateIntegrity } from '../../utils/integrity';
 import { hardReset } from '../../utils/memory';
 
-const STORAGE_KEY = 'aurora-filesystem';
+const STORAGE_KEY = 'yami-filesystem';
 
 function loadFileSystem(): FileNode {
     try {

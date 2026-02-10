@@ -15,7 +15,7 @@ import { useState, useEffect, useCallback } from 'react';
  * });
  */
 export function useAppStorage<T>(appId: string, initialState: T, owner?: string): [T, (value: T | ((prev: T) => T)) => void, () => void] {
-    const storageKey = owner ? `aurora-os-app-${appId}-${owner}` : `aurora-os-app-${appId}`;
+    const storageKey = owner ? `yami-os-app-${appId}-${owner}` : `yami-os-app-${appId}`;
 
     // Load initial state from localStorage or use default
     const [state, setStateInternal] = useState<T>(() => {
@@ -66,7 +66,7 @@ export function useAppStorage<T>(appId: string, initialState: T, owner?: string)
 export function clearAllAppStorage() {
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
-        if (key.startsWith('aurora-os-app-')) {
+        if (key.startsWith('yami-os-app-')) {
             localStorage.removeItem(key);
         }
     });

@@ -4,7 +4,7 @@ import { useAppContext } from '../components/AppContext';
 
 /**
  * A hook for persisting ephemeral session state that should be cleared on Logout.
- * Uses `aurora-session-USERNAME-KEY` format.
+ * Uses `yami-session-USERNAME-KEY` format.
  * 
  * @param key - Unique key for the setting
  * @param initialState - Default state

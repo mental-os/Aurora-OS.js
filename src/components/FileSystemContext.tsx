@@ -387,7 +387,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
   const resetFileSystem = useCallback(() => {
     // Reset installed apps to core apps only
     setInstalledApps(new Set(CORE_APP_IDS));
-    localStorage.removeItem("aurora-installed-apps");
+    localStorage.removeItem("yami-installed-apps");
 
     // Reset filesystem and auth
     resetFileSystemState();

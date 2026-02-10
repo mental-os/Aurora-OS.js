@@ -65,7 +65,7 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             add('gpu', `Graphics: ${hw.gpuRenderer}`, 'text-zinc-400');
             add('console', `Display: ${hw.screenResolution} (32-bit color)`, 'text-zinc-500');
             add('systemd[1]', `Detected architecture ${hw.platform}.`);
-            add('systemd[1]', `Set hostname to <aurora-workstation>.`);
+            add('systemd[1]', `Set hostname to <yami-workstation>.`);
 
             // Author/License Info
             const author = typeof pkg.author === 'string' ? pkg.author : (pkg.author as any)?.name;

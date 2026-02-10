@@ -180,8 +180,8 @@ export function clearSession(username: string): void {
     localStorage.removeItem(windowKey);
 
     // 2. Clear Session Data (Prefix includes username to support multiple users?)
-    // Note: STORAGE_KEYS.SESSION_PREFIX is 'aurora-session-'. 
-    // We should assume session keys might be 'aurora-session-USERNAME-key' or just global if single user active.
+    // Note: STORAGE_KEYS.SESSION_PREFIX is 'yami-session-'. 
+    // We should assume session keys might be 'yami-session-USERNAME-key' or just global if single user active.
     // For now, let's aggressively clear all session keys if we can't filter by user, 
     // OR we standardize session keys to include username.
 

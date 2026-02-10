@@ -18,10 +18,10 @@ const hashString = (str: string) => {
     return hash >>> 0; // Ensure unsigned 32-bit integer
 };
 
-// Hash of the secret password "aurora-r00t-override"
+// Hash of the secret password "yami-r00t-override"
 // We store the hash so the actual password isn't easily greppable in the source.
-export const DEV_KEY_HASH = 2282602482; // Hash of "aurora-r00t-override"
-const STORAGE_KEY = 'AURORA_DEV_OVERRIDE';
+export const DEV_KEY_HASH = 2282602482; // Hash of "yami-r00t-override"
+const STORAGE_KEY = 'YAMI_DEV_OVERRIDE';
 
 export type SystemHealth = 'OK' | 'CORRUPTED';
 

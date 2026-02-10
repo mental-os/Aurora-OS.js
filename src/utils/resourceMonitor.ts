@@ -52,12 +52,12 @@ export function calculateTotalRamUsage(activeUser: string): RamUsageReport {
     };
 
     // 1. Identify all User Sessions with open windows
-    // Key format: aurora-os-windows-{username}
+    // Key format: yami-os-windows-{username}
     const sessionUsers = new Set<string>();
     
     // Also check for users who might define session but have no windows? 
     // Ideally we scan for any user-specific keys, but windows are the best proxy for a "session".
-    // Alternatively, `aurora-os-settings-{username}` implies existence, but not necessarily "running session".
+    // Alternatively, `yami-os-settings-{username}` implies existence, but not necessarily "running session".
     // We'll stick to windows key as "active GUI session".
     
     for (let i = 0; i < localStorage.length; i++) {

@@ -54,7 +54,7 @@ export const websites: Website[] = [
     searchable: false,
   },
   {
-    id: 'aurora-university',
+    id: 'yami-university',
     domain: 'aurora.edu',
     name: 'Aurora University',
     description: 'Premier educational institution for technology and sciences',

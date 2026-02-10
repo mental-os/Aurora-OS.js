@@ -44,9 +44,9 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Legacy Global Key for Migration
-const LEGACY_STORAGE_KEY = 'aurora-os-settings';
+const LEGACY_STORAGE_KEY = 'yami-os-settings';
 
-const SYSTEM_CONFIG_KEY = 'aurora-system-config';
+const SYSTEM_CONFIG_KEY = 'yami-system-config';
 
 interface UserPreferences {
   accentColor: string;
@@ -115,7 +115,7 @@ const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
 };
 
 // Helper: Get key for specific user
-const getUserKey = (username: string) => `aurora-os-settings-${username}`;
+const getUserKey = (username: string) => `yami-os-settings-${username}`;
 
 function loadUserPreferences(username: string): UserPreferences {
   try {

@@ -15,8 +15,8 @@ import {
 } from "../../utils/migrations";
 import { notify } from "../../services/notifications";
 
-const USERS_STORAGE_KEY = "aurora-users";
-const GROUPS_STORAGE_KEY = "aurora-groups";
+const USERS_STORAGE_KEY = "yami-users";
+const GROUPS_STORAGE_KEY = "yami-groups";
 
 const DEFAULT_USERS: User[] = [
   {
@@ -152,11 +152,11 @@ export function useAuth(
 
   const logout = useCallback(() => {
     setCurrentUser(null);
-    localStorage.removeItem("aurora-current-user");
+    localStorage.removeItem("yami-current-user");
 
     // Clear Terminal History on global logout
-    localStorage.removeItem("aurora_terminal_history");
-    localStorage.removeItem("aurora_terminal_input_history");
+    localStorage.removeItem("yami_terminal_history");
+    localStorage.removeItem("yami_terminal_input_history");
     
     notify.system("success", "System", "Logged out successfully");
   }, []);

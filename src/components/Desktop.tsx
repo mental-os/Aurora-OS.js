@@ -121,7 +121,7 @@ function DesktopComponent({ onDoubleClick, icons, onUpdateIconsPositions, onIcon
           break;
         case 'change-wallpaper':
           // Open Settings -> Wallpapers section (via event + app open)
-          window.dispatchEvent(new CustomEvent('aurora-open-settings-section', { detail: 'wallpapers' }));
+          window.dispatchEvent(new CustomEvent('yami-open-settings-section', { detail: 'wallpapers' }));
           onOpenApp('settings');
           break;
       }

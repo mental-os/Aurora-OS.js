@@ -72,7 +72,7 @@ describe('yAMI OS Integration', () => {
     it('boots and renders the Login Screen', () => {
         // Skip first-run language onboarding for this test
         localStorageMock.setItem(
-            'aurora-system-config',
+            'yami-system-config',
             JSON.stringify({ devMode: false, exposeRoot: false, locale: 'en-US', onboardingComplete: true })
         );
 
@@ -89,7 +89,7 @@ describe('yAMI OS Integration', () => {
 
     it('loads persistence data on boot', () => {
         render(<App />);
-        expect(localStorageMock.getItem).toHaveBeenCalledWith('aurora-os-settings');
-        expect(localStorageMock.getItem).toHaveBeenCalledWith('aurora-filesystem');
+        expect(localStorageMock.getItem).toHaveBeenCalledWith('yami-os-settings');
+        expect(localStorageMock.getItem).toHaveBeenCalledWith('yami-filesystem');
     });
 });
