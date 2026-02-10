@@ -1,8 +1,8 @@
-# Contributing to Aurora OS.js 🚀
+# Contributing to yAMI OS 🚀
 
-Welcome, and thank you for considering a contribution to **Aurora OS.js**.
+Welcome, and thank you for considering a contribution to **yAMI OS**.
 
-Aurora OS.js is an experimental, browser-native operating system built with modern web technologies. It explores modular UX, simulated systems, and game-like interaction – somewhere between an OS, a sandbox, and a narrative interface.
+yAMI OS is an experimental, browser-native operating system built with modern web technologies. It explores modular UX, simulated systems, and game-like interaction – somewhere between an OS, a sandbox, and a narrative interface.
 
 This document explains how to contribute, what to expect, and how your work will be treated throughout the lifetime of the project.
 
@@ -104,7 +104,7 @@ Once credited, attribution is never removed, even if the project evolves or ente
 
 ## 📜 Contributor License Agreement (CLA)
 
-By submitting a contribution to Aurora OS.js, you agree to the following:
+By submitting a contribution to yAMI OS, you agree to the following:
 
 - You confirm that you wrote the contribution yourself or have the right to submit it.
 - You grant the project maintainer, **Cătălin-Robert Drăgoiu ([mental-os](https://github.com/mental-os))**, a perpetual, worldwide, royalty-free license to use, modify, distribute, and relicense your contribution as part of Aurora OS.js.

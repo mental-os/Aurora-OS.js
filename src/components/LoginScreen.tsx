@@ -147,6 +147,15 @@ export function LoginScreen() {
         >
             {/* User Selection / Login Container */}
             <div className="w-full max-w-md flex flex-col items-center">
+                {/* yAMI OS Logo */}
+                <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+                    <img 
+                        src="/yami-logo.jpg" 
+                        alt="yAMI OS Logo" 
+                        className="h-24 w-24 object-cover rounded-lg shadow-2xl ring-2 ring-cyan-500/50 hover:ring-cyan-400 transition-all"
+                    />
+                    <h1 className="text-center mt-4 text-2xl font-bold text-white/90 tracking-tight">yAMI OS</h1>
+                </div>
                 {!selectedUser ? (
                     <div className="w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <h2 className="text-white/80 text-center mb-4 text-lg font-medium">{t('login.selectUser')}</h2>

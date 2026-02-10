@@ -22,13 +22,14 @@ import {
 import { SUPPORTED_LOCALES } from '../i18n/translations';
 import { useI18n } from '../i18n/index';
 import pkg from '../../package.json';
-import defaultWallpaper from '../assets/images/background.png';
+// New yAMI wallpaper (place your image at public/yami-wallpaper.jpg)
+const yamiWallpaper = '/yami-wallpaper.jpg';
 import orbitWallpaper from '../assets/images/wallpaper-orbit.png';
 import meshWallpaper from '../assets/images/wallpaper-mesh.png';
 import dunesWallpaper from '../assets/images/wallpaper-dunes.png';
 
 const WALLPAPERS = [
-  { id: 'default', name: 'Nebula', src: defaultWallpaper },
+  { id: 'default', name: 'yAMI Skyline', src: yamiWallpaper },
   { id: 'orbit', name: 'Orbit', src: orbitWallpaper },
   { id: 'mesh', name: 'Flux', src: meshWallpaper },
   { id: 'dunes', name: 'Midnight Dunes', src: dunesWallpaper },
@@ -104,9 +105,9 @@ export function Settings({ owner }: { owner?: string }) {
       }
     };
 
-    window.addEventListener('aurora-open-settings-section', handleOpenSection as EventListener);
+    window.addEventListener('yami-open-settings-section', handleOpenSection as EventListener);
     return () => {
-      window.removeEventListener('aurora-open-settings-section', handleOpenSection as EventListener);
+      window.removeEventListener('yami-open-settings-section', handleOpenSection as EventListener);
     };
   }, [setActiveSection]);
   const {
@@ -794,6 +795,16 @@ export function Settings({ owner }: { owner?: string }) {
 
         {activeSection === 'about' && (
           <div>
+            {/* yAMI OS Logo Section */}
+            <div className="flex flex-col items-center mb-8">
+              <img 
+                src="/yami-logo.jpg" 
+                alt="yAMI OS Logo" 
+                className="h-32 w-32 object-cover rounded-xl shadow-lg ring-2 ring-cyan-500/30 mb-4"
+              />
+              <h1 className="text-2xl font-bold text-white/90 tracking-tight">yAMI OS</h1>
+              <p className="text-sm text-white/50 mt-1">Advanced Operating System</p>
+            </div>
             <h2 className="text-2xl text-white mb-6">{t('settings.sections.about')} {pkg.build.productName}</h2>
             {/* System Info */}
             <div className="bg-black/20 rounded-xl p-6 mb-6 border border-white/5">

@@ -201,7 +201,7 @@ export function createUserHome(username: string, permissions: string = 'drwxr-x-
         const documents = home.children.find((c: any) => c.name === 'Documents');
         if (documents) {
             documents.children.push(
-                { name: 'WELCOME.md', type: 'file', content: '# Welcome to Aurora OS\n\nYou are now using the most advanced web-based operating system simulation.\n\n## Getting Started\n1. Use the **Terminal** to explore the system at a deeper level.\n2. Check **Settings** to customize your experience.\n3. Explore `/var/log` if you are curious about system events.\n\n## Tips\n- Use `Ctrl+C` to interrupt running commands.\n- Use `sudo` for administrative tasks (root password: admin).\n', size: 300, owner: username, permissions: '-rw-r--r--' },
+                { name: 'WELCOME.md', type: 'file', content: '# Welcome to yAMI OS\n\nYou are now using the most advanced web-based operating system simulation.\n\n## Getting Started\n1. Use the **Terminal** to explore the system at a deeper level.\n2. Check **Settings** to customize your experience.\n3. Explore `/var/log` if you are curious about system events.\n\n## Tips\n- Use `Ctrl+C` to interrupt running commands.\n- Use `sudo` for administrative tasks (root password: admin).\n', size: 300, owner: username, permissions: '-rw-r--r--' },
                 { name: 'PROJECT_NOTES.txt', type: 'file', content: 'TODO:\n- Fix the reality anchor stability glitch.\n- Investigate why /tmp is accumulating strange temp files.\n- Update the firewall rules.\n', size: 120, owner: username, permissions: '-rw-r--r--' },
                 { name: 'Notes', type: 'directory', children: [], owner: username, permissions: 'drwxr-xr-x' }
             );
@@ -438,7 +438,7 @@ export const initialFileSystem: any = {
             children: [
                 { name: 'passwd', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: 'root:admin:0:0:System Administrator:/root:/bin/bash\nuser:1234:1000:1000:User:/home/user:/bin/bash\nguest:guest:1001:1001:Guest:/home/guest:/bin/bash' },
                 { name: 'group', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: 'root:x:0:root\nusers:x:100:user,guest\nadmin:x:10:user' },
-                { name: 'hostname', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: 'aurora' },
+                { name: 'hostname', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: 'yami' },
                 { name: 'hosts', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: '127.0.0.1\tlocalhost\n::1\t\tlocalhost' },
                 { name: 'os-release', type: 'file', permissions: '-rw-r--', owner: 'root', content: `NAME="${pkg.build.productName}"\nVERSION="${pkg.version}"\nID=${pkg.name}\nPRETTY_NAME="${pkg.build.productName}"` },
                 {
@@ -447,7 +447,7 @@ export const initialFileSystem: any = {
                     permissions: 'drwxr-xr-x',
                     owner: 'root',
                     children: [
-                        { name: 'sources.list', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: `# ${pkg.build.productName} package sources\ndeb https://packages.aurora.os/stable main` },
+                        { name: 'sources.list', type: 'file', permissions: '-rw-r--r--', owner: 'root', content: `# ${pkg.build.productName} package sources\ndeb https://packages.yami.os/stable main` },
                     ],
                 },
             ],
@@ -484,7 +484,7 @@ export const initialFileSystem: any = {
                 { name: 'Downloads', type: 'directory', children: [], owner: 'root', permissions: 'drwxr-xr-x' },
                 { name: '.Config', type: 'directory', children: [], owner: 'root', permissions: 'drwx------' },
                 { name: '.Trash', type: 'directory', children: [], owner: 'root', permissions: 'drwx------' },
-                { name: '.bashrc', type: 'file', content: '# Root bash configuration\nexport PS1="root@aurora# "', owner: 'root', permissions: '-rw-------' },
+                { name: '.bashrc', type: 'file', content: '# Root bash configuration\nexport PS1="root@yami# "', owner: 'root', permissions: '-rw-------' },
             ],
         },
         // Kernel and system files
@@ -579,7 +579,7 @@ export const initialFileSystem: any = {
                     permissions: 'drwxr-xr-x',
                     owner: 'root',
                     children: [
-                        { name: 'system.log', type: 'file', permissions: '-rw-r-----', owner: 'root', content: '[    0.000000] Linux version 6.6.6-aurora (gcc version 12.2.0) #1 SMP PREEMPT_DYNAMIC\n[    0.002314] Command line: BOOT_IMAGE=/boot/kernel root=/dev/nvme0n1p2 ro quiet splash\n[    0.003451] x86/fpu: Supporting XSAVE feature 0x001: \'x87 floating point registers\'\n[    0.152341] pci 0000:00:02.0: vgaarb: setting as boot-time VGA device\n[    0.892314] systemd[1]: Detected architecture x86-64.\n[    1.234112] aurora-os: integrity verification passed.\n[    2.100231] [FAILED] Failed to start Service Module: "Reality_Anchor".\n[    2.100452] See "systemctl status reality-anchor.service" for details.\n[    2.400000] Finished Initialization.' },
+                        { name: 'system.log', type: 'file', permissions: '-rw-r-----', owner: 'root', content: '[    0.000000] Linux version 6.6.6-yami (gcc version 12.2.0) #1 SMP PREEMPT_DYNAMIC\n[    0.002314] Command line: BOOT_IMAGE=/boot/kernel root=/dev/nvme0n1p2 ro quiet splash\n[    0.003451] x86/fpu: Supporting XSAVE feature 0x001: \'x87 floating point registers\'\n[    0.152341] pci 0000:00:02.0: vgaarb: setting as boot-time VGA device\n[    0.892314] systemd[1]: Detected architecture x86-64.\n[    1.234112] yami-os: integrity verification passed.\n[    2.100231] [FAILED] Failed to start Service Module: "Reality_Anchor".\n[    2.100452] See "systemctl status reality-anchor.service" for details.\n[    2.400000] Finished Initialization.' },
                         { name: 'auth.log', type: 'file', permissions: '-rw-r-----', owner: 'root', content: '' },
                     ],
                 },

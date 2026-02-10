@@ -25,7 +25,8 @@ import { renderContextMenuItems } from './ui/context-menu-utils';
 // import { checkPermissions } from '../utils/fileSystemUtils';
 import { FolderOpen, Trash2, Clipboard, Image as ImageIcon, Scissors, Copy, Info } from 'lucide-react';
 import { notify } from '../services/notifications';
-import defaultWallpaper from '../assets/images/background.png';
+// Default wallpaper is now pulled from the public folder (user-provided yAMI wallpaper)
+const defaultWallpaper = '/yami-wallpaper.jpg';
 import orbitWallpaper from '../assets/images/wallpaper-orbit.png';
 import meshWallpaper from '../assets/images/wallpaper-mesh.png';
 import dunesWallpaper from '../assets/images/wallpaper-dunes.png';

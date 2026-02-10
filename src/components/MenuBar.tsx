@@ -236,6 +236,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
     >
       {/* Left side */}
       <div className="flex items-center space-x-4">
+        <img src="/yami-logo.jpg" alt="yAMI OS" className="w-6 h-6 rounded-sm" />
         <Menubar className="border-none bg-transparent h-auto p-0 space-x-1">
           <MenubarMenu>
             <MenubarTrigger
@@ -257,7 +258,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                   <MenubarItem onClick={() => {
                     // Direct link to About section
                     sessionStorage.setItem('settings-pending-section', 'about');
-                    window.dispatchEvent(new CustomEvent('aurora-open-settings-section', { detail: 'about' }));
+                    window.dispatchEvent(new CustomEvent('yami-open-settings-section', { detail: 'about' }));
                     onOpenApp?.('settings');
                   }}>
                       {t('menubar.system.aboutThisComputer')}

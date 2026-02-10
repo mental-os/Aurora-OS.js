@@ -1,12 +1,12 @@
 {
-      "name": "aurora-os-js",
+      "name": "yami-os-js",
       "version": "0.8.3",
       "private": true,
       "type": "module",
       "author": "Cătălin-Robert Drăgoiu",
       "nickname": "mental.os()",
       "license": "AGPL-3.0",
-      "description": "A browser-based OS hacking simulator powered by web technology.",
+      "description": "A browser-based OS hacking simulator powered by web technology - yAMI OS.",
       "homepage": "https://mental-os.github.io/Aurora-OS.js/",
       "keywords": [
             "browser-os",
@@ -143,8 +143,8 @@
             "translations:build:changed": "npm run translations:validate && tsx scripts/json-to-ts.ts --changed"
       },
       "build": {
-            "appId": "com.auroraos.app",
-            "productName": "Aurora OS",
+            "appId": "com.yamios.app",
+            "productName": "yAMI OS",
             "directories": {
                   "output": "release"
             },

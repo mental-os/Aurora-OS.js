@@ -1,12 +1,12 @@
-# Aurora OS.js
+# yAMI OS
 
 [![Version](https://img.shields.io/badge/Version-v0.8.3-blue)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Status](<https://img.shields.io/badge/Roadmap-Stage%200%20(OS%20Foundation)-blue>) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![Build (Nightly)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=nightly&label=Build%20(Nightly)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
 
-![Social media image for Aurora OS.js hacking simulator game project](.github/openGraph.png)
+![Social media image for yAMI OS hacking simulator game project](.github/openGraph.png)
 
 A hacking game where the operating system is the game.
 
-Aurora OS.js is an experimental, open‑source OS‑simulation / hacking game framework built entirely with modern web technologies: React, Vite, Tailwind, and Electron.  
+yAMI OS is an experimental, open‑source OS‑simulation / hacking game framework built entirely with modern web technologies: React, Vite, Tailwind, and Electron.  
 It’s not a finished game, yet. It’s the foundation: a playable, extensible virtual operating system designed to host hacking mechanics, scripting, multiplayer systems, and emergent gameplay.
 
 ## ✨ What exists right now
@@ -30,7 +30,7 @@ Aurora OS is developed in clear evolutionary steps:
 
 ### [View full roadmap](ROADMAP.md)
 
-The long‑term vision is an OS that feels real, but behaves like a game.
+The long‑term vision is an OS that feels real, but behaves like a game. yAMI OS continues that vision with a fresh visual identity.
 
 ## 🧠 Why This Exists
 
@@ -55,7 +55,7 @@ Aurora OS.js began as that experiment — inspired by OS.js and [Puter](https://
 - UX polishing in progress
 - Looking for **early testers, contributors, and curious minds**
 
-This is the ideal phase to influence direction, architecture, and gameplay systems.
+This is the ideal phase to influence direction, architecture, and gameplay systems for yAMI OS.
 
 ## 🤝 Contributing & Contribution Terms
 

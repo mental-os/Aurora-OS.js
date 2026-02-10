@@ -4,7 +4,7 @@ const pkg = _pkg as any;
 // Critical Constants - Hashed identity values of the project
 // Modifying these values in package.json without a dev key will trigger Safe Mode.
 const EXPECTED_IDENTITY = {
-    name: 1069744709, // Hash of 'aurora-os-js'
+    name: 1297699491, // Hash of 'yami-os-js'
     author: 2105392086, // Hash of 'Cătălin-Robert Drăgoiu'
     license: 555217376, // Hash of 'AGPL-3.0'
 };

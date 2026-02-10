@@ -1,5 +1,5 @@
 /**
- * Aurora OS Memory Management Utilities
+ * yAMI OS Memory Management Utilities
  * 
  * Organizes storage into two tiers:
  * - Soft Memory: Preferences and UI state (safe to reset)
@@ -9,24 +9,24 @@
 // Storage key prefixes/names
 export const STORAGE_KEYS = {
     // Soft memory keys (preferences, safe to forget)
-    SETTINGS: 'aurora-os-settings', // Prefix for user settings
-    DESKTOP_ICONS: 'aurora-os-desktop-positions',
-    SOUND: 'aurora-os-sound-settings',
-    APP_PREFIX: 'aurora-os-app-', // Pattern for app-specific storage
-    WINDOWS_PREFIX: 'aurora-os-windows-', // Window sessions
-    SESSION_PREFIX: 'aurora-session-', // Ephemeral session state (last paths, etc)
-    SYSTEM_CONFIG: 'aurora-system-config', // Global system settings (Dev Mode, etc)
-    LANGUAGE: 'aurora-system-language', // System Language
-    TERMINAL_HISTORY: 'aurora-terminal-history-', // Command output history prefix
-    TERMINAL_INPUT: 'aurora-terminal-input-', // Command input history prefix
-    BATTERY: 'aurora-os-battery-settings', // Battery preferences
-    TIME_MODE: 'aurora-time-mode', // Clock display preference (server/local)
+    SETTINGS: 'yami-os-settings', // Prefix for user settings
+    DESKTOP_ICONS: 'yami-os-desktop-positions',
+    SOUND: 'yami-os-sound-settings',
+    APP_PREFIX: 'yami-os-app-', // Pattern for app-specific storage
+    WINDOWS_PREFIX: 'yami-os-windows-', // Window sessions
+    SESSION_PREFIX: 'yami-session-', // Ephemeral session state (last paths, etc)
+    SYSTEM_CONFIG: 'yami-system-config', // Global system settings (Dev Mode, etc)
+    LANGUAGE: 'yami-system-language', // System Language
+    TERMINAL_HISTORY: 'yami-terminal-history-', // Command output history prefix
+    TERMINAL_INPUT: 'yami-terminal-input-', // Command input history prefix
+    BATTERY: 'yami-os-battery-settings', // Battery preferences
+    TIME_MODE: 'yami-time-mode', // Clock display preference (server/local)
 
     // Hard memory keys (core data, dangerous to forget)
-    FILESYSTEM: 'aurora-filesystem',
-    USERS: 'aurora-users',
-    VERSION: 'aurora-version',
-    INSTALLED_APPS: 'aurora-installed-apps', // App Store installed apps
+    FILESYSTEM: 'yami-filesystem',
+    USERS: 'yami-users',
+    VERSION: 'yami-version',
+    INSTALLED_APPS: 'yami-installed-apps', // App Store installed apps
 
     // Website specific memory
     TRUSTMAIL_ACCOUNTS: 'trustmail_accounts', // Database of created accounts

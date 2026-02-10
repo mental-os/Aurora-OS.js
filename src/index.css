@@ -4,20 +4,20 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
+  --background: #fbfeff;
+  --foreground: oklch(0.12 0 0);
   --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
+  --primary: #002b36;
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
+  --secondary: #00cfe8;
+  --secondary-foreground: #022027;
+  --muted: #f3f9fb;
+  --muted-foreground: #6b7280;
+  --accent: #00d4ff;
+  --accent-foreground: #001218;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
   --border: rgba(0, 0, 0, 0.1);
@@ -45,39 +45,39 @@
 
 .dark {
   /* ====================
-     DYNAMIC USER THEME VARIABLES
+     DYNAMIC USER THEME VARIABLES - yAMI OS
      ==================== */
-  --accent-user: #3b82f6;
+  --accent-user: #00d4ff;
   --blur-enabled: 1;
   --blur-amount: 12px;
 
   /* ====================
-     SEMANTIC COLOR TOKENS
+     SEMANTIC COLOR TOKENS - Vibrant yAMI Theme
      ==================== */
   --primary: var(--accent-user);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary-foreground: oklch(0.1 0 0);
+  --secondary: oklch(0.3 0.15 280);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: oklch(0.3 0 0);
+  --muted-foreground: oklch(0.75 0 0);
+  --accent: oklch(0.6 0.25 270);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --destructive: oklch(0.5 0.2 20);
+  --destructive-foreground: oklch(0.9 0.1 20);
 
   /* ====================
      COMPONENT-SPECIFIC TOKENS
      ==================== */
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --switch-background: rgba(255, 255, 255, 0.2);
+  --background: oklch(0.12 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.18 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.15 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  --border: oklch(0.3 0.05 270);
+  --input: oklch(0.25 0 0);
+  --ring: oklch(0.5 0.2 180);
+  --switch-background: rgba(0, 212, 255, 0.2);
 
   /* ====================
      BLUR & TRANSPARENCY
@@ -96,25 +96,25 @@
   --font-weight-normal: 400;
 
   /* ====================
-     CHART COLORS
+     CHART COLORS - yAMI Vibrant Palette
      ==================== */
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.6 0.25 270);
+  --chart-2: oklch(0.65 0.22 180);
+  --chart-3: oklch(0.7 0.2 90);
+  --chart-4: oklch(0.6 0.26 30);
+  --chart-5: oklch(0.65 0.24 330);
 
   /* ====================
-     SIDEBAR TOKENS
+     SIDEBAR TOKENS - Darkness with yAMI Accents
      ==================== */
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --sidebar: oklch(0.16 0 0);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.5 0.22 180);
+  --sidebar-primary-foreground: oklch(0.1 0 0);
+  --sidebar-accent: oklch(0.35 0.1 270);
+  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar-border: oklch(0.28 0.08 270);
+  --sidebar-ring: oklch(0.55 0.2 180);
 }
 
 @theme inline {
