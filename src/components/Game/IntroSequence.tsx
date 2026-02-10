@@ -74,10 +74,10 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
                             <div className="absolute inset-0 bg-white/20 blur-xl rounded-full" />
                         </div>
                         <h1 className="text-3xl font-bold text-white tracking-[0.5em] uppercase">
-                            Nova Republika
+                            yAMI OS
                         </h1>
                         <p className="text-white/30 text-xs tracking-widest font-mono">
-                            INFORMATION SYSTEMS
+                            OPERATING SYSTEM
                         </p>
                     </motion.div>
                 )}

@@ -122,10 +122,10 @@ export function GameScreenLayout({
           </motion.div>
 
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-2 text-white drop-shadow-lg text-center">
-            AURORA <span className="font-light opacity-70">OS</span>
+            yAMI <span className="font-light opacity-70">OS</span>
           </h1>
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-white/50 text-xs md:text-sm tracking-[0.2em] uppercase text-center">
-            <span>Nova Republika</span>
+            <span>Advanced Operating System</span>
             <span className="hidden md:inline">•</span>
             <span>per aspera ad astra</span>
           </div>
@@ -173,7 +173,7 @@ export function GameScreenLayout({
                   v{pkg.version}
                 </a>
                 <span className="hidden sm:inline">•</span>
-                <span className="hidden sm:inline">Nova Republika IS</span>
+                <span className="hidden sm:inline">yAMI OS CORE</span>
               </>
             )}
           </div>
