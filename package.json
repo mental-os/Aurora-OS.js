@@ -124,7 +124,7 @@
             "vite": "^7.3.1",
             "vite-plugin-compression2": "^2.4.0",
             "vitest": "^4.0.18",
-            "wait-on": "^9.0.3"
+            "wait-on": "^9.0.4"
       },
       "main": "dist-electron/main.js",
       "scripts": {
