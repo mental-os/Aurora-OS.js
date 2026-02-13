@@ -493,7 +493,7 @@ export function useTerminalLogic(
         completion = `"${completion}"`;
       }
 
-      let newInput = input;
+      let newInput: string;
       if (isCommand) {
         newInput = completion + " ";
       } else {

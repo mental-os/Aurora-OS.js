@@ -59,7 +59,7 @@ export const getHardwareInfo = async (): Promise<HardwareInfo> => {
                     info.gpuRenderer = renderer;
                 }
             }
-        } catch (e) {
+        } catch {
             // ignore
         }
     }

@@ -827,7 +827,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
       const selection = text.substring(start, end);
       const after = text.substring(end);
 
-      let newContent = "";
+      let newContent: string;
 
       switch (syntax) {
         case "bold":

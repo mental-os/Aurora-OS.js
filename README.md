@@ -1,75 +1,87 @@
-# Aurora OS.js
+# Aurora OS.js - Hacking simulator game
 
-[![Version](https://img.shields.io/badge/Version-v0.8.5-blue)](https://github.com/mental-os/Aurora-OS.js) [![Discord](https://img.shields.io/discord/1455762640595980452?label=Discord&logo=discord&logoColor=white)](https://discord.gg/G4WktdX7eE) ![Roadmap Status](<https://img.shields.io/badge/Roadmap-Stage%200%20(OS%20Foundation)-blue>) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml/badge.svg)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
+[![Version](https://img.shields.io/badge/Version-v0.8.5-c4b5fd?style=flat-square&logo=git&logoColor=white)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Progress](<https://img.shields.io/badge/Progress-Stage%200%20(Foundation%20%26%20Usability)-f0abfc?style=flat-square&logo=steam&logoColor=white>) [![Discord](https://img.shields.io/discord/1455762640595980452?label=Discord&logo=discord&logoColor=white&color=67e8f9&style=flat-square)](https://discord.gg/G4WktdX7eE) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github&logoColor=white&style=flat-square&color=86efac>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/deploy.yml?label=GitHub%20Pages&logo=github&logoColor=white&style=flat-square&color=86efac)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
 
 ![Social media image for Aurora OS.js hacking simulator game project](.github/openGraph.png)
 
-A hacking game where the operating system is the game.
+**Aurora OS.js** isn't just a web-based OS. It's a portal.
 
-Aurora OS.js is an experimental, open‑source OS‑simulation / hacking game framework built entirely with modern web technologies: React, Vite, Tailwind, and Electron.  
-It’s not a finished game, yet. It’s the foundation: a playable, extensible virtual operating system designed to host hacking mechanics, scripting, multiplayer systems, and emergent gameplay.
+Born from the intersection of digital art and cyberpunk culture, this project reimagines the operating system as an immersive game world. It is a **high-fidelity hacking simulator** built on modern web technologies _(React, Vite, Electron)_, designed to blur the line between utility and gameplay.
 
-## ✨ What exists right now
+Currently in its **pre-Alpha** stage, it serves as the foundation for a future MMO hacking universe - a persistent world where you script, hack, and uncover the lore of an emerging game universe.
 
-Even in its current proof‑of‑concept state, Aurora OS already solves the hard problems:
+## ₩Ⱨ₳₮ ɆӾł₴₮₴ Ɽł₲Ⱨ₮ ₦Ø₩
 
-- 🗂 **Virtual User Space**: Persistent `localStorage` filesystem with real user permissions (`rwx`), user homes, and multi-user isolation (`root`, `guest`, custom users).
-- 🧠 **App Engine**: Window management, z-indexing, process lifecycle, and a global context-aware Menu Bar.
-- 💻 **Terminal**: Bash-like environment with pipes, IO redirection, history, and internal commands (`ls`, `cat`, `grep`, `sudo`, `su`).
-- **System Apps**:
-- **Finder**: Drag & drop file management, list/grid views, and trash can.
-- **App Store**: Install/uninstall apps with permission checks (`sudo` support).
-- **Settings**: System configuration, user management, and personalization.
-- **DevCenter**: System diagnostics and logs.
-- 🎨 **Creative & Media**:
-  - **Photos**: Full gallery with albums, favorites, lightbox, and reactive library scanning.
-  - **Music**: Playlist management, background playback, and binary ID3 metadata parsing.
-- 📝 **Productivity & Internet**:
-  - **Notepad**: Monaco-like editor with syntax highlighting for 10+ languages.
-  - **Browser**: Functional web browser simulation with history and tabs.
-  - **Mail**: Email client simulation with attachments and multiple mailboxes.
+### Key features:
+
+- **High-Fidelity Desktop Environment**: Pixel-perfect window manager with snapping, z-indexing, and a global menu bar that feels exactly like a real OS.
+- **True Virtual Filesystem (VFS)**: A persistent, permission-aware (`rwx`) filesystem. Create, delete, and modify files in `/home`, `/etc`, and `/var`.
+- **Fully Functional Terminal**:
+  - **Core Utils**: `ls`, `cd`, `cat`, `grep`, `pwd`, `cp`, `mv`, `rm`, `mkdir`, `touch`.
+  - **Advanced**: `sudo`, `su`, piping (`|`), redirection (`>`), and environment variables.
+- **Network & Hacking Simulation**:
+  - **WiFi**: Realistic signal strength and bandwidth simulation _(WEP/WPA/WPA2/WPA3)_.
+  - **DNS**: `Browser` respects `/etc/hosts` for local domain spoofing.
+- **Gamified System Resources**:
+  - **Memory**: Apps consume virtual RAM; opening too many apps triggers launch gates.
+  - **Internet speed**: Realistic internet speed simulation based on WiFi signal strength, bandwidth, and security.
+  - **Battery**: Detailed battery health and discharge simulation.
+- **Included Applications**:
+  - **Browser**: Tabbed browsing, history, bookmarks, and offline state simulation.
+  - **Notepad**: VS Code-like editor with syntax highlighting for multiple languages _(JS, TS, HTML, CSS, JSON, and more)_.
+  - **DevCenter**: Real-time system diagnostics, process manager, and filesystem explorer.
+  - **Mail**: Email client with attachment downloads and HTML sanitization.
   - **Calendar**: Event management with drag & drop support.
   - **Messages**: Chat interface simulation.
-- **Localization**: Fully translated in English, German, Spanish, French, Portuguese, Romanian, Chinese, Russian, Japanese, Polish, Korean, and Turkish.
+  - **Media**: Photos and Music apps with binary metadata parsing.
 
-## 🧭 Where This Is Going
+## WⱧɆⱤE ₮Ⱨł₴ łS ₲Øł₦G?
 
-Aurora OS is developed in clear evolutionary steps:
+Aurora OS.js is developed in clear evolutionary steps:
 
-- **Stage 0 (0.x.x) — Foundation & Usability**: Functional desktop OS with real applications and natural usability.
-- **Stage 1 (1.x.x) — Single-Player Hacking Game**: Playable single-player hacking experience (Steam Early Access).
-- **Stage 2 (2.x.x) — Multiplayer Hacking World**: Persistent multiplayer hacking environment (Steamworks).
+- **Stage 0 (0.x.x) → Foundation & Usability**: Functional desktop OS with real applications and natural usability.
+- **Stage 1 (1.x.x) → Single-Player Hacking Game**: Playable single-player hacking experience (Steam Early Access).
+- **Stage 2 (2.x.x) → Multiplayer Hacking World**: Persistent multiplayer hacking environment (Steamworks).
+
+The long‑term vision is a MMO hacking simulator based on a high-fidelity OS (Aurora OS.js) that lets you engage in scripting _(JS/TS/bash)_, PvP, PvE, and lots of social aspects, while discovering the lore behind an extensive universe.
 
 ### [View full roadmap](ROADMAP.md)
 
-The long‑term vision is an OS that feels real, but behaves like a game.
+## ₩ⱧɎ THł₴ ɆӾłST₴?
 
-## 🧠 Why This Exists
+I'm an artist with over 15 years for multidisciplinary digital art & design. The topics I cover in my art are usually borderline technology, psychology, philosophy, and the human condition - all, in the context of the digital age and the future that we are building - you can discover more on my [Instagram page](https://www.instagram.com/mental_os/).
+
+With my personality deeply influenced by the hacking culture and the cyberpunk aesthetic, I've always been fascinated by the idea of a world where technology and humanity are intertwined in a way that blurs the lines between the two.
+
+Having my art evolved over the years from artworks, to full-blown ARG's, to interactive experiences, and now to a full-blown OS simulation, I've always wanted to create something that would allow people to experience the world I've built in a more immersive way. This is the right medium to do that: the next step in my artistic evolution.
 
 I’m deeply inspired by hacking and programming‑driven games:
 
-- [Hackmud](https://store.steampowered.com/app/469920/hackmud/) — brilliant multiplayer scripting
-- [Grey Hack](https://store.steampowered.com/app/605230/Grey_Hack/) — ambitious PvP and persistence
-- [Bitburner](https://github.com/bitburner-official/bitburner-src) — elegant JavaScript sandboxing
-- [else Heart.break()](https://store.steampowered.com/app/400110/Else_HeartBreak/) — unmatched atmosphere and immersion
+- [Hackmud](https://store.steampowered.com/app/469920/hackmud/) - brilliant multiplayer scripting
+- [Grey Hack](https://store.steampowered.com/app/605230/Grey_Hack/) - ambitious PvP and persistence
+- [Bitburner](https://github.com/bitburner-official/bitburner-src) - elegant JavaScript sandboxing
+- [else Heart.break()](https://store.steampowered.com/app/400110/Else_HeartBreak/) - unmatched atmosphere and immersion
 
-Each of them nailed something important — and each of them also felt like they stopped just short of broader reach or replayability.  
-When I discovered [OS.js](https://github.com/os-js/OS.js), a thought clicked instantly:
+Each of them nailed something important - and each of them also felt like they stopped just short of broader reach or replayability.  
 
-> What if the OS itself is the game engine?
+When I discovered [OS.js](https://github.com/os-js/OS.js) back in 2020, a thought clicked instantly:
 
-Aurora OS.js began as that experiment — inspired by OS.js and [Puter](https://github.com/HeyPuter/puter), but reshaped into a game‑first system.
+> What if the OS itself is the game engine and the portal to the mental.os() word?
 
-## 🧪 Current Status
+Now is the time to make it happen.
 
-- Actively developed
-- Architecture stabilizing
-- UX polishing in progress
+## ₵ɄRⱤɆ₦T ₴₮₳₮US (Contributors wanted)
+
+> This is a **work in progress**. The project is still under development and may contain bugs and unfinished features.
+
+- High-fidelity OS simulation inspired by MacOS, Windows, and Linux
+- Functional system and core apps
+- Proto-gameplay elements
 - Looking for **early testers, contributors, and curious minds**
 
 This is the ideal phase to influence direction, architecture, and gameplay systems.
 
-## 🤝 Contributing & Contribution Terms
+## ₵Ø₦TRł฿Ʉ₮IN₲ & CON₮Ɽł฿Ʉ₮ł₦₲ TɆⱤM₴
 
 Aurora OS.js is open-source and community-friendly, with a long-term vision that will include commercial releases.
 
@@ -90,7 +102,7 @@ In short:
 
 If anything feels unclear, open a [discussion](https://github.com/mental-os/Aurora-OS.js/discussions) — transparency matters here.
 
-## Tech Stack
+## TɆ₵Ⱨ ST₳C₭
 
 - **Framework**: React 19 (Vite 7)
 - **Engine**: Electron 40 (Node 25) / ESNext
@@ -98,81 +110,60 @@ If anything feels unclear, open a [discussion](https://github.com/mental-os/Auro
 - **Styling**: Tailwind CSS v4
 - **UI Library**: shadcn/ui (Radix UI, Sonner, Vaul, CMDK) + Custom Components
 - **Icons**: Lucide React
+- **Window Management**: react-rnd
+- **System Info**: systeminformation
 - **Animation**: Motion (Framer Motion)
 - **Audio**: Howler.js
 - **Testing**: Vitest
 
-## 🚀 Getting Started
+## GET₮ł₦₲ ₴₮ARTɆĐ
+
+The fastest way to try it out is to use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) _(Live version)_.
+
+If you want to run it locally:
 
 > **Prerequisite**:  
 > Node.js 24.0.0+ is required.  
 > Chromium-based browsers (Chrome, Edge, Brave, etc.)
 
-In-browser live-version:
+After a ```npm install``` you can run the in-browser live-version with:
 
 ```bash
-npm install
 npm run dev
 ```
 
-or build it for your native OS:
+or run the native version (dev mode):
+
+```bash
+npm run electron:dev
+```
+
+or build it for your native OS (as intended):
 
 ```
 npm run electron:build
 ```
 
-or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
-
-## Release Notes (v0.8.5)
-
-### Added
-
-- **GPU Capabilities**: Added hardware acceleration toggle in BIOS and Settings (High Fidelity vs Performance presets).
-- **Network Simulation**: with functional connection applet and password input. OS is responsive to the network state and react to the connection specifications (speed, signal, etc.): open/WEP/WPA/WPA2/WPA3 security that reflects the max. download speed of the network, signal strength that sets the percentage of the max. download speed, and more to come.
-- **Localization**: Full native translations for 12 languages (EN, DE, ES, FR, PT, RO, RU, JA, PL, KO, TR, ZH) and added Hindi language WIP.
-- **Persistence**: Graphics settings (BioS) now strictly survive "New Game" resets.
-- **Browser**: is now aware of the `/etc/hosts` file and can resolve domain names to IP addresses.
-- **Display settings**: for the System Settings APP in a simmilar way as the Main Menu > BIOS.
-- **Splash screen**: for the native build, that preloads the game in the background.
-
-### Improved
-
-- **Bundle Size Optimization**: Reduced build size by ~65% through conversion of all wallpapers to AVIF format (4.5MB → 1.6MB), lazy loading of all applications (code-split into 12 separate chunks), and Electron-specific compression strategy (ASAR maximum compression, removed redundant web-only optimizations).
-- **Audio Optimization**: Converted all system and UI sounds to Opus format, reducing audio asset size by ~50% (4MB → 2MB) while maintaining high quality (UI sounds reduced by 97%).
-- **Battery Applet**: Enhanced with color-coded status indicators (red ≤20%, yellow ≤50%, white >50%) for percentage text and progress bar. Verified real hardware data integration on macOS (voltage, cycle count, battery health).
-- **Window Performance**: Implemented "Safe" closing animations and optimized z-index handling to reduce layout thrashing.
-- **Browser UI**: to match the OS theme and dynamic colors.
-- **Browser's websites**: Improved layout and responsiveness for all the available websites.
-- **Context Awareness**: Updated AI agent documentation (`context.md`) to reflect the latest architecture mechanics.
-- **App Center**: Improved with network connection check and progress the install of apps based on the effective speed of the network (first 50% of the progress bar is network, second 50% is based on system performance - random for now, not yet implemented).
-- **Native full-screen**: Implemented native full-screen mode for host-OS (Windows, Linux, macOS) and added a the necesarry code to enable it in BIOS (Settings menu).
-- **Debouncing & Sanitization**: for localStorage to prevent prototype pollution and other security issues across various APPs and systems.
-- **Memory**: Optimized to use standardized keys and a tiered priority related to various system functions (user logout, new game, close > continue game, etc.).
-- **Browser**: Improved the pages loading speed mechanism by using the same logic of the App Store (WPA3 is instant, downgrading speed based on the security type of the network, signal strength, etc.).
-- **Network**: Improved statistics and network details display in System Settings > Network.
-
-### Fixed
-
-- **Translation Gaps**: Resolved missing keys and placeholders in non-English locales.
-- **Settings Sync**: Fixed issues where BIOS settings weren't correctly applying to the `SystemConfig`.
-- **Security**: Resolved high-severity vulnerabilities (GHSA-8qq5-rm4j-mr97) in the `node-tar` package by implementing a global dependency override to `tar@^7.5.6`.
-- **DEV Center**: is not available only with "Developer mode" enabled in System Settings > About.
+## ⱤɆⱠEASɆ NØ₮ɆS (v0.8.5)
 
 ### [View full version history](HISTORY.md)
 
-## 📝 License & Others
+## Ⱡł₵ENSɆ & Ø₮ⱧɆRS
 
 ### Community
 
-- [Discord](https://discord.gg/G4WktdX7eE)
-- [mental.os() Universe](https://instagram.com/mental.os)
-- [CONTRIBUTORS.md](CONTRIBUTORS.md)
+- [Discord](https://discord.gg/G4WktdX7eE) - chat, help, etc.
+- [GitHub Discussions](https://github.com/mental-os/Aurora-OS.js/discussions) - ideas, suggestions, etc.
+- [mental.os() Universe](https://instagram.com/mental.os) - lore & more
+- [CONTRIBUTORS.md](CONTRIBUTORS.md) - permanent credit for everyone who helped shape the project
 
 ### Other links
 
-- [GitHub](https://github.com/mental-os/Aurora-OS.js)
-- [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE)
-- GitBook (soon)
+- [Official GitHub repository](https://github.com/mental-os/Aurora-OS.js)
+- [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) _(Live version)_
+- [GitBook](https://mental-os.gitbook.io/aurora-os.js/) _(WIP)_ - Guides, docs, etc.
+- [GitHub Releases](https://github.com/mental-os/Aurora-OS.js/releases) - Releases
+- [GitMCP](https://gitmcp.io/mental-os/Aurora-OS.js) - MCP Server for AI tools
 
 ### License
 
@@ -182,4 +173,4 @@ or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
 ### AI Disclosure
 
-This project, "Aurora OS," is human-written, with AI tools assisting in documentation, GitHub integrations, bug testing, and roadmap tracking. As soon as this project is ready for release, all the AI tools will be removed and the generated content (audio, images, etc.) will be human-created.
+This project, "Aurora OS.js", is human-written, with AI tools assisting in documentation, GitHub integrations, bug testing, and roadmap tracking. As soon as this project is ready for release, all the AI tools will be removed and the generated content (audio, images, etc.) will be human-created.

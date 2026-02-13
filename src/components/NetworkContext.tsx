@@ -41,7 +41,7 @@ function getNetworkCapabilities(ssid: string, knownNetworks: Record<string, Netw
   }
 
   // 2. Determine Security Type (Deterministic)
-  let security: Network['security'] = 'WPA2'; // Default
+  let security: Network['security']; // Default
 
   // Use deterministic random value for this SSID
   const rng = pseudoRandom(ssid);
@@ -66,7 +66,7 @@ function getNetworkCapabilities(ssid: string, knownNetworks: Record<string, Netw
   // 3. Determine Max Speed based on Security (Historical Tiers)
   const speedRng = pseudoRandom(ssid + '_speed');
 
-  let maxSpeed = 0;
+  let maxSpeed: number;
   switch (security) {
     case 'OPEN':
       maxSpeed = speedRng * 1.5 + 1.0; // 1.0 - 2.5 Mbps

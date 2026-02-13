@@ -121,7 +121,7 @@ async function main() {
 	const flags = new Set(args.filter(a => a.startsWith('-')));
 	const explicit = args.filter(a => !a.startsWith('-'));
 
-	let locales: string[] = [];
+	let locales: string[];
 	if (flags.has('--changed')) {
 		const changed = getChangedTsLocales();
 		locales = changed.length ? changed : getAvailableLocales();

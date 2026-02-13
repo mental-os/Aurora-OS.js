@@ -1,19 +1,19 @@
-# 🛤️ Aurora OS Roadmap
+# Aurora OS.js RØ₳ĐM₳₱
 
-![Roadmap Progress](<https://img.shields.io/badge/Roadmap%20Progress-Stage%200%20(Foundation)-blue>)
+![Roadmap Progress](<https://img.shields.io/badge/Progress-Stage%200%20(Foundation%20%26%20Usability)-f0abfc?style=flat-square&logo=steam&logoColor=white>)
 
 > **Vision**  
-> Aurora OS evolves in clearly defined stages: first as a functional desktop OS sandbox, then as a playable single-player hacking game, and finally as a persistent multiplayer hacking experience.
+> Aurora OS.js evolves in clearly defined stages: first as a functional desktop OS sandbox, then as a playable single-player hacking game, and finally as a persistent multiplayer hacking experience.
 
 Versioning follows semantic principles _(explained at the bottom)_:
 
-- **0.x.x** → Functional virtual OS _(no game systems)_
-- **1.x.x** → Playable single-player hacking game _(Steam Early Access)_
-- **2.x.x** → Persistent multiplayer hacking world _(Steamworks)_
+- **0.x.x → Functional virtual OS _(no game systems)_**
+- 1.x.x → Playable single-player hacking game _(Steam Early Access)_
+- 2.x.x → Persistent multiplayer hacking world _(Steamworks)_
 
 ---
 
-## 🚦 Stage 0 — Foundation & Usability (`0.x.x`)
+## **Stage 0 - ₣ØɄ₦Đ₳₮łØ₦ & U₴₳฿łⱠł₮Ɏ (`0.x.x`)**
 
 **Versions:** `0.1.0 → 0.9.x`  
 **Distribution:** GitHub / Web (no Steam)
@@ -31,25 +31,25 @@ Deliver a **functional desktop OS** with real applications and natural usability
 
 ### Core Deliverables
 
-#### 📁 Virtual Filesystem
+#### Virtual Filesystem
 
 - Persistent storage
 - User accounts: `root`, `guest`, player-defined `user`
 - Permissions and isolation foundations
 
-#### 🧭 Onboarding & First Boot
+#### Onboarding & First Boot
 
 - Fresh install / “New Game” flow
 - User creation and environment setup
 
-#### 📦 Core Applications (Fully Functional)
+#### Core Applications (Fully Functional)
 
 - **Photos** — browse and open images
 - **Videos** — playback support
 - **Music** — playlists and playback
 - **Notepad** — edit and persist text
 
-#### 🖥️ Desktop UX & System Tools
+#### Desktop UX & System Tools
 
 - Window management
 - File associations
@@ -59,12 +59,14 @@ Deliver a **functional desktop OS** with real applications and natural usability
 
 - `0.1.0` — Early functional desktop
 - `0.3.0` — Core UX stabilized
+- `0.5.0` — Desktop usable, core apps functional
 - `0.6.0` — OS usable end-to-end
-- `0.9.x` — No placeholder apps remain
+- `0.8.5` — Pre-alpha release with fluid experience
+- `0.9.x` — Game systems begin to integrate
 
 ---
 
-## 🎮 Stage 1 — Single-Player Hacking Game (`1.x.x`)
+## Stage 1 - Sł₦₲ⱠɆ-₱Ⱡ₳ɎER Ⱨ₳₵₭ł₦₲ ₲₳MɆ (`1.x.x`)
 
 **Versions:** `1.0.0 → 1.9.x`  
 **Distribution:** Steam Early Access _(single-player only)_
@@ -81,27 +83,27 @@ Transform Aurora OS into a **playable single-player hacking game**, built direct
 
 ### Core Deliverables
 
-#### 🎯 Game Systems
+#### Game Systems
 
 - Missions and objectives
 - Progression and difficulty scaling
 
-#### 🕹️ Hacking Mechanics
+#### Hacking Mechanics
 
 - Virtual systems and targets
 - Ports, logs, tools, traces, and challenges
 
-#### 🧠 Puzzle & Scripting Layer
+#### Puzzle & Scripting Layer
 
 - Logic-based hacking challenges
 - In-OS scripting and automation
 
-#### 🎛️ Game UI Integration
+#### Game UI Integration
 
 - Diegetic UI embedded in the desktop
 - Non-intrusive overlays that preserve OS usability
 
-#### 📖 Narrative & World-Building
+#### Narrative & World-Building
 
 - Lore fragments
 - Guidance and contextual storytelling
@@ -115,7 +117,7 @@ Transform Aurora OS into a **playable single-player hacking game**, built direct
 
 ---
 
-## 🌐 Stage 2 — Multiplayer Hacking World (`2.x.x`)
+## Stage 2 - MɄⱠ₮ł₱Ⱡ₳YEⱤ Ⱨ₳₵₭ł₦₲ ₩ØⱤLĐ (`2.x.x`)
 
 **Distribution:** Steam _(Steamworks-powered)_
 
@@ -131,22 +133,22 @@ Evolve Aurora OS into a **connected, persistent multiplayer hacking environment*
 
 ### Core Deliverables
 
-#### 🌍 Networking & Persistence
+#### Networking & Persistence
 
 - Session and identity management
 - Long-lived, persistent servers
 
-#### 🧑‍🤝‍🧑 Multiplayer Systems
+#### Multiplayer Systems
 
 - Cooperative and competitive hacking
 - Shared targets and objectives
 
-#### 🏆 Progression & Reputation
+#### Progression & Reputation
 
 - Rankings and leaderboards
 - Shared achievements and long-term identity
 
-#### 🔐 Security & Permissions
+#### Security & Permissions
 
 - Anti-abuse systems
 - Server authority and validation
@@ -159,7 +161,7 @@ Evolve Aurora OS into a **connected, persistent multiplayer hacking environment*
 
 ---
 
-## 🔢 Version Number Meaning
+## VɆⱤ₴łØ₦ ₦ɄM฿ɆⱤ MɆ₳₦ł₦₲
 
 ### MAJOR (`x.0.0`)
 
@@ -233,19 +235,20 @@ Patch releases:
 
 ---
 
-## 🧭 Development Phases & Milestones
+## ĐɆVɆⱠØPMɆ₦₮ ₱Ⱨ₳₴ɆS & MIⱠɆ₴₮Ø₦Ɇ₴
 
 | Version Range | Meaning                                   |
 | ------------- | ----------------------------------------- |
-| `0.x.x`       | Experimental OS phase — APIs may change   |
-| `0.5.0`       | Desktop usable, core apps functional      |
+| **`0.x.x`**       | **Experimental OS phase — APIs may change**   |
+| **`0.5.0`**       | **Desktop usable, core apps functional**      |
+| **`0.8.5`**       | **Pre-alpha release with fluid experience**   |
 | `1.0.0`       | Playable single-player baseline           |
 | `1.x.x`       | Single-player expansion and stabilization |
 | `2.0.0`       | Persistent multiplayer architecture       |
 
 ---
 
-## 🧩 Commit → Version Mapping (Guideline)
+## ₵ØMMł₮ → VɆⱤ₴łØ₦ M₳₱PPI₦₲ (Guideline)
 
 Recommended commit conventions:
 

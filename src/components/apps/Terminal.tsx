@@ -49,10 +49,10 @@ export function Terminal({ id, onLaunchApp, owner, onClose }: TerminalProps) {
 
     window.addEventListener('app-menu-action', handleMenuAction as EventListener);
     return () => {
-        window.removeEventListener('app-menu-action', handleMenuAction as EventListener);
-        
-        // Removed auto-clear history on unmount to prevent data loss on re-renders/spurious unmounts.
-        // History persistence is now handled solely by useTerminalLogic via localStorage.
+      window.removeEventListener('app-menu-action', handleMenuAction as EventListener);
+
+      // Removed auto-clear history on unmount to prevent data loss on re-renders/spurious unmounts.
+      // History persistence is now handled solely by useTerminalLogic via localStorage.
     };
   }, [clearHistory, setInput, id]);
 
@@ -112,7 +112,7 @@ export function Terminal({ id, onLaunchApp, owner, onClose }: TerminalProps) {
       const isWhitespace = match[5] !== undefined;
       const isWord = match[6] !== undefined;
 
-      let color = 'white';
+      let color: string;
 
       if (isWhitespace) {
         tokens.push(<span key={index++} className="whitespace-pre">{fullMatch}</span>);

@@ -6,9 +6,15 @@
 - **Network Simulation**: with functional connection applet and password input. OS is responsive to the network state and react to the connection specifications (speed, signal, etc.): open/WEP/WPA/WPA2/WPA3 security that reflects the max. download speed of the network, signal strength that sets the percentage of the max. download speed, and more to come.
 - **Localization**: Full native translations for 12 languages (EN, DE, ES, FR, PT, RO, RU, JA, PL, KO, TR, ZH) and added Hindi language WIP.
 - **Persistence**: Graphics settings (BioS) now strictly survive "New Game" resets.
+- **Browser**: is now aware of the `/etc/hosts` file and can resolve domain names to IP addresses.
+- **Display settings**: for the System Settings APP in a simmilar way as the Main Menu > BIOS.
+- **Splash screen**: for the native build, that preloads the game in the background.
 
 ### Improved
 
+- **Bundle Size Optimization**: Reduced build size by ~65% through conversion of all wallpapers to AVIF format (4.5MB → 1.6MB), lazy loading of all applications (code-split into 12 separate chunks), and Electron-specific compression strategy (ASAR maximum compression, removed redundant web-only optimizations).
+- **Audio Optimization**: Converted all system and UI sounds to Opus format, reducing audio asset size by ~50% (4MB → 2MB) while maintaining high quality (UI sounds reduced by 97%).
+- **Battery Applet**: Enhanced with color-coded status indicators (red ≤20%, yellow ≤50%, white >50%) for percentage text and progress bar. Verified real hardware data integration on macOS (voltage, cycle count, battery health).
 - **Window Performance**: Implemented "Safe" closing animations and optimized z-index handling to reduce layout thrashing.
 - **Browser UI**: to match the OS theme and dynamic colors.
 - **Browser's websites**: Improved layout and responsiveness for all the available websites.
@@ -16,13 +22,16 @@
 - **App Center**: Improved with network connection check and progress the install of apps based on the effective speed of the network (first 50% of the progress bar is network, second 50% is based on system performance - random for now, not yet implemented).
 - **Native full-screen**: Implemented native full-screen mode for host-OS (Windows, Linux, macOS) and added a the necesarry code to enable it in BIOS (Settings menu).
 - **Debouncing & Sanitization**: for localStorage to prevent prototype pollution and other security issues across various APPs and systems.
-- **Memory**: Optimized to use standardized keys and a tiered priority related to various system functions (user logout, new game, close > continue game, etc.)
+- **Memory**: Optimized to use standardized keys and a tiered priority related to various system functions (user logout, new game, close > continue game, etc.).
+- **Browser**: Improved the pages loading speed mechanism by using the same logic of the App Store (WPA3 is instant, downgrading speed based on the security type of the network, signal strength, etc.).
+- **Network**: Improved statistics and network details display in System Settings > Network.
 
 ### Fixed
 
 - **Translation Gaps**: Resolved missing keys and placeholders in non-English locales.
 - **Settings Sync**: Fixed issues where BIOS settings weren't correctly applying to the `SystemConfig`.
 - **Security**: Resolved high-severity vulnerabilities (GHSA-8qq5-rm4j-mr97) in the `node-tar` package by implementing a global dependency override to `tar@^7.5.6`.
+- **DEV Center**: is now available only with "Developer mode" enabled in System Settings > About.
 
 ## 0.8.4
 

@@ -99,8 +99,8 @@ export function calculateTotalRamUsage(activeUser: string): RamUsageReport {
             if (!app || !app.ramUsage) return;
 
             const baseRam = app.ramUsage;
-            let winCost = 0;
-            let typeLabel = '';
+            let winCost: number;
+            let typeLabel: string;
 
             if (!openAppIds.has(win.type)) {
                 // First Window (Main)
