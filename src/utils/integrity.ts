@@ -5,7 +5,7 @@ const pkg = _pkg as any;
 // Modifying these values in package.json without a dev key will trigger Safe Mode.
 const EXPECTED_IDENTITY = {
     name: 1069744709, // Hash of 'aurora-os-js'
-    author: 2907722783, // Hash of 'Dope Pixels'
+    author: 2105392086, // Hash of 'Cătălin-Robert Drăgoiu'
     license: 555217376, // Hash of 'AGPL-3.0'
 };
 
@@ -39,9 +39,10 @@ export const validateIntegrity = (): boolean => {
     }
 
     // 2. Validate Identity using hashes
+    const authorName = typeof pkg.author === 'string' ? pkg.author : pkg.author?.name;
     const isIdentityValid =
         hashString(pkg.name) === EXPECTED_IDENTITY.name &&
-        hashString(pkg.author) === EXPECTED_IDENTITY.author &&
+        hashString(authorName) === EXPECTED_IDENTITY.author &&
         hashString(pkg.license) === EXPECTED_IDENTITY.license;
     // checking productName might be too strict if they just want to config it, 
     // but 'name' and 'author' are strict IP markers.
