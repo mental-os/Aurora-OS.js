@@ -25,16 +25,16 @@ import { renderContextMenuItems } from '@/components/ui/context-menu-utils';
 // import { checkPermissions } from '@/utils/fileSystemUtils';
 import { FolderOpen, Trash2, Clipboard, Image as ImageIcon, Scissors, Copy, Info } from 'lucide-react';
 import { notify } from '@/services/notifications';
-import defaultWallpaper from '../assets/images/background.png';
-import orbitWallpaper from '../assets/images/wallpaper-orbit.png';
-import meshWallpaper from '../assets/images/wallpaper-mesh.png';
-import dunesWallpaper from '../assets/images/wallpaper-dunes.png';
+import defaultWallpaper from '@/assets/images/wallpaper-nebula.avif';
+import cityWallpaper from '@/assets/images/wallpaper-city.avif';
+import auroraWallpaper from '@/assets/images/wallpaper-aurora.avif';
+import lakeWallpaper from '@/assets/images/wallpaper-lake.avif';
 
 const WALLPAPERS: Record<string, string> = {
   default: defaultWallpaper,
-  orbit: orbitWallpaper,
-  mesh: meshWallpaper,
-  dunes: dunesWallpaper,
+  city: cityWallpaper,
+  aurora: auroraWallpaper,
+  lake: lakeWallpaper,
 };
 
 interface DesktopProps {

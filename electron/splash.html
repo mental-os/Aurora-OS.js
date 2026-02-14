@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora OS.js</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-app-region: drag;
+            user-select: none;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 32px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .ascii-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .ascii-aurora {
+            font-family: monospace;
+            font-weight: bold;
+            color: white;
+            white-space: pre;
+            font-size: 8px;
+        }
+
+        .ascii-os {
+            font-family: monospace;
+            font-weight: bold;
+            white-space: pre;
+            font-size: 8px;
+            background: linear-gradient(135deg, #00ffff 0% 33%, #8a2be2 33% 66%, #ff00ff 66% 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 7px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 6px;
+        }
+
+        .loading-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 200px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #06b6d4);
+            border-radius: 1px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .status-text {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 0.5px;
+            text-align: center;
+            min-height: 16px;
+            transition: opacity 0.2s ease;
+        }
+
+        .version {
+            position: absolute;
+            bottom: 12px;
+            right: 16px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.15);
+            font-family: monospace;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(0.97); }
+        }
+
+        /* Fade out animation when closing */
+        body.fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: scale(0.98); }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <div class="ascii-row">
+            <pre class="ascii-aurora">
+ █████╗ ██╗   ██╗██████╗  ██████╗ ██████╗  █████╗      
+██╔══██╗██║   ██║██╔══██╗██╔═══██╗██╔══██╗ ╚════╝     
+███████║██║   ██║██████╔╝██║   ██║██████╔╝███████║    
+██╔══██║██║   ██║██╔══██╗██║   ██║██╔══██╗███████║    
+██║  ██║╚██████╔╝██║  ██║╚██████╔╝██║  ██║███ ███║    
+╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝    </pre>
+            <pre class="ascii-os">
+██████╗ ███████╗
+██╔═══██╗██╔════╝
+██║   ██║███████╗
+██║   ██║╚════██║
+╚██████╔╝███████╗
+ ╚═════╝ ╚══════╝</pre>
+        </div>
+        <div class="subtitle">Nova Republika</div>
+    </div>
+
+    <div class="loading-section">
+        <div class="progress-track">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="status-text" id="statusText">Initializing...</div>
+    </div>
+
+    <div class="version" id="versionText"></div>
+
+    <script>
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('statusText');
+
+        let currentProgress = 0;
+        let idleInterval = null;
+        let idleTarget = 0;
+
+        function setProgress(percent, text) {
+            // Stop any idle crawl
+            if (idleInterval) {
+                clearInterval(idleInterval);
+                idleInterval = null;
+            }
+
+            currentProgress = percent;
+            progressBar.style.width = percent + '%';
+            if (text) statusText.textContent = text;
+        }
+
+        // Idle crawl: slowly advances progress between real milestones
+        // Makes the loader feel alive even when waiting
+        function startIdleCrawl(targetPercent) {
+            idleTarget = targetPercent;
+            if (idleInterval) clearInterval(idleInterval);
+
+            idleInterval = setInterval(() => {
+                if (currentProgress < idleTarget) {
+                    currentProgress += Math.random() * 0.3 + 0.1;
+                    currentProgress = Math.min(currentProgress, idleTarget);
+                    progressBar.style.width = currentProgress + '%';
+                } else {
+                    clearInterval(idleInterval);
+                    idleInterval = null;
+                }
+            }, 200);
+        }
+
+        // Listen for real progress updates from Electron main process
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (!data || !data.type) return;
+
+            switch (data.type) {
+                case 'version':
+                    document.getElementById('versionText').textContent = 'v' + data.version;
+                    break;
+
+                case 'progress':
+                    // Real milestone reached
+                    setProgress(data.percent, data.status);
+                    // Start idle crawl towards next expected milestone
+                    if (data.idleTarget) {
+                        startIdleCrawl(data.idleTarget);
+                    }
+                    break;
+
+                case 'close':
+                    if (idleInterval) {
+                        clearInterval(idleInterval);
+                        idleInterval = null;
+                    }
+                    // Complete the progress bar
+                    setProgress(100, 'Ready');
+                    // Fade out
+                    setTimeout(() => {
+                        document.body.classList.add('fade-out');
+                    }, 200);
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

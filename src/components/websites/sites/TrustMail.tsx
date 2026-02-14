@@ -140,7 +140,7 @@ export function TrustMail(_props: WebsiteProps) {
                             <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
                                 <Mail className="w-6 h-6 text-white" />
                             </div>
-                            <div>
+                            <div className="hidden @[400px]:block">
                                 <div className="text-xl font-bold text-gray-900">TrustMail</div>
                                 <div className="text-xs text-gray-500">Secure email service</div>
                             </div>
@@ -149,14 +149,14 @@ export function TrustMail(_props: WebsiteProps) {
                     actions={
                         <div className="flex items-center gap-3">
                             <Lock className="w-4 h-4 text-green-600" />
-                            <span className="text-sm text-gray-600 font-medium">Secure Connection</span>
+                            <span className="text-sm text-gray-600 font-medium hidden @sm:inline">Secure Connection</span>
                         </div>
                     }
                 />
 
-                <WebsiteContainer size="lg" className="min-h-[calc(100vh-80px)] flex items-center">
+                <WebsiteContainer size="lg" className="min-h-full flex items-center">
                     <div className="w-full max-w-3xl mx-auto">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div className="grid grid-cols-1 @md:grid-cols-2 gap-12 items-center">
                             {/* Left side - Marketing */}
                             <div>
                                 <div className="mb-8">
@@ -251,7 +251,7 @@ export function TrustMail(_props: WebsiteProps) {
                     }
                 />
 
-                <WebsiteContainer size="md" className="min-h-[calc(100vh-80px)] flex items-center">
+                <WebsiteContainer size="md" className="min-h-full flex items-center">
                     <div className="w-full max-w-md mx-auto">
                          <div className="bg-white rounded-2xl shadow-2xl p-8">
                             <div className="text-center mb-8">
@@ -339,7 +339,7 @@ export function TrustMail(_props: WebsiteProps) {
                     }
                 />
 
-                <WebsiteContainer size="md" className="min-h-[calc(100vh-80px)] flex items-center">
+                <WebsiteContainer size="md" className="min-h-full flex items-center">
                     <div className="w-full max-w-md mx-auto">
                         <div className="bg-white rounded-2xl shadow-2xl p-8">
                             <div className="text-center mb-8">
@@ -478,7 +478,7 @@ export function TrustMail(_props: WebsiteProps) {
                 }
             />
 
-            <WebsiteContainer size="md" className="min-h-[calc(100vh-80px)] flex items-center">
+            <WebsiteContainer size="md" className="min-h-full flex items-center">
                 <div className="w-full max-w-md mx-auto text-center">
                     <div className="bg-white rounded-2xl shadow-2xl p-12">
                         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">

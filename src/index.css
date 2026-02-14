@@ -325,6 +325,28 @@ html {
   scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
 }
 
+/* Unified Browser Scrollbar (Always visible) */
+.browser-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.browser-scrollbar::-webkit-scrollbar-track {
+  background: #09090b; /* Solid Dark Gutter */
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.browser-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 10px;
+}
+
+.browser-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
 /* ====================
    PERFORMANCE OVERRIDES
    ==================== */

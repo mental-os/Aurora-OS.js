@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to release (e.g. v0.8.6)'
+        required: true
+        default: 'v0.8.5'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Web & Electron
+        run: npm run electron:build
+        env:
+          # Required for electron-builder to publish to GitHub Releases
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish (Manual confirmation or auto-upload)
+        # The electron:build script runs electron-builder.
+        # If GH_TOKEN is present and it's a tag, it will attempt to publish if configured.
+        # Alternatively, we can use the upload-artifact action if we want to separate steps.
+        # But electron-builder's native publish is usually better for releases.
+        run: npx electron-builder --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

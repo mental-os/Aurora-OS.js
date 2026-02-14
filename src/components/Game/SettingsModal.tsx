@@ -5,11 +5,11 @@ import pkg from '@/../package.json';
 import { cn } from '@/components/ui/utils';
 import { feedback } from '@/services/soundFeedback';
 import { soundManager } from '@/services/sound';
-import { useFileSystem } from '@/components/FileSystemContext';
 import { useI18n } from '@/i18n/index';
 import { useFullscreen } from '@/hooks/useFullscreen';
 import { useAppContext } from '@/components/AppContext';
 import { SUPPORTED_LOCALES } from '@/i18n/translations';
+import { factoryReset } from '@/utils/memory';
 
 interface SettingsModalProps {
     onClose: () => void;
@@ -20,13 +20,12 @@ type Tab = 'display' | 'audio' | 'system';
 export function SettingsModal({ onClose }: SettingsModalProps) {
     const { t } = useI18n();
     const [activeTab, setActiveTab] = useState<Tab>('display');
-    const { resetFileSystem } = useFileSystem();
 
     const tabs = useMemo(() => [
-        { id: 'display', icon: Monitor, label: 'Display' },
-        { id: 'audio', icon: Speaker, label: 'Audio' },
-        { id: 'system', icon: Laptop, label: 'System' },
-    ] as const, []);
+        { id: 'display', icon: Monitor, label: t('game.bios.tabs.display') },
+        { id: 'audio', icon: Speaker, label: t('game.bios.tabs.audio') },
+        { id: 'system', icon: Laptop, label: t('game.bios.tabs.system') },
+    ] as const, [t]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -53,10 +52,11 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
 
     // Core state from AppContext
     const {
+        reduceMotion, setReduceMotion,
+        disableGradients, setDisableGradients,
         blurEnabled, setBlurEnabled,
         disableShadows, setDisableShadows,
-        disableGradients, setDisableGradients,
-        reduceMotion, setReduceMotion,
+        gpuEnabled, setGpuEnabled,
         locale, setLocale
     } = useAppContext();
 
@@ -68,28 +68,96 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         ambiance: soundManager.getVolume('ambiance') * 100,
     });
 
-    // Fullscreen
-    const { isFullscreen, toggleFullscreen: toggleFullscreenBase } = useFullscreen();
-    const toggleFullscreen = () => {
+    // Fullscreen / Display settings
+    const { isFullscreen, isElectron, displaySettings, setDisplaySettings } = useFullscreen();
+
+    const RESOLUTIONS = useMemo(() => {
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+
+        const allResolutions = [
+            { label: '5120x1440', width: 5120, height: 1440 },
+            { label: '3840x2160', width: 3840, height: 2160 },
+            { label: '3440x1440', width: 3440, height: 1440 },
+            { label: '2880x1800', width: 2880, height: 1800 },
+            { label: '2560x1600', width: 2560, height: 1600 },
+            { label: '2560x1440', width: 2560, height: 1440 },
+            { label: '2560x1080', width: 2560, height: 1080 },
+            { label: '1920x1200', width: 1920, height: 1200 },
+            { label: '1920x1080', width: 1920, height: 1080 },
+            { label: '1680x1050', width: 1680, height: 1050 },
+            { label: '1600x900', width: 1600, height: 900 },
+            { label: '1512x982', width: 1512, height: 982 },
+            { label: '1470x956', width: 1470, height: 956 },
+            { label: '1440x900', width: 1440, height: 900 },
+            { label: '1366x768', width: 1366, height: 768 },
+        ];
+
+        return allResolutions.filter(res => res.width <= screenWidth && res.height <= screenHeight);
+    }, []);
+
+    const handleModeChange = (mode: 'fullscreen' | 'borderless' | 'windowed') => {
         feedback.click();
-        toggleFullscreenBase();
+
+        // Direct check for electron API to be ultra-responsive
+        const electron = (window as any).electron;
+        const actualIsElectron = isElectron || !!electron;
+
+        if (actualIsElectron) {
+            setDisplaySettings({
+                mode,
+                // Fallback to defaults if settings haven't loaded yet
+                width: displaySettings?.width || 1366,
+                height: displaySettings?.height || 768,
+                frame: displaySettings?.frame ?? false,
+            });
+        } else {
+            // Standard browser fallback
+            if (mode === 'fullscreen' && !document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else if (mode === 'windowed' && document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+    };
+
+    const handleResolutionChange = (width: number, height: number) => {
+        feedback.click();
+        setDisplaySettings({
+            mode: displaySettings?.mode || 'windowed',
+            width,
+            height,
+            frame: displaySettings?.frame ?? false,
+        });
+    };
+
+    const handleFrameToggle = () => {
+        feedback.click();
+        setDisplaySettings({
+            mode: displaySettings?.mode || 'windowed',
+            width: displaySettings?.width || 1920,
+            height: displaySettings?.height || 1080,
+            frame: displaySettings ? !displaySettings.frame : true,
+        });
     };
 
     // Determine current graphics preset
     const getPreset = () => {
-        if (blurEnabled && !disableShadows && !disableGradients && !reduceMotion) return 'ultra';
-        if (!blurEnabled && disableShadows && disableGradients && reduceMotion) return 'performance';
+        if (gpuEnabled && blurEnabled && !disableShadows && !disableGradients && !reduceMotion) return 'ultra';
+        if (!gpuEnabled && !blurEnabled && disableShadows && disableGradients && reduceMotion) return 'performance';
         return 'custom';
     };
 
     const applyPreset = (preset: 'ultra' | 'performance') => {
         feedback.click();
         if (preset === 'ultra') {
+            setGpuEnabled(true);
             setBlurEnabled(true);
             setDisableShadows(false);
             setDisableGradients(false);
             setReduceMotion(false);
         } else {
+            setGpuEnabled(false);
             setBlurEnabled(false);
             setDisableShadows(true);
             setDisableGradients(true);
@@ -119,7 +187,8 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
     const handleFactoryReset = () => {
         if (confirm(t('game.bios.factoryResetConfirm'))) {
             feedback.click();
-            resetFileSystem();
+            // True Factory Reset: Wipe everything (incl. BIOS)
+            factoryReset();
             setTimeout(() => window.location.reload(), 500);
         }
     };
@@ -140,7 +209,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                         </div>
                         <div>
                             <h2 className="text-xl font-bold tracking-widest uppercase">{t('game.bios.title')}</h2>
-                            <p className="text-xs text-white/50 uppercase tracking-widest font-mono mt-0.5">Configuration Utility</p>
+                            <p className="text-xs text-white/50 uppercase tracking-widest font-mono mt-0.5">{t('game.bios.configurationUtility')}</p>
                         </div>
                     </div>
                     <button
@@ -183,36 +252,104 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                 className="space-y-8"
                             >
                                 {activeTab === 'display' && (
-                                    <>
+                                    <div className="space-y-8">
+                                        {/* Display Mode Section */}
                                         <div className="space-y-4">
                                             <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/20 pb-2 flex items-center gap-2">
-                                                <span className="w-2 h-2 bg-white/40" /> {t('game.bios.fullScreen')}
+                                                <span className="w-2 h-2 bg-white/40" /> {t('game.bios.displayMode')}
                                             </h3>
-                                            <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 hover:border-white/50 transition-colors">
-                                                <div className="flex items-center gap-3 text-white/80">
-                                                    <Monitor className="w-5 h-5" />
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold text-sm uppercase">{t('game.bios.fullScreen')}</span>
-                                                        <span className="text-[10px] text-white/40">{t('game.bios.immersiveMode')}</span>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={toggleFullscreen}
-                                                    className={cn(
-                                                        "px-4 py-2 text-xs font-bold uppercase tracking-wider border-2 transition-all",
-                                                        isFullscreen
-                                                            ? "bg-white text-black border-white"
-                                                            : "bg-transparent text-white border-white/40 hover:border-white"
-                                                    )}
-                                                >
-                                                    {isFullscreen ? t('game.bios.fullScreenExit') : t('game.bios.fullScreenEnter')}
-                                                </button>
+
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {(['fullscreen', 'borderless', 'windowed'] as const).map((mode) => {
+                                                    // Determine logical active mode
+                                                    const electronAPI = (window as any).electron;
+                                                    const actualIsElectron = isElectron || !!electronAPI;
+
+                                                    let activeMode: string = isFullscreen ? 'fullscreen' : 'windowed';
+                                                    if (actualIsElectron && displaySettings) {
+                                                        activeMode = displaySettings.mode;
+                                                    }
+
+                                                    const isActive = activeMode === mode;
+
+                                                    return (
+                                                        <button
+                                                            key={mode}
+                                                            onClick={() => handleModeChange(mode)}
+                                                            className={cn(
+                                                                "p-4 border-2 text-center transition-all relative overflow-hidden group",
+                                                                isActive
+                                                                    ? "bg-white/10 border-white text-white"
+                                                                    : "bg-black border-zinc-800 hover:border-white/50 text-zinc-500"
+                                                            )}
+                                                        >
+                                                            <div className="font-bold uppercase text-[10px] tracking-widest">{t(`game.bios.${mode}`)}</div>
+                                                            {isActive && (
+                                                                <motion.div layoutId="mode-indicator" className="absolute bottom-0 left-0 right-0 h-1 bg-white" />
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
 
+                                        {/* Resolution & Settings (Only in Windowed Mode in Electron, or if state is ambiguous but clearly in Electron) */}
+                                        {(isElectron || !!(window as any).electron) && (displaySettings?.mode === 'windowed' || (!displaySettings && !isFullscreen)) && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="grid grid-cols-2 gap-8"
+                                            >
+                                                <div className="space-y-4">
+                                                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/20 pb-2 flex items-center gap-2">
+                                                        <span className="w-2 h-2 bg-white/40" /> {t('game.bios.resolution')}
+                                                    </h3>
+                                                    <div className="grid grid-cols-1 gap-1">
+                                                        {RESOLUTIONS.map((res) => (
+                                                            <button
+                                                                key={res.label}
+                                                                onClick={() => handleResolutionChange(res.width, res.height)}
+                                                                className={cn(
+                                                                    "p-2 border transition-all text-left text-[10px] font-bold uppercase tracking-wider",
+                                                                    displaySettings?.width === res.width && displaySettings?.height === res.height
+                                                                        ? "bg-white text-black border-white"
+                                                                        : "bg-black text-white/40 border-zinc-800 hover:border-white/50"
+                                                                )}
+                                                            >
+                                                                {res.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/20 pb-2 flex items-center gap-2">
+                                                        <span className="w-2 h-2 bg-white/40" /> {t('game.bios.windowSettings')}
+                                                    </h3>
+                                                    <button
+                                                        onClick={handleFrameToggle}
+                                                        className={cn(
+                                                            "w-full p-4 border-2 text-left transition-all flex justify-between items-center group",
+                                                            displaySettings?.frame
+                                                                ? "bg-white/5 border-white text-white"
+                                                                : "bg-black border-zinc-800 text-zinc-500 hover:border-white/50"
+                                                        )}
+                                                    >
+                                                        <div>
+                                                            <div className="font-bold uppercase text-xs tracking-widest">{t('game.bios.windowFrame')}</div>
+                                                            <div className="text-[9px] opacity-40 mt-1">{t('game.bios.windowFrameHint')}</div>
+                                                        </div>
+                                                        <div className={cn("w-4 h-4 border-2 flex items-center justify-center", displaySettings?.frame ? "border-white bg-white" : "border-zinc-700")}>
+                                                            {displaySettings?.frame && <Check className="w-3 h-3 text-black" />}
+                                                        </div>
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
+
                                         <div className="space-y-4">
                                             <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/20 pb-2 flex items-center gap-2">
-                                                <span className="w-2 h-2 bg-white/40" /> Graphics Quality
+                                                <span className="w-2 h-2 bg-white/40" /> {t('game.bios.graphicsQuality')}
                                             </h3>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <button
@@ -226,10 +363,10 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                                 >
                                                     <div className="relative z-10">
                                                         <div className="flex justify-between items-center mb-2">
-                                                            <div className="font-bold uppercase text-sm">High Fidelity</div>
+                                                            <div className="font-bold uppercase text-sm">{t('game.bios.presets.highFidelity.label')}</div>
                                                             {getPreset() === 'ultra' && <div className={cn("w-2 h-2 bg-white", !reduceMotion && "animate-pulse")} />}
                                                         </div>
-                                                        <div className="text-[10px] opacity-60">Blur, Shadows, Vibrancy enabled. visual++</div>
+                                                        <div className="text-[10px] opacity-60">{t('game.bios.presets.highFidelity.desc')}</div>
                                                     </div>
                                                 </button>
                                                 <button
@@ -243,10 +380,10 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                                 >
                                                     <div className="relative z-10">
                                                         <div className="flex justify-between items-center mb-2">
-                                                            <div className="font-bold uppercase text-sm">Performance</div>
+                                                            <div className="font-bold uppercase text-sm">{t('game.bios.presets.performance.label')}</div>
                                                             {getPreset() === 'performance' && <div className={cn("w-2 h-2 bg-white", !reduceMotion && "animate-pulse")} />}
                                                         </div>
-                                                        <div className="text-[10px] opacity-60">Max FPS. Minimal effects. speed++</div>
+                                                        <div className="text-[10px] opacity-60">{t('game.bios.presets.performance.desc')}</div>
                                                     </div>
                                                 </button>
                                             </div>
@@ -254,32 +391,54 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                             {/* Advanced Toggles */}
                                             <div className="pt-2 grid grid-cols-2 gap-2">
                                                 <button
+                                                    onClick={() => {
+                                                        const newState = !gpuEnabled;
+                                                        setGpuEnabled(newState);
+                                                        if (!newState) {
+                                                            setBlurEnabled(false);
+                                                            setDisableShadows(true);
+                                                            setReduceMotion(true);
+                                                        }
+                                                    }}
+                                                    className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5 col-span-2", gpuEnabled ? "border-white text-white" : "border-zinc-800 text-zinc-600")}
+                                                >
+                                                    [ {gpuEnabled ? 'X' : ' '} ] {t('game.bios.hardwareAcceleration')}
+                                                </button>
+                                                <button
                                                     onClick={() => setReduceMotion(!reduceMotion)}
                                                     className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5", reduceMotion ? "border-white text-white" : "border-zinc-800 text-zinc-600")}
                                                 >
-                                                    [ {reduceMotion ? 'X' : ' '} ] Reduce Motion
+                                                    [ {reduceMotion ? 'X' : ' '} ] {t('game.bios.reduceMotion')}
                                                 </button>
                                                 <button
                                                     onClick={() => setDisableGradients(!disableGradients)}
                                                     className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5", disableGradients ? "border-white text-white" : "border-zinc-800 text-zinc-600")}
                                                 >
-                                                    [ {disableGradients ? 'X' : ' '} ] Simple Colors
+                                                    [ {disableGradients ? 'X' : ' '} ] {t('game.bios.simpleColors')}
                                                 </button>
                                                 <button
                                                     onClick={() => setBlurEnabled(!blurEnabled)}
-                                                    className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5", !blurEnabled ? "border-white text-white" : "border-zinc-800 text-zinc-600")}
+                                                    disabled={!gpuEnabled}
+                                                    className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5",
+                                                        !gpuEnabled && "opacity-50 cursor-not-allowed",
+                                                        !blurEnabled ? "border-white text-white" : "border-zinc-800 text-zinc-600"
+                                                    )}
                                                 >
-                                                    [ {!blurEnabled ? 'X' : ' '} ] Solid Backgrounds
+                                                    [ {!blurEnabled ? 'X' : ' '} ] {t('game.bios.solidBackgrounds')}
                                                 </button>
                                                 <button
                                                     onClick={() => setDisableShadows(!disableShadows)}
-                                                    className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5", disableShadows ? "border-white text-white" : "border-zinc-800 text-zinc-600")}
+                                                    disabled={!gpuEnabled}
+                                                    className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5",
+                                                        !gpuEnabled && "opacity-50 cursor-not-allowed",
+                                                        disableShadows ? "border-white text-white" : "border-zinc-800 text-zinc-600"
+                                                    )}
                                                 >
-                                                    [ {disableShadows ? 'X' : ' '} ] No Shadows
+                                                    [ {disableShadows ? 'X' : ' '} ] {t('game.bios.noShadows')}
                                                 </button>
                                             </div>
                                         </div>
-                                    </>
+                                    </div>
                                 )}
 
                                 {activeTab === 'audio' && (
@@ -415,7 +574,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
 
                                         <div className="pt-8 space-y-4">
                                             <h3 className="text-xs font-bold text-red-500 uppercase tracking-wider border-b border-red-900/50 pb-2 flex items-center gap-2">
-                                                <span className="w-2 h-2 bg-red-500" /> Danger Zone
+                                                <span className="w-2 h-2 bg-red-500" /> {t('game.bios.dangerZone')}
                                             </h3>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <button
@@ -447,7 +606,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                 {/* Footer */}
                 <div className="p-3 border-t border-white bg-black text-center text-[10px] text-white/40 font-mono uppercase tracking-widest flex justify-between px-4">
                     <span>{pkg.build.productName} v{pkg.version}</span>
-                    <span>{activeTab.toUpperCase()} CONFIG</span>
+                    <span>{activeTab.toUpperCase()} {t('game.bios.configFooter')}</span>
                 </div>
             </motion.div>
         </div>

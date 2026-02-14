@@ -52,20 +52,46 @@ export const en: TranslationDict = {
       credits: {},
     },
     bios: {
+
       title: 'BIOS Settings',
-
-      fullScreen: 'Full Screen',
-      immersiveMode: 'Immersive mode',
-      fullScreenEnter: 'Enter',
-      fullScreenExit: 'Exit',
+      hardwareAcceleration: 'Hardware Acceleration',
+      displayMode: 'Display Mode',
+      fullscreen: 'Fullscreen',
+      borderless: 'Borderless',
+      windowed: 'Windowed',
+      resolution: 'Resolution',
+      windowSettings: 'Window Settings',
+      windowFrame: 'Window Frame',
+      windowFrameHint: 'Title bar & Borders (Restart required)',
+      configurationUtility: 'Configuration Utility',
+      tabs: {
+        display: 'Display',
+        audio: 'Audio',
+        system: 'System',
+      },
+      graphicsQuality: 'Graphics Quality',
+      presets: {
+        highFidelity: {
+          label: 'High Fidelity',
+          desc: 'Blur, Shadows, Vibrancy enabled. visual++',
+        },
+        performance: {
+          label: 'Performance',
+          desc: 'Max FPS. Minimal effects. speed++',
+        },
+      },
+      reduceMotion: 'Reduce Motion',
+      simpleColors: 'Simple Colors',
+      solidBackgrounds: 'Solid Backgrounds',
+      noShadows: 'No Shadows',
+      dangerZone: 'Danger Zone',
+      configFooter: 'CONFIG',
       softReset: 'Soft Reset',
-      softResetHint: 'Reload Application',
-      softResetConfirm: 'Soft Reset: This will reload the application but keep your data. Continue?',
+      softResetHint: 'Reloads the current session (F5)',
+      softResetConfirm: 'Are you sure you want to reload the page? Unsaved changes will be lost.',
       factoryReset: 'Factory Reset',
-      factoryResetHint: 'Wipe All Data',
-      factoryResetConfirm:
-        'FACTORY RESET: This will wipe ALL data, users, and files appropriately. This cannot be undone. Are you sure?',
-
+      factoryResetHint: 'Wipes all data & saves',
+      factoryResetConfirm: 'WARNING: This will wipe all save data and reset the game to factory state. This action cannot be undone. Are you sure?',
     },
     footer: {
       originalDistribution: 'Original Distribution',
@@ -163,9 +189,6 @@ export const en: TranslationDict = {
       bookmarks: 'Bookmarks',
       mailbox: 'Mailbox',
       message: 'Message',
-      devCenter: 'DEV Center',
-      tools: 'Tools',
-      image: 'Image',
       conversations: 'Conversations',
     },
     items: {
@@ -252,6 +275,7 @@ export const en: TranslationDict = {
     },
     empty: 'No notifications',
     clearApp: 'Clear all from this app',
+    messageFrom: 'Message from {{sender}}',
   },
   memory: {
     title: 'Memory',
@@ -319,6 +343,8 @@ export const en: TranslationDict = {
     },
 
     welcome: {
+      title: 'Browser',
+      description: 'Search for information or enter a URL to start browsing.',
       searchPlaceholder: 'Search websites or enter address...',
       favorites: 'Favorites',
       recentActivity: 'Recent Activity',
@@ -328,6 +354,8 @@ export const en: TranslationDict = {
       pageNotFound: 'Page Not Found',
       pageNotFoundDesc: 'The website {{url}} could not be found.',
       goHome: 'Go to Home',
+      offlineTitle: 'No Internet Connection',
+      offlineDesc: 'You are not connected to the internet. Please connect to a network to browse the web.',
     },
   },
   music: {
@@ -645,7 +673,7 @@ export const en: TranslationDict = {
       allPhotos: 'All Photos',
       favorites: 'Favorites',
       recent: 'Recent',
-
+      userLibrary: "{{user}}'s Library",
     },
 
     menu: {
@@ -675,7 +703,8 @@ export const en: TranslationDict = {
     },
     folders: {
       pictures: 'Pictures',
-
+      recent: 'Recent',
+      misc: 'Misc',
     },
   },
   mail: {
@@ -981,6 +1010,8 @@ export const en: TranslationDict = {
 
 
     performance: {
+
+
       title: 'Performance Monitor',
 
     },
@@ -1066,6 +1097,7 @@ export const en: TranslationDict = {
       wallpaperUse: 'Use',
     },
     performance: {
+
       blurTitle: 'Blur & Transparency',
       blurDescription: 'Enable glass blur effect and window transparency',
       reduceMotionTitle: 'Reduce Motion',
@@ -1074,14 +1106,33 @@ export const en: TranslationDict = {
       disableShadowsDescription: 'Remove window shadows to improve rendering performance',
       disableGradientsTitle: 'Disable Gradients',
       disableGradientsDescription: 'Use solid colors instead of gradients for icons',
+      gpuTitle: 'Use graphics acceleration',
+      gpuDescription: 'Use hardware acceleration when available (restart required)',
+    },
+    network: {
+      wifiTitle: 'Wi-Fi',
+      wifinotConnected: 'Not Connected',
+      wifiDisabled: 'Wi-Fi is off',
+      wifiNetworks: 'Available Networks',
+      scanning: 'Scanning...',
+      passwordPlaceholder: 'Password',
+      disconnect: 'Disconnect',
+      configurationMode: 'Configuration mode',
+      automatic: 'Automatic (DHCP)',
+      manual: 'Manual',
+      autoConfigTitle: 'Automatic configuration',
+      manualConfigTitle: 'Manual configuration',
+      ipAddress: 'IP Address',
+      subnetMask: 'Subnet Mask',
+      gateway: 'Gateway',
+      dns: 'DNS Server',
+      validateConfig: 'Validate configuration',
+      configSaved: 'Network configuration saved successfully',
+      dhcpAttributionProgress: 'Retrieving an IP address via DHCP',
     },
     placeholders: {
-      displaysTitle: 'Display Settings',
-      displaysDescription: 'Resolution, scaling, and brightness controls coming soon.',
       notificationsTitle: 'Notifications',
       notificationsDescription: 'Notification center preferences coming soon.',
-      networkTitle: 'Network',
-      networkDescription: 'Wi‑Fi and Bluetooth configurations coming soon.',
       securityTitle: 'Security & Privacy',
       securityDescription: 'Firewall, permissions, and privacy settings coming soon.',
       storageTitle: 'Storage',

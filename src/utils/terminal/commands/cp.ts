@@ -40,8 +40,8 @@ export const cp: TerminalCommand = {
         }
 
         // Determine destination name and parent
-        let destName = '';
-        let parentPath = '';
+        let destName: string;
+        let parentPath: string;
 
         // If dest is directory, copy into it with same name
         const destNode = getNodeAtPath(destPath);
@@ -84,17 +84,17 @@ export const cp: TerminalCommand = {
             // Try to overwrite if it exists
             const fullDestPath = parentPath === '/' ? `/${destName}` : `${parentPath}/${destName}`;
             const existingNode = getNodeAtPath(fullDestPath);
-            
+
             if (existingNode && existingNode.type === 'file') {
-                 if (!checkPermissions(existingNode, userObj, 'write')) {
+                if (!checkPermissions(existingNode, userObj, 'write')) {
                     return { output: [`cp: cannot create regular file '${fullDestPath}': Permission denied`], error: true };
-                 }
-                 const writeSuccess = fileSystem.writeFile(fullDestPath, content);
-                 if (!writeSuccess) {
-                     return { output: [`cp: cannot create regular file '${args[1]}': Operation failed`], error: true };
-                 }
+                }
+                const writeSuccess = fileSystem.writeFile(fullDestPath, content);
+                if (!writeSuccess) {
+                    return { output: [`cp: cannot create regular file '${args[1]}': Operation failed`], error: true };
+                }
             } else {
-                 return { output: [`cp: cannot create regular file '${args[1]}': Operation failed`], error: true };
+                return { output: [`cp: cannot create regular file '${args[1]}': Operation failed`], error: true };
             }
         }
 

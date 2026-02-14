@@ -144,14 +144,14 @@ export function BatteryApplet() {
                 <div className={cn("p-4", hasMetrics && "border-b border-white/10")}>
                     {/* Main Status */}
                     <div className="flex items-center gap-4 mb-3">
-                        <div className="text-4xl font-light tracking-tight">{percentage}%</div>
+                        <div className="text-4xl font-light tracking-tight" style={getStatusColorStyle()}>{percentage}%</div>
                         <div className="flex-1 flex flex-col justify-center gap-1">
                              <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
                                   <div 
-                                    className={cn("h-full transition-all duration-500", !charging && "bg-white")} 
+                                    className="h-full transition-all duration-500" 
                                     style={{ 
                                         width: `${percentage}%`,
-                                        backgroundColor: charging ? accentColor : undefined
+                                        backgroundColor: charging ? accentColor : (getStatusColorStyle()?.color || '#ffffff')
                                     }}
                                   />
                              </div>

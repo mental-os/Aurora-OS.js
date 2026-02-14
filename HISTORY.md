@@ -1,3 +1,96 @@
+## 0.8.5
+
+### Added
+
+- **GPU Capabilities**: Added hardware acceleration toggle in BIOS and Settings (High Fidelity vs Performance presets).
+- **Network Simulation**: with functional connection applet and password input. OS is responsive to the network state and react to the connection specifications (speed, signal, etc.): open/WEP/WPA/WPA2/WPA3 security that reflects the max. download speed of the network, signal strength that sets the percentage of the max. download speed, and more to come.
+- **Localization**: Full native translations for 12 languages (EN, DE, ES, FR, PT, RO, RU, JA, PL, KO, TR, ZH) and added Hindi language WIP.
+- **Persistence**: Graphics settings (BioS) now strictly survive "New Game" resets.
+- **Browser**: is now aware of the `/etc/hosts` file and can resolve domain names to IP addresses.
+- **Display settings**: for the System Settings APP in a simmilar way as the Main Menu > BIOS.
+- **Splash screen**: for the native build, that preloads the game in the background.
+
+### Improved
+
+- **Bundle Size Optimization**: Reduced build size by ~65% through conversion of all wallpapers to AVIF format (4.5MB → 1.6MB), lazy loading of all applications (code-split into 12 separate chunks), and Electron-specific compression strategy (ASAR maximum compression, removed redundant web-only optimizations).
+- **Audio Optimization**: Converted all system and UI sounds to Opus format, reducing audio asset size by ~50% (4MB → 2MB) while maintaining high quality (UI sounds reduced by 97%).
+- **Battery Applet**: Enhanced with color-coded status indicators (red ≤20%, yellow ≤50%, white >50%) for percentage text and progress bar. Verified real hardware data integration on macOS (voltage, cycle count, battery health).
+- **Window Performance**: Implemented "Safe" closing animations and optimized z-index handling to reduce layout thrashing.
+- **Browser UI**: to match the OS theme and dynamic colors.
+- **Browser's websites**: Improved layout and responsiveness for all the available websites.
+- **Context Awareness**: Updated AI agent documentation (`context.md`) to reflect the latest architecture mechanics.
+- **App Center**: Improved with network connection check and progress the install of apps based on the effective speed of the network (first 50% of the progress bar is network, second 50% is based on system performance - random for now, not yet implemented).
+- **Native full-screen**: Implemented native full-screen mode for host-OS (Windows, Linux, macOS) and added a the necesarry code to enable it in BIOS (Settings menu).
+- **Debouncing & Sanitization**: for localStorage to prevent prototype pollution and other security issues across various APPs and systems.
+- **Memory**: Optimized to use standardized keys and a tiered priority related to various system functions (user logout, new game, close > continue game, etc.).
+- **Browser**: Improved the pages loading speed mechanism by using the same logic of the App Store (WPA3 is instant, downgrading speed based on the security type of the network, signal strength, etc.).
+- **Network**: Improved statistics and network details display in System Settings > Network.
+
+### Fixed
+
+- **Translation Gaps**: Resolved missing keys and placeholders in non-English locales.
+- **Settings Sync**: Fixed issues where BIOS settings weren't correctly applying to the `SystemConfig`.
+- **Security**: Resolved high-severity vulnerabilities (GHSA-8qq5-rm4j-mr97) in the `node-tar` package by implementing a global dependency override to `tar@^7.5.6`.
+- **DEV Center**: is now available only with "Developer mode" enabled in System Settings > About.
+
+## 0.8.4
+
+### Added
+
+- **Photos App**: Full-featured gallery with albums, favorites, lightbox, and background library scanning.
+- **Mock Content**: Initial set of high-quality mock images seeded to `~/Pictures`.
+- **Simulated Cloud Services**: Added initial support for simulated cloud services (e.g., TrustMail accounts DB, messages DB).
+- **TrustMail**: Added Account Recovery system with secret key generation and storage.
+- **Fully functional Messages App**: with support for multiple accounts, bidirectional chat, and more.
+- **Notifications Applet**: Added initial support for app notifications and HeadsUp notifications (implemented in the Messages app).
+- **App Store**: Uninstall confirmation and window closing block event if an app is still installing.
+- **DevCenter - Messages Debugger**: New debugging interface for Messages app with account creation, registry management, and message sending tools.
+- **Memory Management**: New configurable System Memory (default 2GB) with dynamic App Launch Gates that prevent opening apps when RAM is insufficient.
+
+### Removed
+
+- **TrustMail and Mail**: Dependency on local inbox and outbox.
+- **TrustMail**: Removed single-account limitation (multi-account support).
+- **DevCenter**: Removed legacy System Logs tab in favor of more focused debugging tools.
+
+### Improved
+
+- **Architecture**: Standardized internal imports to use absolute `@/` alias.
+- **Configuration**: Centralized all brand identity (colors, wallpapers, name) into `systemConfig.ts` for easier white-labeling and theming.
+- **Multi-User**: Enhanced app isolation (local providers) for `sudo`/`su` sessions.
+- **Localization**: Achieved 100% translation parity across all 12 supported languages (EN, DE, ES, FR, PT, RO, ZH, RU, JA, PL, KO, TR).
+- **Audio**: Added dedicated Ambiance channel with independent volume control and hierarchical settings persistence.
+- **Boot Sequence**: Improved startup sounds with high-quality assets for Intro (`computerStart`) and BIOS (`biosStart`).
+- **DevCenter**: Complete UI overhaul with new Apps debugging section, enhanced File System explorer with detailed file properties, and unified glassmorphism aesthetic with system accent colors.
+- **Internationalization**: All DevCenter UI strings are now fully localized with synchronized translations across all supported languages.
+- **Calendar**: Added drag & drop support.
+- **Calendar**: Added dynamic categories support `(.config/calendar.json)`.
+- **Calendar first event**: aka. "Loop Started" event is now set to follow the onboarding completion time.
+- **Time source**: now influences Calendar app (local time vs. server time).
+- **Modals**: such as "Open File" or "Create/Edit Event" blurs the background.
+- **Main Services & Mail**: Trash functionality and permanent deletion.
+- **Mail App**: Improved UI and responsive design to match Messages App.
+- **Terminal performance**: by switching to memos, the terminal is now much faster and more responsive.
+- **Notifications**: Clear distinction between system notifications (debug notifications in bottom right) and app notifications (app events notifications in top right and the Notifications applet).
+- **App Store**: Improved UI and responsive design to match other Apps.
+- **Main Menu**: Added "Contribute" tab and "Developer disclaimer" floating window.
+- **Modals**: Added `Escape` key close support and Arrow key navigation for tabs in `Settings` and `Credits` modals.
+- **Onboarding**: Improved user flow with `Escape` to cancel/go back and `Enter` to advance steps.
+- **BIOS Settings**: Complete overhaul with tabbed interface, graphics presets (Ultra/Performance), and granular audio controls.
+- **Pre-boot flow**: Improved support for keyboard navigation and user experience.
+
+### Fixed
+
+- **System Stability**: Resolved "System Critical Error" caused by React Context duplication.
+- **Audio**: Fixed unwarranted "warning" sound during New Game initialization by silencing user-less system reset notifications.
+- **Login Screen**: Fixed password hint display bug where it would incorrectly default to "guest" for users with empty hints.
+- **Drag & Drop**: Fixed drag-and-drop support system-wide (Finder, Calendar, etc.) avoiding double-click triggers (browsers limitation).
+- **Finder**: Fixed double-click launch reliability and "Open Folder" case-sensitivity issues.
+- **Mail App**: Fixed remembering opened tabs after app close, or relogin.
+- **Terminal text selection**: Fixed text selection in Terminal app created by the "no text selection" settings across the app (input boxes should be fine).
+- **DevCenter**: Updated to include all current features in a unified testing environment with proper storage key usage and Messages DB integration.
+- **Session**: Prevented apps from auto-playing/opening content when restoring old sessions.
+
 ## 0.8.3
 
 ### Added

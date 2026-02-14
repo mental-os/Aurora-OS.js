@@ -1,16 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { IntroSequence } from '@/components/Game/IntroSequence';
 import { MainMenu } from '@/components/Game/MainMenu';
 import { BootSequence } from '@/components/Game/BootSequence';
 import { useFileSystem } from '@/components/FileSystemContext';
-import { useAppContext } from '@/components/AppContext';
+import { useAppContext, SystemConfig } from '@/components/AppContext';
+import { PERSISTENT_CONFIG_KEYS } from '@/config/systemConfig';
 
 import { STORAGE_KEYS } from '@/utils/memory';
 import { Onboarding } from "@/components/Game/Onboarding.tsx";
 
 import { StorageIndicator } from '@/components/ui/StorageIndicator';
 import { feedback } from '@/services/soundFeedback';
-import { useEffect } from 'react';
 
 // The "Actual Game" being played is passed as children (The OS Desktop)
 interface GameRootProps {
@@ -22,7 +22,8 @@ type GameState = 'INTRO' | 'MENU' | 'FIRST_BOOT' | 'BOOT' | 'ONBOARDING' | 'GAME
 export function GameRoot({ children }: GameRootProps) {
     const [gameState, setGameState] = useState<GameState>('INTRO'); // Default to INTRO
     const { resetFileSystem } = useFileSystem();
-    const { setIsLocked, resetSystemConfig } = useAppContext();
+    const appContext = useAppContext();
+    const { setIsLocked, resetSystemConfig } = appContext;
 
     // Global click sound (Persistent across all game states: Menu, Intro, Desktop, etc.)
     useEffect(() => {
@@ -33,16 +34,37 @@ export function GameRoot({ children }: GameRootProps) {
         return () => window.removeEventListener('click', handleGlobalClick);
     }, []);
 
-    // Check for save data
-    const hasSave = useMemo(() => {
-        return !!localStorage.getItem(STORAGE_KEYS.VERSION);
+    // Signal Electron that the React app is ready (closes splash screen)
+    useEffect(() => {
+        // @ts-expect-error - window.electron is only available in Electron runtime
+        window.electron?.signalReady?.();
     }, []);
+
+    // Check for save data
+    const { onboardingComplete } = appContext;
+    const hasSave = useMemo(() => {
+        // Check for FILESYSTEM AND Onboarding Status
+        // A valid game requires both the FS to exist and the user to have finished setup.
+        // This prevents "Continue" from being active on a fresh (wiped) FS.
+        const fsExists = !!localStorage.getItem(STORAGE_KEYS.FILESYSTEM);
+        return fsExists && onboardingComplete;
+    }, [onboardingComplete]);
 
     const handleNewGame = () => {
         // hardReset() is now handled internally by resetFileSystem()
         // which resets both localStorage and in-memory React state
         resetFileSystem(true);
-        resetSystemConfig();
+
+        // Preserve "BIOS" settings (Graphics/Hardware/Language) dynamically
+        const biosSettings: Partial<SystemConfig> = {};
+        PERSISTENT_CONFIG_KEYS.forEach((key) => {
+            if (appContext[key] !== undefined) {
+                // @ts-expect-error - Dynamic key assignment to Partial<SystemConfig>
+                biosSettings[key] = appContext[key];
+            }
+        });
+
+        resetSystemConfig(biosSettings);
 
         setIsLocked(false);
         setGameState('FIRST_BOOT');

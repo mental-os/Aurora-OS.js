@@ -46,10 +46,38 @@ export const tr: TranslationDict = {
     },
     "bios": {
       "title": "BIOS Ayarları",
-      "fullScreen": "Tam Ekran",
-      "immersiveMode": "Sürükleyici Mod",
-      "fullScreenEnter": "Giriş",
-      "fullScreenExit": "Çıkış",
+      "hardwareAcceleration": "Donanım Hızlandırma",
+      "displayMode": "Görüntü Modu",
+      "fullscreen": "Tam Ekran",
+      "borderless": "Çerçevesiz",
+      "windowed": "Pencere",
+      "resolution": "Çözünürlük",
+      "windowSettings": "Pencere Ayarları",
+      "windowFrame": "Pencere Çerçevesi",
+      "windowFrameHint": "Başlık çubuğu ve Kenarlıklar (Yeniden başlatma gerekir)",
+      "configurationUtility": "Yapılandırma Aracı",
+      "tabs": {
+        "display": "Ekran",
+        "audio": "Ses",
+        "system": "Sistem"
+      },
+      "graphicsQuality": "Grafik Kalitesi",
+      "presets": {
+        "highFidelity": {
+          "label": "Yüksek Kalite",
+          "desc": "Bulanıklık, Gölgeler, Canlılık etkin. görsel++"
+        },
+        "performance": {
+          "label": "Performans",
+          "desc": "Maks FPS. Minimum efekt. hız++"
+        }
+      },
+      "reduceMotion": "Hareketleri Azalt",
+      "simpleColors": "Basit Renkler",
+      "solidBackgrounds": "Düz Arkaplanlar",
+      "noShadows": "Gölge Yok",
+      "dangerZone": "Tehlike Bölgesi",
+      "configFooter": "YAPILANDIRMA",
       "softReset": "Yazılımsal Sıfırlama",
       "softResetHint": "Uygulamayı yeniden yükle",
       "softResetConfirm": "Yazılımsal Sıfırlama: Bu işlem uygulamayı yeniden yükleyecek ancak verilerinizi koruyacaktır. Devam et?",
@@ -148,9 +176,6 @@ export const tr: TranslationDict = {
       "bookmarks": "Yer İmleri",
       "mailbox": "Posta Kutusu",
       "message": "Mesaj",
-      "devCenter": "GELİŞTİRİCİ Merkezi",
-      "tools": "Araçlar",
-      "image": "Görüntü",
       "conversations": "Konuşmalar"
     },
     "items": {
@@ -232,7 +257,8 @@ export const tr: TranslationDict = {
       "fileError": "Dosya Hatası"
     },
     "empty": "Bildirim Yok",
-    "clearApp": "Bu uygulamadan gelenlerin hepsini temizle"
+    "clearApp": "Bu uygulamadan gelenlerin hepsini temizle",
+    "messageFrom": "Message from {{sender}}"
   },
   "memory": {
     "title": "Bellek",
@@ -298,6 +324,8 @@ export const tr: TranslationDict = {
       "closeTab": "Sekmeyi Kapat"
     },
     "welcome": {
+      "title": "Browser",
+      "description": "Search for information or enter a URL to start browsing.",
       "searchPlaceholder": "Web sitelerini ara veya adres gir...",
       "favorites": "Sık Kullanılanlar",
       "recentActivity": "Son Etkinlik"
@@ -306,7 +334,9 @@ export const tr: TranslationDict = {
     "error": {
       "pageNotFound": "Sayfa Bulunamadı",
       "pageNotFoundDesc": "{{url}} web sitesi bulunamadı.",
-      "goHome": "Eve Dön"
+      "goHome": "Eve Dön",
+      "offlineTitle": "No Internet Connection",
+      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
     }
   },
   "music": {
@@ -619,7 +649,8 @@ export const tr: TranslationDict = {
     "library": {
       "allPhotos": "Tüm Fotoğraflar",
       "favorites": "Sık Kullanılanlar",
-      "recent": "En Son"
+      "recent": "En Son",
+      "userLibrary": "{{user}}'s Library"
     },
     "menu": {
       "slideshow": "Slayt Gösterisi",
@@ -647,7 +678,9 @@ export const tr: TranslationDict = {
       "openHome": "Ana dizini aç"
     },
     "folders": {
-      "pictures": "Resimler"
+      "pictures": "Resimler",
+      "recent": "Recent",
+      "misc": "Misc"
     }
   },
   "mail": {
@@ -1023,15 +1056,34 @@ export const tr: TranslationDict = {
       "disableShadowsTitle": "Gölgeleri Devre Dışı Bırak",
       "disableShadowsDescription": "Oluşturma performansını artırmak için pencere gölgelerini kaldır",
       "disableGradientsTitle": "Gradyanları Devre Dışı Bırak",
-      "disableGradientsDescription": "Simgeler için gradyanlar yerine düz renkler kullan"
+      "disableGradientsDescription": "Simgeler için gradyanlar yerine düz renkler kullan",
+      "gpuTitle": "Grafik hızlandırmayı kullan",
+      "gpuDescription": "Mümkün olduğunda donanım hızlandırmayı kullan (yeniden başlatma gerekir)"
+    },
+    "network": {
+      "wifiTitle": "Wi-Fi",
+      "wifinotConnected": "Not Connected",
+      "wifiDisabled": "Wi-Fi kapalı",
+      "wifiNetworks": "Kullanılabilir Ağlar",
+      "scanning": "Taranıyor...",
+      "passwordPlaceholder": "Şifre",
+      "disconnect": "Bağlantıyı Kes",
+      "configurationMode": "Yapılandırma modu",
+      "automatic": "Otomatik (DHCP)",
+      "manual": "Manuel",
+      "autoConfigTitle": "Otomatik yapılandırma",
+      "manualConfigTitle": "Manuel yapılandırma",
+      "ipAddress": "IP Adresi",
+      "subnetMask": "Alt Ağ Maskesi",
+      "gateway": "Ağ Geçidi",
+      "dns": "DNS Sunucusu",
+      "validateConfig": "Yapılandırmayı Doğrula",
+      "configSaved": "Ağ yapılandırması başarıyla kaydedildi",
+      "dhcpAttributionProgress": "DHCP üzerinden IP adresi alınıyor"
     },
     "placeholders": {
-      "displaysTitle": "Ekran Ayarları",
-      "displaysDescription": "Çözünürlük, ölçeklendirme ve parlaklık kontrolü çok yakında.",
       "notificationsTitle": "Bildirimler",
       "notificationsDescription": "Bildirim merkezi tercihleri çok yakında.",
-      "networkTitle": "Ağ",
-      "networkDescription": "Wi‑Fi ve Bluetooth yapılandırması çok yakında.",
       "securityTitle": "Güvenlik ve Gizlilik",
       "securityDescription": "Güvenlik duvarı, izinler ve gizlilik ayarları çok yakında.",
       "storageTitle": "Depolama",

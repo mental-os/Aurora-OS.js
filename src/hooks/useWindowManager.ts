@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { STORAGE_KEYS } from '../utils/memory';
+import { safeParseLocal } from '../utils/safeStorage';
 import { feedback } from '../services/soundFeedback';
 import { notify } from '../services/notifications';
 import { getApp } from '../config/appRegistry';
@@ -49,9 +50,29 @@ export function useWindowManager(
         setIsRestoring(true);
         const key = `${STORAGE_KEYS.WINDOWS_PREFIX}${activeUser}`;
         try {
-            const stored = localStorage.getItem(key);
-            if (stored) {
-                const sessions: WindowSession[] = JSON.parse(stored);
+            const sessionsRaw = safeParseLocal<any[]>(key);
+            if (sessionsRaw && Array.isArray(sessionsRaw)) {
+                const sessions: WindowSession[] = sessionsRaw
+                    .filter(s => s && typeof s.id === 'string' && typeof s.type === 'string')
+                    .map((s) => ({
+                        id: String(s.id),
+                        type: String(s.type),
+                        title: typeof s.title === 'string' ? s.title : String(s.type || 'Window'),
+                        isMinimized: !!s.isMinimized,
+                        isMaximized: !!s.isMaximized,
+                        position: {
+                            x: typeof s.position?.x === 'number' ? s.position.x : 100,
+                            y: typeof s.position?.y === 'number' ? s.position.y : 80,
+                        },
+                        size: {
+                            width: typeof s.size?.width === 'number' ? s.size.width : 900,
+                            height: typeof s.size?.height === 'number' ? s.size.height : 600,
+                        },
+                        zIndex: typeof s.zIndex === 'number' ? s.zIndex : 100,
+                        data: s.data,
+                        owner: typeof s.owner === 'string' ? s.owner : (activeUser || 'guest'),
+                    }));
+
                 const restoredWindows: WindowState[] = sessions.map((session) => {
                     const { content } = getAppContent(session.type, session.data, session.owner);
                     return {
@@ -76,6 +97,9 @@ export function useWindowManager(
     }, [activeUser, getAppContent]);
 
     // Persist windows on change (Debounced)
+    // Persist windows on change (Debounced)
+    const persistTimeoutRef = useRef<number | null>(null);
+
     useEffect(() => {
         if (isRestoring || !activeUser) return;
 
@@ -93,11 +117,31 @@ export function useWindowManager(
             owner: w.owner,
         }));
 
-        try {
-            localStorage.setItem(key, JSON.stringify(sessions));
-        } catch (e) {
-            console.warn('Failed to save windows:', e);
+        // Debounce writes to reduce localStorage I/O during rapid UI changes
+        if (persistTimeoutRef.current) {
+            clearTimeout(persistTimeoutRef.current as any);
         }
+        persistTimeoutRef.current = window.setTimeout(() => {
+            try {
+                localStorage.setItem(key, JSON.stringify(sessions));
+            } catch (e) {
+                console.warn('Failed to save windows:', e);
+            }
+            persistTimeoutRef.current = null;
+        }, 300);
+
+        // Flush on cleanup/unmount: ensure the latest state is saved
+        return () => {
+            if (persistTimeoutRef.current) {
+                clearTimeout(persistTimeoutRef.current as any);
+                persistTimeoutRef.current = null;
+                try {
+                    localStorage.setItem(key, JSON.stringify(sessions));
+                } catch (e) {
+                    console.warn('Failed to flush windows on unmount:', e);
+                }
+            }
+        };
     }, [windows, activeUser, isRestoring]);
 
     const openWindow = useCallback(

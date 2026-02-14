@@ -46,10 +46,38 @@ export const ro: TranslationDict = {
     },
     "bios": {
       "title": "Setări BIOS",
-      "fullScreen": "Ecran Complet",
-      "immersiveMode": "Mod Imersiv",
-      "fullScreenEnter": "Intră",
-      "fullScreenExit": "Ieși",
+      "hardwareAcceleration": "Accelerare Hardware",
+      "displayMode": "Mod Afișare",
+      "fullscreen": "Ecran Complet",
+      "borderless": "Fără Margini",
+      "windowed": "Fereastră",
+      "resolution": "Rezoluție",
+      "windowSettings": "Setări Fereastră",
+      "windowFrame": "Cadru Fereastră",
+      "windowFrameHint": "Bară de titlu și margini (Repornire necesară)",
+      "configurationUtility": "Utilitar de Configurare",
+      "tabs": {
+        "display": "Ecran",
+        "audio": "Audio",
+        "system": "Sistem"
+      },
+      "graphicsQuality": "Calitate Grafică",
+      "presets": {
+        "highFidelity": {
+          "label": "Înaltă Fidelitate",
+          "desc": "Neclaritate, Umbre, Vibranță activate. vizual++"
+        },
+        "performance": {
+          "label": "Performanță",
+          "desc": "Max FPS. Efecte minime. viteză++"
+        }
+      },
+      "reduceMotion": "Reducere Mișcare",
+      "simpleColors": "Culori Simple",
+      "solidBackgrounds": "Fundaluri Solide",
+      "noShadows": "Fără Umbre",
+      "dangerZone": "Zonă Periculoasă",
+      "configFooter": "CONFIG",
       "softReset": "Resetare Ușoară",
       "softResetHint": "Reîncarcă Aplicația",
       "softResetConfirm": "Resetare Ușoară: Aceasta va reîncărca aplicația, dar va păstra datele. Continui?",
@@ -148,9 +176,6 @@ export const ro: TranslationDict = {
       "bookmarks": "Marcaje",
       "mailbox": "Cutie poștală",
       "message": "Mesaje",
-      "devCenter": "Centru DEV",
-      "tools": "Unelte",
-      "image": "Imagine",
       "conversations": "Conversații"
     },
     "items": {
@@ -232,7 +257,8 @@ export const ro: TranslationDict = {
       "fileError": "Eroare fișier"
     },
     "empty": "Nu există notificări",
-    "clearApp": "Șterge tot de la această aplicație"
+    "clearApp": "Șterge tot de la această aplicație",
+    "messageFrom": "Message from {{sender}}"
   },
   "memory": {
     "title": "Memorie",
@@ -298,6 +324,8 @@ export const ro: TranslationDict = {
       "closeTab": "Închide Tab"
     },
     "welcome": {
+      "title": "Browser",
+      "description": "Search for information or enter a URL to start browsing.",
       "searchPlaceholder": "Caută site-uri web sau introdu o adresă...",
       "favorites": "Favorite",
       "recentActivity": "Activitate recentă"
@@ -306,7 +334,9 @@ export const ro: TranslationDict = {
     "error": {
       "pageNotFound": "Pagina nu a fost găsită",
       "pageNotFoundDesc": "Site-ul web {{url}} nu a putut fi găsit.",
-      "goHome": "Mergi la pagina principală"
+      "goHome": "Mergi la pagina principală",
+      "offlineTitle": "No Internet Connection",
+      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
     }
   },
   "music": {
@@ -619,7 +649,8 @@ export const ro: TranslationDict = {
     "library": {
       "allPhotos": "Toate Fotografiile",
       "favorites": "Favorite",
-      "recent": "Recente"
+      "recent": "Recente",
+      "userLibrary": "{{user}}'s Library"
     },
     "menu": {
       "slideshow": "Diaporamă",
@@ -647,7 +678,9 @@ export const ro: TranslationDict = {
       "openHome": "Deschide Directorul Acasă"
     },
     "folders": {
-      "pictures": "Imagini"
+      "pictures": "Imagini",
+      "recent": "Recent",
+      "misc": "Misc"
     }
   },
   "mail": {
@@ -1023,15 +1056,34 @@ export const ro: TranslationDict = {
       "disableShadowsTitle": "Dezactivează Umbre",
       "disableShadowsDescription": "Elimină umbrele ferestrelor pentru a îmbunătăți randarea",
       "disableGradientsTitle": "Dezactivează Gradienți",
-      "disableGradientsDescription": "Folosește culori solide în loc de gradienți pentru pictograme"
+      "disableGradientsDescription": "Folosește culori solide în loc de gradienți pentru pictograme",
+      "gpuTitle": "Utilizează accelerarea grafică",
+      "gpuDescription": "Utilizează accelerarea hardware dacă este disponibilă (necesită restart)"
+    },
+    "network": {
+      "wifiTitle": "Wi-Fi",
+      "wifinotConnected": "Not Connected",
+      "wifiDisabled": "Wi-Fi dezactivat",
+      "wifiNetworks": "Rețele disponibile",
+      "scanning": "Căutare în curs...",
+      "passwordPlaceholder": "Parolă",
+      "disconnect": "Deconectare",
+      "configurationMode": "Mod de configurare",
+      "automatic": "Automat (DHCP)",
+      "manual": "Manual",
+      "autoConfigTitle": "Configurare automată",
+      "manualConfigTitle": "Configurare manuală",
+      "ipAddress": "Adresă IP",
+      "subnetMask": "Mască de subrețea",
+      "gateway": "Gateway",
+      "dns": "Server DNS",
+      "validateConfig": "Validare configurație",
+      "configSaved": "Configurație de rețea salvată cu succes",
+      "dhcpAttributionProgress": "Se recuperează o adresă IP prin DHCP"
     },
     "placeholders": {
-      "displaysTitle": "Setări Ecran",
-      "displaysDescription": "Rezoluție, scalare și luminozitate în curând.",
       "notificationsTitle": "Notificări",
       "notificationsDescription": "Preferințe centru de notificări în curând.",
-      "networkTitle": "Rețea",
-      "networkDescription": "Configurări Wi‑Fi și Bluetooth în curând.",
       "securityTitle": "Securitate & Confidențialitate",
       "securityDescription": "Firewall, permisiuni și setări de confidențialitate în curând.",
       "storageTitle": "Stocare",

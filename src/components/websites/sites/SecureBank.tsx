@@ -63,7 +63,7 @@ export function SecureBank(_props: WebsiteProps) {
         }
       />
 
-      <WebsiteContainer size="md" className="min-h-[calc(100vh-80px)] flex items-center">
+      <WebsiteContainer size="md" className="min-h-full flex items-center">
         <div className="w-full max-w-md mx-auto">
           {/* Login Card */}
           <div className="bg-white rounded-2xl shadow-2xl p-8">

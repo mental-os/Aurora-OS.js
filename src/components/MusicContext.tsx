@@ -72,28 +72,28 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
     const getSafeMeta = useCallback((filename: string) => {
         const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
         const parts = nameWithoutExt.split(' - ');
-        
+
         if (parts.length >= 2) {
-            return { 
-                artist: parts[0].trim() || t('music.metadata.unknownArtist'), 
-                title: parts.slice(1).join(' - ').trim() || t('music.metadata.unknownTitle'), 
-                album: t('music.metadata.unknownAlbum') 
+            return {
+                artist: parts[0].trim() || t('music.metadata.unknownArtist'),
+                title: parts.slice(1).join(' - ').trim() || t('music.metadata.unknownTitle'),
+                album: t('music.metadata.unknownAlbum')
             };
         }
-        return { 
-            artist: t('music.metadata.unknownArtist'), 
-            title: nameWithoutExt || t('music.metadata.unknownTitle'), 
-            album: t('music.metadata.unknownAlbum') 
+        return {
+            artist: t('music.metadata.unknownArtist'),
+            title: nameWithoutExt || t('music.metadata.unknownTitle'),
+            album: t('music.metadata.unknownAlbum')
         };
     }, [t]);
 
     // Standardized Granular Keys (User Preference)
     // Uses standardized APP_PREFIX from memory.ts
     const getKeys = (user: string) => ({
-        QUEUE: `${STORAGE_KEYS.APP_PREFIX}music-queue-${user}`,
-        INDEX: `${STORAGE_KEYS.APP_PREFIX}music-index-${user}`,
-        SEEK: `${STORAGE_KEYS.APP_PREFIX}music-seek-${user}`,
-        RECENT: `${STORAGE_KEYS.APP_PREFIX}music-recent-${user}`
+        QUEUE: `${STORAGE_KEYS.APP_DATA_PREFIX}music-queue-${user}`,
+        INDEX: `${STORAGE_KEYS.APP_DATA_PREFIX}music-index-${user}`,
+        SEEK: `${STORAGE_KEYS.APP_DATA_PREFIX}music-seek-${user}`,
+        RECENT: `${STORAGE_KEYS.APP_DATA_PREFIX}music-recent-${user}`
     });
 
     const keys = getKeys(activeUser || 'guest');
@@ -117,17 +117,17 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
                             if (content && content !== s.url) {
                                 return { ...s, url: content };
                             }
-                        } catch { 
-                            /* ignore hydration errors */ 
+                        } catch {
+                            /* ignore hydration errors */
                         }
                     }
                     return s;
                 });
             }
             return [];
-        } catch (e) { 
+        } catch (e) {
             console.warn('[MusicContext] Failed to load playlist', e);
-            return []; 
+            return [];
         }
     });
 
@@ -163,7 +163,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
 
     const [activeCategory, setActiveCategory] = useSessionStorage<string>('music-active-category', 'songs', activeUser);
     const [librarySongs, setLibrarySongs] = useState<Song[]>([]);
-    
+
     // Track playback state for effects
     const playbackStateRef = useRef({ isPlaying: false, currentTime: 0, duration: 0 });
     useEffect(() => {
@@ -184,7 +184,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
     // 2. Persistence (Smart - only save if data exists, ELSE gated by isMusicOpen)
     useEffect(() => {
         if (!isMusicOpen) return;
-        
+
         if (playlist.length > 0) {
             localStorage.setItem(keys.QUEUE, JSON.stringify(playlist));
         } else {
@@ -437,7 +437,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
         if (!isMusicOpen) return;
 
         let rafId: number;
-        
+
         const updateTime = () => {
             if (soundRef.current && isPlaying) {
                 const current = soundRef.current.seek();
@@ -447,7 +447,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
                 rafId = requestAnimationFrame(updateTime);
             }
         };
-        
+
         if (isPlaying) {
             rafId = requestAnimationFrame(updateTime);
         } else if (soundRef.current) {
@@ -456,7 +456,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
             if (typeof current === 'number') setCurrentTime(current);
             if (typeof dur === 'number') setDuration(dur);
         }
-        
+
         return () => {
             if (rafId) cancelAnimationFrame(rafId);
         };
@@ -481,19 +481,19 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
                 if (typeof seek === 'number') {
                     localStorage.setItem(keys.SEEK, seek.toString());
                 }
-            } 
+            }
             // Also save if paused but we have a position
-             else if (soundRef.current) {
-                 const seek = soundRef.current.seek();
-                 if (typeof seek === 'number' && seek > 0) {
+            else if (soundRef.current) {
+                const seek = soundRef.current.seek();
+                if (typeof seek === 'number' && seek > 0) {
                     localStorage.setItem(keys.SEEK, seek.toString());
-                 }
+                }
             }
         };
 
         // Save every 2 seconds to ensure crash recovery isn't too far off
         const interval = setInterval(saveState, 2000);
-        
+
         // Save on unload/hidden (refresh/close tab)
         const handleUnload = () => saveState();
         window.addEventListener('beforeunload', handleUnload);
@@ -641,7 +641,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
 
                     // Update BOTH states if needed, but primarily the one we are scanning
                     const updateSong = (s: Song) => s.id === song.id ? { ...s, duration: formatted, ...enrichedMeta } : s;
-                    
+
                     setPlaylist(prev => prev.map(updateSong));
                     setLibrarySongs(prev => prev.map(updateSong));
                     setRecent(prev => prev.map(updateSong));

@@ -14,9 +14,10 @@ import {
   migrateGroups,
 } from "../../utils/migrations";
 import { notify } from "../../services/notifications";
+import { STORAGE_KEYS, clearSession } from "../../utils/memory";
 
-const USERS_STORAGE_KEY = "aurora-users";
-const GROUPS_STORAGE_KEY = "aurora-groups";
+const USERS_STORAGE_KEY = STORAGE_KEYS.USERS;
+const GROUPS_STORAGE_KEY = STORAGE_KEYS.GROUPS;
 
 const DEFAULT_USERS: User[] = [
   {
@@ -151,14 +152,22 @@ export function useAuth(
   );
 
   const logout = useCallback(() => {
+    if (currentUser) {
+      clearSession(currentUser);
+    }
     setCurrentUser(null);
-    localStorage.removeItem("aurora-current-user");
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
 
-    // Clear Terminal History on global logout
-    localStorage.removeItem("aurora_terminal_history");
-    localStorage.removeItem("aurora_terminal_input_history");
-    
     notify.system("success", "System", "Logged out successfully");
+  }, [currentUser]);
+
+  const suspendSession = useCallback(() => {
+    // Switch User (Keep Session)
+    // We do NOT call clearSession() here.
+    // We just unset the current user so the Login Screen appears.
+    setCurrentUser(null);
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    notify.system("success", "System", "Session suspended");
   }, []);
 
   const addUser = useCallback(
@@ -261,8 +270,8 @@ export function useAuth(
 
   const updateUser = useCallback(
     (
-      username: string, 
-      updates: { fullName?: string; password?: string; passwordHint?: string; isAdmin?: boolean }, 
+      username: string,
+      updates: { fullName?: string; password?: string; passwordHint?: string; isAdmin?: boolean },
       asUser?: string
     ): boolean => {
       const actingUser = getCurrentUser(asUser || currentUser);
@@ -285,16 +294,16 @@ export function useAuth(
       setUsers((prev) => {
         const newUsers = [...prev];
         const user = { ...newUsers[userIndex] };
-        
+
         if (updates.fullName !== undefined) user.fullName = updates.fullName;
         if (updates.password !== undefined) user.password = updates.password;
         if (updates.passwordHint !== undefined) user.passwordHint = updates.passwordHint;
-        
+
         // Handle Admin Role (Group Membership)
         if (updates.isAdmin !== undefined) {
           const groups = user.groups || [];
           const hasAdmin = groups.includes('admin');
-          
+
           if (updates.isAdmin && !hasAdmin) {
             user.groups = [...groups, 'admin'];
             // Also ensure corresponding Group object is updated (handled in separate effect or here?)
@@ -311,17 +320,17 @@ export function useAuth(
 
       // Sync Group Membership if isAdmin changed
       if (updates.isAdmin !== undefined) {
-         setGroups((prevGroups) => prevGroups.map(g => {
-           if (g.groupName === 'admin') {
-             const isMember = g.members.includes(username);
-             if (updates.isAdmin && !isMember) {
-               return { ...g, members: [...g.members, username] };
-             } else if (!updates.isAdmin && isMember) {
-               return { ...g, members: g.members.filter(m => m !== username) };
-             }
-           }
-           return g;
-         }));
+        setGroups((prevGroups) => prevGroups.map(g => {
+          if (g.groupName === 'admin') {
+            const isMember = g.members.includes(username);
+            if (updates.isAdmin && !isMember) {
+              return { ...g, members: [...g.members, username] };
+            } else if (!updates.isAdmin && isMember) {
+              return { ...g, members: g.members.filter(m => m !== username) };
+            }
+          }
+          return g;
+        }));
       }
 
       return true;
@@ -367,8 +376,8 @@ export function useAuth(
   const addUserToGroup = useCallback(
     (username: string, groupName: string): boolean => {
       // Allow if group exists
-      if (!groups.some((g) => g.groupName === groupName)) return false; 
-      
+      if (!groups.some((g) => g.groupName === groupName)) return false;
+
       // Update User object's groups array
       setUsers((prev) =>
         prev.map((u) => {
@@ -393,7 +402,7 @@ export function useAuth(
           return g;
         })
       );
-      
+
       return true;
     },
     [groups]
@@ -455,6 +464,7 @@ export function useAuth(
     resetAuthState,
     verifyUserPassword: (u: string, p: string) =>
       verifyUserPassword(u, p, fileSystem, users),
+    suspendSession,
   };
 }
 

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useTerminalLogic } from '../hooks/useTerminalLogic';
 import { FileSystemProvider, useFileSystem } from '../components/FileSystemContext';
 import { AppProvider } from '../components/AppContext';
+import { STORAGE_KEYS } from '../utils/memory';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -45,16 +46,16 @@ describe('useTerminalLogic', () => {
         await waitFor(() => {
             expect(result.current.fs.users.length).toBeGreaterThan(0);
         });
-        
+
         await act(async () => {
-             // Login as root to create user home
+            // Login as root to create user home
             result.current.fs.login('root', 'admin');
         });
 
         await act(async () => {
             result.current.fs.addUser('user', 'User', '1234');
         });
-        
+
         // addUser creates home directory.
 
         await act(async () => {
@@ -115,18 +116,18 @@ describe('useTerminalLogic', () => {
         }, { wrapper });
 
         await waitFor(() => {
-             expect(result.current.fs.users.length).toBeGreaterThan(0);
+            expect(result.current.fs.users.length).toBeGreaterThan(0);
         });
 
         await act(async () => {
             result.current.fs.login('root', 'admin');
         });
-        
-        await act(async () => {
-             result.current.fs.addUser('user', 'User', '1234');
-        }); 
 
-         await act(async () => {
+        await act(async () => {
+            result.current.fs.addUser('user', 'User', '1234');
+        });
+
+        await act(async () => {
             result.current.fs.login('user', '1234');
         });
 
@@ -175,16 +176,15 @@ describe('useTerminalLogic', () => {
             result.current.terminal.setInput('echo persistence_test');
         });
         await act(async () => {
-             result.current.terminal.handleKeyDown({ key: 'Enter', preventDefault: () => { } } as any);
+            result.current.terminal.handleKeyDown({ key: 'Enter', preventDefault: () => { } } as any);
         });
 
-        // Verify localStorage was updated
-        // We look for 'aurora_terminal_history' key
+        // Verify localStorage was updated with the new key format
         await waitFor(() => {
-             expect(localStorage.setItem).toHaveBeenCalledWith(
-                 'aurora-terminal-history-user', 
-                 expect.stringContaining('persistence_test')
-             );
+            expect(localStorage.setItem).toHaveBeenCalledWith(
+                `${STORAGE_KEYS.TERM_HISTORY_PREFIX}user`,
+                expect.stringContaining('persistence_test')
+            );
         });
     });
 });

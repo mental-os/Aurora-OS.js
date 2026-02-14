@@ -35,7 +35,7 @@ export const mv: TerminalCommand = {
         // Check dest parent write perms (for creation)
         // Move logic handles renaming. We need to check parent of DEST.
         // If dest is dir, we move INTO it. If dest is file/new, we move TO it (parent is dir).
-        let destParentPath = '';
+        let destParentPath: string;
         const destNode = getNodeAtPath(destPath);
         if (destNode && destNode.type === 'directory') {
             destParentPath = destPath;

@@ -32,7 +32,7 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             try {
                 // Play BIOS start sound
                 soundManager.play('biosStart');
-                
+
                 await import('../OS'); // Trigger the dynamic import
                 setIsLoaded(true);
             } catch (e) {
@@ -44,7 +44,7 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
         loadOS();
 
         // --- Dynamic Log Generation ---
-        const generateLogs = (): LogEntry[] => {
+        const generateLogs = async (): Promise<LogEntry[]> => {
             const logs: LogEntry[] = [];
             let currentTime = 0.0;
 
@@ -62,16 +62,18 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             };
 
             // BIOS / Hardware
-            const hw = getHardwareInfo();
+            // 1. Fetch Real Hardware Info (Async)
+            const hw = await getHardwareInfo();
+
             add('kernel', `${pkg.build.productName} version ${pkg.version}-generic (build@${pkg.name})`);
             add('kernel', `Command line: BOOT_IMAGE=/boot/vmlinuz-${pkg.version} root=UUID=7427-42A9 ro quiet splash`);
-            add('kernel', `Detected CPU: ${hw.cpuCores} Cores (${navigator.hardwareConcurrency ? 'SMP' : 'UP'} enabled)`);
-            add('kernel', `Memory: ${hw.memory ? hw.memory + ' GiB' : 'Reserved'} System RAM`);
+            add('kernel', `Detected CPU: ${hw.cpuModel} (${hw.cpuCores} Cores)`);
+            add('kernel', `Memory: ${hw.memory} GiB System RAM`);
             add('gpu', `Graphics: ${hw.gpuRenderer}`, 'text-zinc-400');
             add('console', `Display: ${hw.screenResolution} (32-bit color)`, 'text-zinc-500');
             add('systemd[1]', `Detected architecture ${hw.platform}.`);
             add('systemd[1]', `Set hostname to <aurora-workstation>.`);
-            
+
             // System Probes
             add('kernel', `Probing Hardware Capabilities...`, 'text-zinc-500');
             add('kernel', `Synchronizing System Clock (date-fns)...`, 'text-zinc-500');
@@ -112,7 +114,7 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             if (deps['sonner']) add('daemon', `Starting Notification Service (Sonner)`, 'text-slate-300');
             if (devDeps['typescript']) add('compiler', `Runtime Type Checks Enabled (TypeScript)`, 'text-cyan-300');
             if (devDeps['vite']) add('boot', `Vite Hot Module Replacement: Ready`, 'text-pink-400');
-            
+
             // App Registry
             add('systemd[1]', `Hydrating React Context...`, undefined, true, 0.3);
             Object.keys(APP_REGISTRY).forEach((appId) => {
@@ -128,39 +130,45 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             return logs;
         };
 
-        const fullSequence = generateLogs();
-
-        // --- Variable Speed Loop ---
-        let currentIndex = 0;
+        // --- Execute Async Start ---
         let isCancelled = false;
 
-        const processNextLine = () => {
-            if (isCancelled || currentIndex >= fullSequence.length) return;
+        const startSequence = async () => {
+            const fullSequence = await generateLogs();
+            if (isCancelled) return;
 
-            const nextLog = fullSequence[currentIndex];
-            setLogs(prev => [...prev, nextLog]);
+            // --- Variable Speed Loop ---
+            let currentIndex = 0;
 
-            // Calculate progress based on index
-            setProgress(Math.min(100, Math.floor(((currentIndex + 1) / fullSequence.length) * 100)));
-            currentIndex++;
+            const processNextLine = () => {
+                if (isCancelled || currentIndex >= fullSequence.length) return;
 
-            if (currentIndex < fullSequence.length) {
-                // Determine delay for NEXT line
-                // Fast for 'apt' hits, slow for 'kernel'/'compiling'
-                let delay = Math.random() * 50 + 20; // Default fast-ish
-                const msg = nextLog.message.toLowerCase();
+                const nextLog = fullSequence[currentIndex];
+                setLogs(prev => [...prev, nextLog]);
 
-                if (msg.includes('hit:')) delay = 15; // Very fast scrolling
-                else if (msg.includes('initializing') || msg.includes('calibrating')) delay = 300; // Slow processing
-                else if (msg.includes('reached target')) delay = 200; // Pause for effect
-                else if (msg.includes('startup finished')) delay = 800; // Final pause
+                // Calculate progress based on index
+                setProgress(Math.min(100, Math.floor(((currentIndex + 1) / fullSequence.length) * 100)));
+                currentIndex++;
 
-                setTimeout(processNextLine, delay);
-            }
+                if (currentIndex < fullSequence.length) {
+                    // Determine delay for NEXT line
+                    let delay = Math.random() * 50 + 20; // Default fast-ish
+                    const msg = nextLog.message.toLowerCase();
+
+                    if (msg.includes('hit:')) delay = 15; // Very fast scrolling (if any remains)
+                    else if (msg.includes('initializing') || msg.includes('calibrating')) delay = 300; // Slow processing
+                    else if (msg.includes('reached target')) delay = 200; // Pause for effect
+                    else if (msg.includes('startup finished')) delay = 800; // Final pause
+
+                    setTimeout(processNextLine, delay);
+                }
+            };
+
+            // Start
+            setTimeout(processNextLine, 100);
         };
 
-        // Start the loop
-        setTimeout(processNextLine, 100);
+        startSequence();
 
         return () => { isCancelled = true; };
     }, []);

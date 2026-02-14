@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, FolderOpen, FileText, Download, HardDrive, Search, Grid3x3, List, Monitor, Music, Image, Trash, Trash2, Settings, Home, Clipboard, Info, Scissors, Copy } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderOpen, FileText, Download, HardDrive, Search, Grid3x3, List, Monitor, Music, Image, Trash, Trash2, Settings, Home, Info, Scissors, Copy } from 'lucide-react';
 import { notify } from '@/services/notifications';
 import { useAppContext } from '@/components/AppContext';
 import { AppTemplate } from '@/components/apps/AppTemplate';
@@ -75,7 +75,6 @@ function BreadcrumbPill({ name, isLast, accentColor, onClick, onDrop }: Breadcru
   );
 }
 
-import { ContextMenuConfig } from '@/types';
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -85,17 +84,7 @@ import {
   ContextMenuShortcut,
 } from '@/components/ui/context-menu';
 import { renderContextMenuItems } from '@/components/ui/context-menu-utils';
-
-// ... (existing imports)
-
-export const finderContextMenuConfig: ContextMenuConfig = {
-  items: [
-    { type: 'item', labelKey: 'menubar.items.newFolder', label: 'New Folder', action: 'new-folder', icon: FolderOpen },
-    { type: 'item', labelKey: 'menubar.items.paste', label: 'Paste', action: 'paste', disabled: true, icon: Clipboard },
-    { type: 'separator' },
-    { type: 'item', labelKey: 'menubar.items.getInfo', label: 'Get Info', action: 'get-info', icon: Info }
-  ]
-};
+import { finderContextMenuConfig } from '@/config/app-menus';
 
 export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string; initialPath?: string; onOpenApp?: (id: string, args?: any, owner?: string) => void, owner?: string }) {
   const { accentColor, activeUser: desktopUser } = useAppContext();
@@ -128,8 +117,8 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
   // We use a shared "last path" preference for the DEFAULT opening path (Scoped to user!)
   const [lastPath, setLastPath] = useSessionStorage(`finder-last-path-${activeUser}`, homePath);
 
-  const startPath = initialPath 
-    ? (initialPath === '~' || initialPath === '~/' ? homePath : initialPath) 
+  const startPath = initialPath
+    ? (initialPath === '~' || initialPath === '~/' ? homePath : initialPath)
     : lastPath;
   const [currentPath, setCurrentPath] = useState(startPath);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -183,39 +172,39 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
 
   // Handle Context Menu Actions
   const handleGetInfo = useCallback((pathOrNode: string | FileNode) => {
-       let node: FileNode | null | undefined;
-       if (typeof pathOrNode === 'string') {
-         node = getNodeAtPath(pathOrNode, activeUser);
-       } else {
-         node = pathOrNode;
-       }
+    let node: FileNode | null | undefined;
+    if (typeof pathOrNode === 'string') {
+      node = getNodeAtPath(pathOrNode, activeUser);
+    } else {
+      node = pathOrNode;
+    }
 
-       if (node) {
-           const modDate = node.modified ? new Date(node.modified).toLocaleDateString() : t('a11y.common.notAvailable');
-           const details = (
-               <div className="flex flex-col gap-1 mt-1">
-                   <div className="grid grid-cols-[max-content_1fr] gap-x-2">
-                       <span className="text-white/50">{t('fileManager.details.type')}:</span>
-                       <span className="text-white/90">{node.type}</span>
-                       <span className="text-white/50">{t('fileManager.details.owner')}:</span>
-                       <span className="text-white/90">{node.owner}</span>
-                       <span className="text-white/50">{t('fileManager.details.permissions')}:</span>
-                       <span className="text-white/90 font-mono text-[11px]">{node.permissions || t('a11y.common.notAvailable')}</span>
-                       <span className="text-white/50">{t('fileManager.details.modified')}:</span>
-                       <span className="text-white/90">{modDate}</span>
-                       {node.size !== undefined && (
-                           <>
-                               <span className="text-white/50">{t('fileManager.details.size')}:</span>
-                               <span className="text-white/90">{t('fileManager.details.bytes', { count: node.size })}</span>
-                           </>
-                       )}
-                   </div>
-               </div>
-           );
-           notify.system('success', node.name || t('notifications.subtitles.info'), details, t('notifications.subtitles.info'));
-       } else {
-           notify.system('error', t('notifications.subtitles.error'), t('fileManager.toasts.couldNotGetInfo'), t('notifications.subtitles.error'));
-       }
+    if (node) {
+      const modDate = node.modified ? new Date(node.modified).toLocaleDateString() : t('a11y.common.notAvailable');
+      const details = (
+        <div className="flex flex-col gap-1 mt-1">
+          <div className="grid grid-cols-[max-content_1fr] gap-x-2">
+            <span className="text-white/50">{t('fileManager.details.type')}:</span>
+            <span className="text-white/90">{node.type}</span>
+            <span className="text-white/50">{t('fileManager.details.owner')}:</span>
+            <span className="text-white/90">{node.owner}</span>
+            <span className="text-white/50">{t('fileManager.details.permissions')}:</span>
+            <span className="text-white/90 font-mono text-[11px]">{node.permissions || t('a11y.common.notAvailable')}</span>
+            <span className="text-white/50">{t('fileManager.details.modified')}:</span>
+            <span className="text-white/90">{modDate}</span>
+            {node.size !== undefined && (
+              <>
+                <span className="text-white/50">{t('fileManager.details.size')}:</span>
+                <span className="text-white/90">{t('fileManager.details.bytes', { count: node.size })}</span>
+              </>
+            )}
+          </div>
+        </div>
+      );
+      notify.system('success', node.name || t('notifications.subtitles.info'), details, t('notifications.subtitles.info'));
+    } else {
+      notify.system('error', t('notifications.subtitles.error'), t('fileManager.toasts.couldNotGetInfo'), t('notifications.subtitles.error'));
+    }
   }, [getNodeAtPath, activeUser, t]);
 
   useEffect(() => {
@@ -230,8 +219,8 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
           let counter = 1;
           const checkExists = (n: string) => items.some(i => i.name === n);
           while (checkExists(name)) {
-              name = `${t('menubar.items.newFolder')} ${counter}`;
-              counter++;
+            name = `${t('menubar.items.newFolder')} ${counter}`;
+            counter++;
           }
           createDirectory(currentPath, name, activeUser);
           break;
@@ -240,8 +229,8 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
           pasteNodes(currentPath, activeUser);
           break;
         case 'get-info': {
-           handleGetInfo(currentPath);
-           break;
+          handleGetInfo(currentPath);
+          break;
         }
       }
     };
@@ -344,9 +333,9 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
           notify.system('error', 'Finder', t('fileManager.toasts.photosNotInstalled'), t('notifications.subtitles.appMissing'));
         }
       } else {
-          // Fallback or unknowns: maybe open in text editor or show info?
-          // For now, just generic "Cannot open"
-          notify.system('error', 'Finder', t('fileManager.toasts.fileTypeNotSupported', { type: item.name.split('.').pop() || 'unknown' }), t('notifications.subtitles.fileError'));
+        // Fallback or unknowns: maybe open in text editor or show info?
+        // For now, just generic "Cannot open"
+        notify.system('error', 'Finder', t('fileManager.toasts.fileTypeNotSupported', { type: item.name.split('.').pop() || 'unknown' }), t('notifications.subtitles.fileError'));
       }
     }
   }, [getNodeAtPath, activeUser, resolvePath, onOpenApp, navigateTo, t, isSearchOpen, searchQuery]);
@@ -415,7 +404,6 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
 
 
   const handleDragStart = useCallback((e: React.DragEvent, item: FileNode) => {
-    console.log('Drag started:', item.id);
     // If dragging an item NOT in selection, select it exclusively
     let itemsToDrag = Array.from(selectedItems);
     if (!selectedItems.has(item.id)) {
@@ -467,7 +455,6 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
 
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
-      console.log('Drop data:', data);
 
       const idsToMove = data.ids || (data.id ? [data.id] : []);
 
@@ -476,11 +463,11 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
         if (id === targetItem.id) return; // Can't drop on self
 
         const destPath = currentPath === '/'
-            ? `/${targetItem.name}`
-            : `${currentPath}/${targetItem.name}`;
-           
+          ? `/${targetItem.name}`
+          : `${currentPath}/${targetItem.name}`;
+
         if (moveNodeById(id, destPath, activeUser, data.sourceUser)) {
-            movedCount++;
+          movedCount++;
         }
       });
 
@@ -672,44 +659,44 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
       <div className="flex-1 flex items-center gap-1.5 overflow-hidden mx-2 mask-linear-fade">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full">
           {isSearchOpen ? (
-             <div className="relative w-full max-w-md mx-auto flex items-center animate-in fade-in duration-200">
-                 <Search className="absolute left-3 w-4 h-4 text-white/40" />
-                 <input 
-                    autoFocus
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t('fileManager.actions.search')}
-                    className="w-full bg-black/20 border border-white/10 rounded-full py-1.5 pl-9 pr-8 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/20 focus:bg-black/30 transition-all"
-                    onKeyDown={(e) => {
-                        if (e.key === 'Escape') {
-                            setSearchQuery('');
-                            setIsSearchOpen(false);
-                            // Refocus grid on escape?
-                        }
-                    }}
-                 />
-                 {searchQuery && (
-                     <button 
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-2 p-1 rounded-full hover:bg-white/10 text-white/40 hover:text-white"
-                     >
-                        <span className="sr-only">Clear</span>
-                        <div className="w-3 h-3 flex items-center justify-center font-bold text-[10px]">✕</div>
-                     </button>
-                 )}
-             </div>
+            <div className="relative w-full max-w-md mx-auto flex items-center animate-in fade-in duration-200">
+              <Search className="absolute left-3 w-4 h-4 text-white/40" />
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('fileManager.actions.search')}
+                className="w-full bg-black/20 border border-white/10 rounded-full py-1.5 pl-9 pr-8 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/20 focus:bg-black/30 transition-all"
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setSearchQuery('');
+                    setIsSearchOpen(false);
+                    // Refocus grid on escape?
+                  }
+                }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 p-1 rounded-full hover:bg-white/10 text-white/40 hover:text-white"
+                >
+                  <span className="sr-only">Clear</span>
+                  <div className="w-3 h-3 flex items-center justify-center font-bold text-[10px]">✕</div>
+                </button>
+              )}
+            </div>
           ) : (
             currentPath === '/' ? (
-                <BreadcrumbPill
+              <BreadcrumbPill
                 name="/"
                 isLast={true}
                 accentColor={accentColor}
                 onClick={() => { }}
                 onDrop={(e) => handleSidebarDrop(e, '/')}
-                />
+              />
             ) : (
-                (() => {
+              (() => {
                 // Convert to absolute path to avoid '~' which breaks navigation
                 const resolvedPath = resolvePath(currentPath, activeUser);
                 const segments = resolvedPath.split('/').filter(Boolean);
@@ -730,13 +717,13 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
 
                 // Add from end (right) to start (left)
                 for (let i = segments.length - 1; i >= 0; i--) {
-                    if (currentWidth + segmentWidths[i] <= availableWidth) {
+                  if (currentWidth + segmentWidths[i] <= availableWidth) {
                     currentWidth += segmentWidths[i];
                     visibleSegmentsCount++;
-                    } else {
+                  } else {
                     // No force show - if it doesn't fit, it doesn't show
                     break;
-                    }
+                  }
                 }
 
                 // If we can't fit even one segment properly, show nothing (or maybe just root if that fits, but root is handled separately above)
@@ -749,27 +736,27 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
                 // Reconstruct path for the visible segments
                 // The first visible segment's full path depends on previous hidden ones
                 let cumulativePath = hiddenSegments.length > 0
-                    ? '/' + hiddenSegments.join('/')
-                    : '';
+                  ? '/' + hiddenSegments.join('/')
+                  : '';
 
                 return visibleSegments.map((segment, index) => {
-                    cumulativePath += `/${segment}`;
-                    const isLast = index === visibleSegments.length - 1;
-                    const path = cumulativePath; // Close over value
-                    const displayName = segment;
+                  cumulativePath += `/${segment}`;
+                  const isLast = index === visibleSegments.length - 1;
+                  const path = cumulativePath; // Close over value
+                  const displayName = segment;
 
-                    return (
+                  return (
                     <BreadcrumbPill
-                        key={path}
-                        name={displayName}
-                        isLast={isLast}
-                        accentColor={accentColor}
-                        onClick={() => navigateTo(path)}
-                        onDrop={(e) => handleSidebarDrop(e, path)}
+                      key={path}
+                      name={displayName}
+                      isLast={isLast}
+                      accentColor={accentColor}
+                      onClick={() => navigateTo(path)}
+                      onDrop={(e) => handleSidebarDrop(e, path)}
                     />
-                    );
+                  );
                 });
-                })()
+              })()
             )
           )}
         </div>
@@ -797,12 +784,12 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
             <List className="w-4 h-4" />
           </button>
         </div>
-        <button 
-            onClick={() => {
-                setIsSearchOpen(!isSearchOpen);
-                if (!isSearchOpen) setTimeout(() => (document.querySelector('input[type="text"]') as HTMLElement)?.focus(), 50);
-            }} 
-            className={`p-1.5 rounded-md transition-colors ${isSearchOpen ? 'bg-white/20 text-white' : 'hover:bg-white/5 text-white/50'}`}
+        <button
+          onClick={() => {
+            setIsSearchOpen(!isSearchOpen);
+            if (!isSearchOpen) setTimeout(() => (document.querySelector('input[type="text"]') as HTMLElement)?.focus(), 50);
+          }}
+          className={`p-1.5 rounded-md transition-colors ${isSearchOpen ? 'bg-white/20 text-white' : 'hover:bg-white/5 text-white/50'}`}
         >
           <Search className="w-4 h-4" />
         </button>
@@ -844,19 +831,19 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
         // So `destParentPath` is indeed the PARENT folder.
         // AND it does `if (destParent.children.some(child => child.name === nodeToMove.name)) return false;`
         // So it uses the node's EXISTING name.
-        
+
         // Therefore, we just pass `currentPath` as `destParentPath`.
-        
+
         if (moveNodeById(id, currentPath, activeUser, data.sourceUser)) {
-           movedCount++;
+          movedCount++;
         }
       });
 
       if (movedCount > 0) {
         if (movedCount === 1) {
-            notify.system('success', t('notifications.subtitles.moved') || 'Moved', t('fileManager.toasts.movedItem') || 'Moved 1 item');
+          notify.system('success', t('notifications.subtitles.moved') || 'Moved', t('fileManager.toasts.movedItem') || 'Moved 1 item');
         } else {
-            notify.system('success', t('notifications.subtitles.moved') || 'Moved', t('fileManager.toasts.movedItems', { count: movedCount }) || `Moved ${movedCount} items`);
+          notify.system('success', t('notifications.subtitles.moved') || 'Moved', t('fileManager.toasts.movedItems', { count: movedCount }) || `Moved ${movedCount} items`);
         }
         // feedback.move(); // Assuming feedback is defined elsewhere
       }
@@ -948,8 +935,8 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
     if (!node) return;
     // Check READ permission
     if (!checkPermissions(node, users.find(u => u.username === activeUser) || { username: activeUser } as any, 'read')) {
-        notify.system('error', 'Permission Denied', 'Cannot copy item');
-        return;
+      notify.system('error', 'Permission Denied', 'Cannot copy item');
+      return;
     }
     copyNodes([id], activeUser);
   }, [items, users, activeUser, copyNodes]);
@@ -976,8 +963,8 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         <ContextMenuItem onClick={() => {
-            const fullPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
-            handleOpenItem(item, fullPath);
+          const fullPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
+          handleOpenItem(item, fullPath);
         }}>
           <FolderOpen className="mr-2 h-4 w-4" /> {t('a11y.common.open')}
         </ContextMenuItem>
@@ -994,12 +981,12 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
           <Info className="mr-2 h-4 w-4" /> {t('menubar.items.getInfo')}
         </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem 
-            onClick={() => {
-                const fullPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
-                moveToTrash(fullPath, activeUser);
-            }} 
-            className="text-red-400 focus:text-red-400 focus:bg-red-500/20"
+        <ContextMenuItem
+          onClick={() => {
+            const fullPath = currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`;
+            moveToTrash(fullPath, activeUser);
+          }}
+          className="text-red-400 focus:text-red-400 focus:bg-red-500/20"
         >
           <Trash2 className="mr-2 h-4 w-4" /> {t('fileManager.actions.moveToTrash')}
         </ContextMenuItem>
@@ -1009,181 +996,181 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
 
   const content = (
     <ContextMenu>
-    <ContextMenuTrigger asChild disabled={selectedItems.size > 0 && !selectionBox}> 
-    {/* Explicitly disable background context menu if items are selected? 
+      <ContextMenuTrigger asChild disabled={selectedItems.size > 0 && !selectionBox}>
+        {/* Explicitly disable background context menu if items are selected? 
         Actually, usually clicking on background clears selection unless modifier. 
         Our onMouseDown clears selection if not clicking a button.
         But Right Click (Context Menu) ALSO fires mousedown usually?
         If I right click background, `onMouseDown` fires -> clears selection -> Background Menu opens.
         So this is fine.
     */}
-    <div
-      ref={(node: HTMLDivElement | null) => {
-        containerRefSetter(node);
-        gridRef.current = node;
-      }}
-      // ... props ...
-      className="flex-1 overflow-y-auto p-6 transition-colors duration-200 relative outline-none"
-      tabIndex={0}
-      style={{
-        backgroundColor: isDraggingOver ? `${accentColor}10` : undefined,
-        boxShadow: isDraggingOver ? `inset 0 0 0 2px ${accentColor}80` : undefined
-      }}
-      onDragOver={handleContainerDragOver}
-      onDragLeave={handleContainerDragLeave}
-      onDrop={handleContainerDrop}
-      onMouseDown={(e) => {
-        const target = e.target as HTMLElement;
-        if (!target.closest('button')) {
-          if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
-            setSelectedItems(new Set());
-          }
-          setSelectionBox({
-            start: { x: e.clientX, y: e.clientY },
-            current: { x: e.clientX, y: e.clientY }
-          });
-        }
-      }}
-    >
-      {/* ... selection box ... */}
-      {selectionBox && gridRef.current && (
-         // ... (abbreviated, use original code if possible or keep logic)
-         (() => {
-           const containerRect = gridRef.current!.getBoundingClientRect();
-           const scrollLeft = gridRef.current!.scrollLeft;
-           const scrollTop = gridRef.current!.scrollTop;
-           const left = Math.min(selectionBox.start.x, selectionBox.current.x) - containerRect.left + scrollLeft;
-           const top = Math.min(selectionBox.start.y, selectionBox.current.y) - containerRect.top + scrollTop;
-           const width = Math.abs(selectionBox.current.x - selectionBox.start.x);
-           const height = Math.abs(selectionBox.current.y - selectionBox.start.y);
-           return (
-             <div
-               className="absolute border border-blue-400/50 bg-blue-500/20 z-50 pointer-events-none"
-               style={{ left, top, width, height }}
-             />
-           );
-         })()
-      )}
-
-      {searchQuery ? (
-        // Search Logic (keep as is)
-        <div className="flex flex-col gap-1 w-full relative h-full">
-            {searchResults.length === 0 ? (
-                <EmptyState
-                    icon={Search}
-                    title={t('fileManager.search.noResultsTitle')}
-                    description={t('fileManager.search.noResultsDesc', { query: searchQuery })}
-                    className="h-full"
+        <div
+          ref={(node: HTMLDivElement | null) => {
+            containerRefSetter(node);
+            gridRef.current = node;
+          }}
+          // ... props ...
+          className="flex-1 overflow-y-auto p-6 transition-colors duration-200 relative outline-none"
+          tabIndex={0}
+          style={{
+            backgroundColor: isDraggingOver ? `${accentColor}10` : undefined,
+            boxShadow: isDraggingOver ? `inset 0 0 0 2px ${accentColor}80` : undefined
+          }}
+          onDragOver={handleContainerDragOver}
+          onDragLeave={handleContainerDragLeave}
+          onDrop={handleContainerDrop}
+          onMouseDown={(e) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest('button')) {
+              if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
+                setSelectedItems(new Set());
+              }
+              setSelectionBox({
+                start: { x: e.clientX, y: e.clientY },
+                current: { x: e.clientX, y: e.clientY }
+              });
+            }
+          }}
+        >
+          {/* ... selection box ... */}
+          {selectionBox && gridRef.current && (
+            // ... (abbreviated, use original code if possible or keep logic)
+            (() => {
+              const containerRect = gridRef.current!.getBoundingClientRect();
+              const scrollLeft = gridRef.current!.scrollLeft;
+              const scrollTop = gridRef.current!.scrollTop;
+              const left = Math.min(selectionBox.start.x, selectionBox.current.x) - containerRect.left + scrollLeft;
+              const top = Math.min(selectionBox.start.y, selectionBox.current.y) - containerRect.top + scrollTop;
+              const width = Math.abs(selectionBox.current.x - selectionBox.start.x);
+              const height = Math.abs(selectionBox.current.y - selectionBox.start.y);
+              return (
+                <div
+                  className="absolute border border-blue-400/50 bg-blue-500/20 z-50 pointer-events-none"
+                  style={{ left, top, width, height }}
                 />
-            ) : (
+              );
+            })()
+          )}
+
+          {searchQuery ? (
+            // Search Logic (keep as is)
+            <div className="flex flex-col gap-1 w-full relative h-full">
+              {searchResults.length === 0 ? (
+                <EmptyState
+                  icon={Search}
+                  title={t('fileManager.search.noResultsTitle')}
+                  description={t('fileManager.search.noResultsDesc', { query: searchQuery })}
+                  className="h-full"
+                />
+              ) : (
                 <div className="flex flex-col gap-1 p-2 w-full">
                   <h3 className="text-white/50 text-xs uppercase font-medium px-2 mb-2 sticky top-0 backdrop-blur-md bg-black/20 z-10 py-2 rounded-lg">
                     {t('fileManager.search.resultsTitle', { count: searchResults.length })}
                   </h3>
                   <div className="flex flex-col gap-1">
-                  {searchResults.map(({ node, path }) => (
+                    {searchResults.map(({ node, path }) => (
                       <button
-                          key={path}
-                          onClick={() => handleOpenItem(node, path)}
-                          className="flex items-center gap-3 p-2 rounded-md hover:bg-white/10 text-left group w-full transition-colors"
+                        key={path}
+                        onClick={() => handleOpenItem(node, path)}
+                        className="flex items-center gap-3 p-2 rounded-md hover:bg-white/10 text-left group w-full transition-colors"
                       >
-                          <div className="w-8 h-8 shrink-0 flex items-center justify-center">
-                            <FileIcon name={node.name} type={node.type} accentColor={accentColor} className="w-full h-full" />
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                              <span className="text-sm font-medium text-white group-hover:text-white transition-colors truncate">{node.name}</span>
-                              <span className="text-xs text-white/40 truncate">{path}</span>
-                          </div>
+                        <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                          <FileIcon name={node.name} type={node.type} accentColor={accentColor} className="w-full h-full" />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-sm font-medium text-white group-hover:text-white transition-colors truncate">{node.name}</span>
+                          <span className="text-xs text-white/40 truncate">{path}</span>
+                        </div>
                       </button>
-                  ))}
+                    ))}
                   </div>
                 </div>
-            )}
-        </div>
-      ) : items.length === 0 ? (
-        <EmptyState
-          icon={FolderOpen}
-          title={t('fileManager.emptyFolder')}
-          className="h-full"
-        />
-      ) : appState.viewMode === 'grid' ? (
-        <ResponsiveGrid minItemWidth={110} className="gap-6">
-          {items.map((item) => 
-            renderItemContextMenu(item, (
-                <button
-                onClick={(e) => handleItemClick(e, item.id)}
-                onDoubleClick={() => handleItemDoubleClick(item)}
-                draggable
-                onDragStart={(e) => handleDragStart(e, item)}
-                onDragOver={(e) => handleDragOver(e, item)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, item)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-lg transition-colors group relative
+              )}
+            </div>
+          ) : items.length === 0 ? (
+            <EmptyState
+              icon={FolderOpen}
+              title={t('fileManager.emptyFolder')}
+              className="h-full"
+            />
+          ) : appState.viewMode === 'grid' ? (
+            <ResponsiveGrid minItemWidth={110} className="gap-6">
+              {items.map((item) =>
+                renderItemContextMenu(item, (
+                  <button
+                    onClick={(e) => handleItemClick(e, item.id)}
+                    onDoubleClick={() => handleItemDoubleClick(item)}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, item)}
+                    onDragOver={(e) => handleDragOver(e, item)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, item)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg transition-colors group relative
                 ${selectedItems.has(item.id) ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'}
                 ${dragTargetId === item.id ? 'bg-blue-500/20 ring-2 ring-blue-500' : ''}`}
-                >
-                <div className="w-20 h-20 flex items-center justify-center pointer-events-none">
-                    <FileIcon name={item.name} type={item.type} accentColor={accentColor} isEmpty={item.children?.length === 0} />
-                </div>
-                <div className="w-full text-center pointer-events-none">
-                    <div className="text-sm text-white/90 truncate px-1 w-full">
-                    {item.name}
+                  >
+                    <div className="w-20 h-20 flex items-center justify-center pointer-events-none">
+                      <FileIcon name={item.name} type={item.type} accentColor={accentColor} isEmpty={item.children?.length === 0} />
                     </div>
-                    {item.type === 'directory' && item.children && (
-                    <div className="text-xs mt-0.5" style={{ color: accentColor }}>
-                        {item.children.length} item{item.children.length !== 1 ? 's' : ''}
+                    <div className="w-full text-center pointer-events-none">
+                      <div className="text-sm text-white/90 truncate px-1 w-full">
+                        {item.name}
+                      </div>
+                      {item.type === 'directory' && item.children && (
+                        <div className="text-xs mt-0.5" style={{ color: accentColor }}>
+                          {item.children.length} item{item.children.length !== 1 ? 's' : ''}
+                        </div>
+                      )}
                     </div>
-                    )}
-                </div>
-                </button>
-            ))
-          )}
-        </ResponsiveGrid>
-      ) : (
-        <div className="flex flex-col gap-1">
-          {items.map((item) => 
-            renderItemContextMenu(item, (
-            <button
-              key={item.id}
-              onClick={(e) => handleItemClick(e, item.id)}
-              onDoubleClick={() => handleItemDoubleClick(item)}
-              draggable
-              onDragStart={(e) => handleDragStart(e, item)}
-              onDragOver={(e) => handleDragOver(e, item)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, item)}
-              className={`flex items-center gap-3 p-2 rounded-lg transition-colors 
+                  </button>
+                ))
+              )}
+            </ResponsiveGrid>
+          ) : (
+            <div className="flex flex-col gap-1">
+              {items.map((item) =>
+                renderItemContextMenu(item, (
+                  <button
+                    key={item.id}
+                    onClick={(e) => handleItemClick(e, item.id)}
+                    onDoubleClick={() => handleItemDoubleClick(item)}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, item)}
+                    onDragOver={(e) => handleDragOver(e, item)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, item)}
+                    className={`flex items-center gap-3 p-2 rounded-lg transition-colors 
               ${selectedItems.has(item.id) ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'}
               ${dragTargetId === item.id ? 'bg-blue-500/20 ring-1 ring-blue-500' : ''}`}
-            >
-              <div className="w-8 h-8 flex items-center justify-center shrink-0 pointer-events-none">
-                <FileIcon name={item.name} type={item.type} accentColor={accentColor} isEmpty={item.children?.length === 0} />
-              </div>
-              <div className="flex-1 text-left min-w-0 pointer-events-none">
-                <div className="text-sm text-white/90 truncate">{item.name}</div>
-              </div>
-              <div className="text-xs text-white/40 shrink-0 pointer-events-none">
-                {item.type === 'directory'
-                  ? t('fileManager.details.items', { count: item.children?.length || 0 })
-                  : item.size ? t('fileManager.details.bytes', { count: item.size }) : ''}
-              </div>
-              {item.permissions && !isMobile && (
-                <div className="text-xs text-white/50 font-mono shrink-0 whitespace-nowrap text-right min-w-[90px] pointer-events-none">
-                  {item.permissions}
-                </div>
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center shrink-0 pointer-events-none">
+                      <FileIcon name={item.name} type={item.type} accentColor={accentColor} isEmpty={item.children?.length === 0} />
+                    </div>
+                    <div className="flex-1 text-left min-w-0 pointer-events-none">
+                      <div className="text-sm text-white/90 truncate">{item.name}</div>
+                    </div>
+                    <div className="text-xs text-white/40 shrink-0 pointer-events-none">
+                      {item.type === 'directory'
+                        ? t('fileManager.details.items', { count: item.children?.length || 0 })
+                        : item.size ? t('fileManager.details.bytes', { count: item.size }) : ''}
+                    </div>
+                    {item.permissions && !isMobile && (
+                      <div className="text-xs text-white/50 font-mono shrink-0 whitespace-nowrap text-right min-w-[90px] pointer-events-none">
+                        {item.permissions}
+                      </div>
+                    )}
+                  </button>
+                ))
               )}
-            </button>
-            ))
+            </div>
           )}
         </div>
-      )}
-    </div>
-    </ContextMenuTrigger>
+      </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         {renderContextMenuItems(
           finderContextMenuConfig.items.map(item => {
             if (item.type === 'item' && item.action === 'paste') {
-               return { ...item, disabled: clipboard.items.length === 0 };
+              return { ...item, disabled: clipboard.items.length === 0 };
             }
             return item;
           }),
@@ -1198,34 +1185,3 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
   return <AppTemplate sidebar={fileManagerSidebar} toolbar={toolbar} content={content} minContentWidth={600} />;
 }
 
-import { AppMenuConfig } from '@/types';
-
-export const finderMenuConfig: AppMenuConfig = {
-  menus: ['File', 'Edit', 'View', 'Go', 'Window', 'Help'],
-  items: {
-    'File': [
-      { labelKey: 'menubar.items.newWindow', shortcut: '⌘N', action: 'new-window' },
-      { labelKey: 'menubar.items.newFolder', shortcut: '⇧⌘N', action: 'new-folder' },
-      { type: 'separator' },
-      { labelKey: 'menubar.items.closeWindow', shortcut: '⌘W', action: 'close-window' }
-    ],
-    'Edit': [
-      { labelKey: 'menubar.items.undo', shortcut: '⌘Z', action: 'undo' },
-      { labelKey: 'menubar.items.redo', shortcut: '⇧⌘Z', action: 'redo' },
-      { type: 'separator' },
-      { labelKey: 'menubar.items.cut', shortcut: '⌘X', action: 'cut' },
-      { labelKey: 'menubar.items.copy', shortcut: '⌘C', action: 'copy' },
-      { labelKey: 'menubar.items.paste', shortcut: '⌘V', action: 'paste' },
-      { labelKey: 'menubar.items.selectAll', shortcut: '⌘A', action: 'select-all' }
-    ],
-    'Go': [
-      { labelKey: 'menubar.items.back', shortcut: '⌘[', action: 'go-back' },
-      { labelKey: 'menubar.items.forward', shortcut: '⌘]', action: 'go-forward' },
-      { labelKey: 'menubar.items.enclosingFolder', shortcut: '⌘↑', action: 'go-up' },
-      { type: 'separator' },
-      { labelKey: 'fileManager.places.home', shortcut: '⇧⌘H', action: 'go-home' },
-      { labelKey: 'fileManager.places.desktop', shortcut: '⇧⌘D', action: 'go-desktop' },
-      { labelKey: 'fileManager.places.downloads', shortcut: '⌥⌘L', action: 'go-downloads' }
-    ]
-  }
-};

@@ -2,7 +2,7 @@ import { Email } from "@/components/apps/Mail";
 import { encodePassword, decodePassword } from "@/utils/authUtils";
 import { STORAGE_KEYS } from "@/utils/memory";
 
-const DB_KEY = STORAGE_KEYS.MAIL_SERVER_DB;
+const DB_KEY = `${STORAGE_KEYS.APP_DATA_PREFIX}mail-server-db`;
 
 export interface MailAccount {
   email: string;
@@ -41,13 +41,13 @@ class MailServiceImpl {
 
   // Generate a random recovery secret (simulated 4-word phrase or code)
   private generateSecret(): string {
-     const array = new Uint32Array(4);
-     window.crypto.getRandomValues(array);
-     
-     // Convert to base36 strings to look like the original format but securely generated
-     return Array.from(array)
-       .map(x => x.toString(36).substring(0, 5).padEnd(5, '0'))
-       .join('-');
+    const array = new Uint32Array(4);
+    window.crypto.getRandomValues(array);
+
+    // Convert to base36 strings to look like the original format but securely generated
+    return Array.from(array)
+      .map(x => x.toString(36).substring(0, 5).padEnd(5, '0'))
+      .join('-');
   }
 
   createAccount(
@@ -99,7 +99,7 @@ class MailServiceImpl {
   recoverPassword(secret: string): string | null {
     const db = this.getDB();
     const account = Object.values(db.accounts).find(acc => acc.recoverySecret === secret);
-    
+
     if (account) {
       return decodePassword(account.passwordHash);
     }
@@ -128,7 +128,7 @@ class MailServiceImpl {
     const account = db.accounts[emailAddress];
 
     if (account && account.emails) {
-      account.emails = account.emails.map(email => 
+      account.emails = account.emails.map(email =>
         email.id === emailId ? { ...email, ...updates } : email
       );
       this.saveDB(db);

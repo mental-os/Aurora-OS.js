@@ -46,10 +46,38 @@ export const zh: TranslationDict = {
     },
     "bios": {
       "title": "BIOS 设置",
-      "fullScreen": "全屏",
-      "immersiveMode": "沉浸模式",
-      "fullScreenEnter": "进入",
-      "fullScreenExit": "退出",
+      "hardwareAcceleration": "硬件加速",
+      "displayMode": "显示模式",
+      "fullscreen": "全屏",
+      "borderless": "无边框",
+      "windowed": "窗口化",
+      "resolution": "分辨率",
+      "windowSettings": "窗口设置",
+      "windowFrame": "窗口边框",
+      "windowFrameHint": "标题栏和边框 (需要重启)",
+      "configurationUtility": "配置实用程序",
+      "tabs": {
+        "display": "显示",
+        "audio": "音频",
+        "system": "系统"
+      },
+      "graphicsQuality": "图形质量",
+      "presets": {
+        "highFidelity": {
+          "label": "高保真",
+          "desc": "启用模糊、阴影、活力。视觉++"
+        },
+        "performance": {
+          "label": "性能",
+          "desc": "最大帧率。最小特效。速度++"
+        }
+      },
+      "reduceMotion": "减弱动态效果",
+      "simpleColors": "简单色彩",
+      "solidBackgrounds": "纯色背景",
+      "noShadows": "无阴影",
+      "dangerZone": "危险区域",
+      "configFooter": "配置",
       "softReset": "软重置",
       "softResetHint": "重新加载应用",
       "softResetConfirm": "软重置：这将重新加载应用但保留数据。继续？",
@@ -148,9 +176,6 @@ export const zh: TranslationDict = {
       "bookmarks": "书签",
       "mailbox": "邮箱",
       "message": "消息",
-      "devCenter": "开发者中心",
-      "tools": "工具",
-      "image": "图片",
       "conversations": "对话"
     },
     "items": {
@@ -232,7 +257,8 @@ export const zh: TranslationDict = {
       "fileError": "文件错误"
     },
     "empty": "暂无通知",
-    "clearApp": "清除此应用所有通知"
+    "clearApp": "清除此应用所有通知",
+    "messageFrom": "Message from {{sender}}"
   },
   "memory": {
     "title": "内存",
@@ -298,6 +324,8 @@ export const zh: TranslationDict = {
       "closeTab": "关闭标签页"
     },
     "welcome": {
+      "title": "Browser",
+      "description": "Search for information or enter a URL to start browsing.",
       "searchPlaceholder": "搜索网站或输入地址...",
       "favorites": "收藏",
       "recentActivity": "最近活动"
@@ -306,7 +334,9 @@ export const zh: TranslationDict = {
     "error": {
       "pageNotFound": "页面未找到",
       "pageNotFoundDesc": "无法找到网站 {{url}}。",
-      "goHome": "前往首页"
+      "goHome": "前往首页",
+      "offlineTitle": "No Internet Connection",
+      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
     }
   },
   "music": {
@@ -619,7 +649,8 @@ export const zh: TranslationDict = {
     "library": {
       "allPhotos": "所有照片",
       "favorites": "收藏",
-      "recent": "最近"
+      "recent": "最近",
+      "userLibrary": "{{user}}'s Library"
     },
     "menu": {
       "slideshow": "幻灯片",
@@ -647,7 +678,9 @@ export const zh: TranslationDict = {
       "openHome": "打开主目录"
     },
     "folders": {
-      "pictures": "图片"
+      "pictures": "图片",
+      "recent": "Recent",
+      "misc": "Misc"
     }
   },
   "mail": {
@@ -1023,15 +1056,34 @@ export const zh: TranslationDict = {
       "disableShadowsTitle": "禁用阴影",
       "disableShadowsDescription": "移除窗口阴影以提高渲染性能",
       "disableGradientsTitle": "禁用渐变",
-      "disableGradientsDescription": "使用纯色代替图标渐变"
+      "disableGradientsDescription": "使用纯色代替图标渐变",
+      "gpuTitle": "使用图形加速",
+      "gpuDescription": "可用时使用硬件加速（需要重启）"
+    },
+    "network": {
+      "wifiTitle": "Wi-Fi",
+      "wifinotConnected": "Not Connected",
+      "wifiDisabled": "Wi-Fi 已关闭",
+      "wifiNetworks": "可用网络",
+      "scanning": "正在扫描...",
+      "passwordPlaceholder": "密码",
+      "disconnect": "断开连接",
+      "configurationMode": "配置模式",
+      "automatic": "自动 (DHCP)",
+      "manual": "手动",
+      "autoConfigTitle": "自动配置",
+      "manualConfigTitle": "手动配置",
+      "ipAddress": "IP 地址",
+      "subnetMask": "子网掩码",
+      "gateway": "网关",
+      "dns": "DNS 服务器",
+      "validateConfig": "验证配置",
+      "configSaved": "网络配置已成功保存",
+      "dhcpAttributionProgress": "正在通过 DHCP 获取 IP 地址"
     },
     "placeholders": {
-      "displaysTitle": "显示器设置",
-      "displaysDescription": "分辨率、缩放和亮度控制即将推出。",
       "notificationsTitle": "通知",
       "notificationsDescription": "通知中心首选项即将推出。",
-      "networkTitle": "网络",
-      "networkDescription": "Wi‑Fi 和蓝牙配置即将推出。",
       "securityTitle": "安全与隐私",
       "securityDescription": "防火墙、权限和隐私设置即将推出。",
       "storageTitle": "存储",

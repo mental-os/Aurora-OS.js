@@ -46,10 +46,38 @@ export const ja: TranslationDict = {
     },
     "bios": {
       "title": "BIOS設定",
-      "fullScreen": "フルスクリーン",
-      "immersiveMode": "没入モード",
-      "fullScreenEnter": "入る",
-      "fullScreenExit": "出る",
+      "hardwareAcceleration": "ハードウェアアクセラレーション",
+      "displayMode": "ディスプレイモード",
+      "fullscreen": "フルスクリーン",
+      "borderless": "ボーダーレス",
+      "windowed": "ウィンドウ",
+      "resolution": "解像度",
+      "windowSettings": "ウィンドウ設定",
+      "windowFrame": "ウィンドウ枠",
+      "windowFrameHint": "タイトルバーと枠 (再起動が必要)",
+      "configurationUtility": "設定ユーティリティ",
+      "tabs": {
+        "display": "ディスプレイ",
+        "audio": "オーディオ",
+        "system": "システム"
+      },
+      "graphicsQuality": "グラフィック品質",
+      "presets": {
+        "highFidelity": {
+          "label": "高忠実度",
+          "desc": "ブラー、影、鮮やかさを有効化。見た目++"
+        },
+        "performance": {
+          "label": "パフォーマンス",
+          "desc": "最大FPS。最小限のエフェクト。速度++"
+        }
+      },
+      "reduceMotion": "視差効果を減らす",
+      "simpleColors": "シンプルカラー",
+      "solidBackgrounds": "単色背景",
+      "noShadows": "影なし",
+      "dangerZone": "危険地帯",
+      "configFooter": "設定",
       "softReset": "ソフトリセット",
       "softResetHint": "アプリケーションをリロード",
       "softResetConfirm": "ソフトリセット：アプリケーションをリロードしますが、データは保持されます。続けますか？",
@@ -148,9 +176,6 @@ export const ja: TranslationDict = {
       "bookmarks": "ブックマーク",
       "mailbox": "メールボックス",
       "message": "メッセージ",
-      "devCenter": "DEVセンター",
-      "tools": "ツール",
-      "image": "画像",
       "conversations": "会話"
     },
     "items": {
@@ -232,7 +257,8 @@ export const ja: TranslationDict = {
       "fileError": "ファイルエラー"
     },
     "empty": "通知はありません",
-    "clearApp": "このアプリからの通知をすべて消去"
+    "clearApp": "このアプリからの通知をすべて消去",
+    "messageFrom": "Message from {{sender}}"
   },
   "memory": {
     "title": "メモリ",
@@ -298,6 +324,8 @@ export const ja: TranslationDict = {
       "closeTab": "タブを閉じる"
     },
     "welcome": {
+      "title": "Browser",
+      "description": "Search for information or enter a URL to start browsing.",
       "searchPlaceholder": "ウェブサイトを検索またはアドレスを入力...",
       "favorites": "お気に入り",
       "recentActivity": "最近のアクティビティ"
@@ -306,7 +334,9 @@ export const ja: TranslationDict = {
     "error": {
       "pageNotFound": "ページが見つかりません",
       "pageNotFoundDesc": "ウェブサイト {{url}} は見つかりませんでした。",
-      "goHome": "ホームへ"
+      "goHome": "ホームへ",
+      "offlineTitle": "No Internet Connection",
+      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
     }
   },
   "music": {
@@ -619,7 +649,8 @@ export const ja: TranslationDict = {
     "library": {
       "allPhotos": "すべての写真",
       "favorites": "お気に入り",
-      "recent": "最近の項目"
+      "recent": "最近の項目",
+      "userLibrary": "{{user}}'s Library"
     },
     "menu": {
       "slideshow": "スライドショー",
@@ -647,7 +678,9 @@ export const ja: TranslationDict = {
       "openHome": "ホームディレクトリを開く"
     },
     "folders": {
-      "pictures": "ピクチャ"
+      "pictures": "ピクチャ",
+      "recent": "Recent",
+      "misc": "Misc"
     }
   },
   "mail": {
@@ -1023,15 +1056,34 @@ export const ja: TranslationDict = {
       "disableShadowsTitle": "影を無効化",
       "disableShadowsDescription": "ウィンドウの影を削除して描画パフォーマンスを向上",
       "disableGradientsTitle": "グラデーションを無効化",
-      "disableGradientsDescription": "アイコンにグラデーションの代わりに単色を使用"
+      "disableGradientsDescription": "アイコンにグラデーションの代わりに単色を使用",
+      "gpuTitle": "グラフィックスアクセラレーションを使用",
+      "gpuDescription": "利用可能な場合はハードウェアアクセラレーションを使用（再起動が必要）"
+    },
+    "network": {
+      "wifiTitle": "Wi-Fi",
+      "wifinotConnected": "Not Connected",
+      "wifiDisabled": "Wi-Fi はオフです",
+      "wifiNetworks": "利用可能なネットワーク",
+      "scanning": "スキャン中...",
+      "passwordPlaceholder": "パスワード",
+      "disconnect": "切断",
+      "configurationMode": "構成モード",
+      "automatic": "自動 (DHCP)",
+      "manual": "手動",
+      "autoConfigTitle": "自動構成",
+      "manualConfigTitle": "手動構成",
+      "ipAddress": "IPアドレス",
+      "subnetMask": "サブネットマスク",
+      "gateway": "ゲートウェイ",
+      "dns": "DNSサーバー",
+      "validateConfig": "構成を検証",
+      "configSaved": "ネットワーク構成が正常に保存されました",
+      "dhcpAttributionProgress": "DHCP経由でIPアドレスを取得中"
     },
     "placeholders": {
-      "displaysTitle": "ディスプレイ設定",
-      "displaysDescription": "解像度、スケーリング、明るさの制御は近日公開予定。",
       "notificationsTitle": "通知",
       "notificationsDescription": "通知センターの設定は近日公開予定。",
-      "networkTitle": "ネットワーク",
-      "networkDescription": "Wi‑Fi と Bluetooth の設定は近日公開予定。",
       "securityTitle": "セキュリティとプライバシー",
       "securityDescription": "ファイアウォール、権限、プライバシー設定は近日公開予定。",
       "storageTitle": "ストレージ",

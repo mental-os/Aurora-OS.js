@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, memo } from 'react';
 import pkg from '../../package.json';
-import { Orbit, Wifi } from 'lucide-react';
+import { Orbit } from 'lucide-react';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useFullscreen } from '@/hooks/useFullscreen';
 import { CreditsDrawer } from '@/components/Credits/CreditsDrawer';
@@ -11,6 +11,7 @@ import { AudioApplet } from '@/components/AudioApplet';
 import { NotificationsApplet } from '@/components/NotificationsApplet';
 import { BatteryApplet } from '@/components/BatteryApplet';
 import { MemoryApplet } from '@/components/MemoryApplet';
+import { InternetApplet } from '@/components/InternetApplet';
 import { hardReset, clearSession } from '@/utils/memory';
 import {
   Menubar,
@@ -34,8 +35,8 @@ interface MenuBarProps {
 
 function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
   const { menuBarBackground, blurStyle, getBackgroundColor } = useThemeColors();
-  const { devMode, disableShadows, setIsLocked, locale, timeMode, setTimeMode } = useAppContext();
-  const { logout, currentUser } = useFileSystem();
+  const { disableShadows, setIsLocked, locale, timeMode, setTimeMode } = useAppContext();
+  const { logout, suspendSession, currentUser } = useFileSystem();
   const { t } = useI18n();
 
   const [currentTime, setCurrentTime] = useState('');
@@ -120,8 +121,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
     'History': 'menubar.menus.history',
     'Bookmarks': 'menubar.menus.bookmarks',
     'Mailbox': 'menubar.menus.mailbox',
-    'Message': 'menubar.menus.message',
-    'DEV Center': 'menubar.menus.devCenter'
+    'Message': 'menubar.menus.message'
   };
 
   const getMenuDisplayName = (menuName: string) => {
@@ -130,9 +130,7 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
   };
 
   // Add "DEV Center" to Finder menus if devMode is enabled
-  const menuLabels = (appConfig.name === 'Finder' && devMode)
-    ? [...appConfig.menus, 'DEV Center']
-    : appConfig.menus;
+  const menuLabels = appConfig.menus;
 
   // Render dummy menu content for now, can be expanded to be real later
   const renderMenuContent = (menuName: string) => {
@@ -253,26 +251,26 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                     window.dispatchEvent(new CustomEvent('aurora-open-settings-section', { detail: 'about' }));
                     onOpenApp?.('settings');
                   }}>
-                      {t('menubar.system.aboutThisComputer')}
+                    {t('menubar.system.aboutThisComputer')}
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                    <p>{t('menubar.system.viewSystemInfo')}</p>
+                  <p>{t('menubar.system.viewSystemInfo')}</p>
                 </TooltipContent>
               </Tooltip>
               <MenubarSeparator className="bg-white/10" />
               <Tooltip>
                 <TooltipTrigger asChild>
                   <MenubarItem onClick={() => onOpenApp?.('settings')}>
-                      {t('menubar.system.systemSettings')}
+                    {t('menubar.system.systemSettings')}
                   </MenubarItem>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                    <p>{t('menubar.system.viewSystemSettings')}</p>
+                  <p>{t('menubar.system.viewSystemSettings')}</p>
                 </TooltipContent>
               </Tooltip>
               <MenubarItem onClick={() => onOpenApp?.('appstore')}>
-                  {t('menubar.system.appStore')}
+                {t('menubar.system.appStore')}
               </MenubarItem>
               <MenubarSeparator className="bg-white/10" />
               <Tooltip>
@@ -291,8 +289,8 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <MenubarItem onClick={() => {
-                    // Switch User -> Logout to suspend, keep storage
-                    logout();
+                    // Switch User -> Suspend session (keep RAM/Storage)
+                    suspendSession();
                   }}>
                     {t('menubar.system.switchUser')}
                   </MenubarItem>
@@ -380,21 +378,17 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
                   "text-white/70 hover:text-white data-[state=open]:text-white focus:text-white"
                 )}
                 onClick={() => {
-                  if (menu === 'DEV Center') {
-                    onOpenApp?.('dev-center');
-                  }
+                  // Standard menu click handling if needed
                 }}
               >
                 {getMenuDisplayName(menu)}
               </MenubarTrigger>
-              {menu !== 'DEV Center' && (
-                <MenubarContent
-                  className={cn("border-white/10 text-white min-w-48 p-1 z-10000", !disableShadows ? "shadow-xl" : "shadow-none")}
-                  style={{ background: getBackgroundColor(0.8), ...blurStyle }}
-                >
-                  {renderMenuContent(menu)}
-                </MenubarContent>
-              )}
+              <MenubarContent
+                className={cn("border-white/10 text-white min-w-48 p-1 z-10000", !disableShadows ? "shadow-xl" : "shadow-none")}
+                style={{ background: getBackgroundColor(0.8), ...blurStyle }}
+              >
+                {renderMenuContent(menu)}
+              </MenubarContent>
             </MenubarMenu>
           ))}
         </Menubar>
@@ -404,13 +398,11 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
       <div className="flex items-center gap-4 px-2">
         <MemoryApplet />
         <BatteryApplet key={currentUser} />
-        <button className="flex items-center justify-center text-white/90 hover:text-white transition-colors">
-          <Wifi className="w-4 h-4" />
-        </button>
+        <InternetApplet onOpenApp={onOpenApp} />
         <AudioApplet />
         <NotificationsApplet onOpenApp={onOpenApp} />
 
-        <button 
+        <button
           onClick={() => setTimeMode(timeMode === 'server' ? 'local' : 'server')}
           className="text-white/90 text-xs font-medium flex items-center gap-2 hover:bg-white/10 px-2 py-1 rounded transition-colors"
           title={timeMode === 'server' ? t('menubar.system.serverTime') : t('menubar.system.localTime')}

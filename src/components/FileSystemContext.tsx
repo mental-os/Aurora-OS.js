@@ -87,6 +87,7 @@ export interface FileSystemContextType {
   resetFileSystem: (silent?: boolean) => void;
   login: (username: string, password?: string) => boolean;
   logout: () => void;
+  suspendSession: () => void;
   chmod: (path: string, mode: string, asUser?: string) => boolean;
   chown: (
     path: string,
@@ -132,6 +133,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     getCurrentUser,
     login,
     logout,
+    suspendSession,
     addUser,
     updateUser,
     deleteUser,
@@ -223,7 +225,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     resolvePath,
     getNodeAtPath,
   });
-  
+
   // Clipboard Logic
   const copyNodes = useCallback((ids: string[], sourceUserContext: string) => {
     setClipboard({
@@ -246,30 +248,30 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     const destUser = asUser || currentUser || undefined;
 
     clipboard.items.forEach(item => {
-       if (clipboard.operation === 'copy') {
-          // We need copyNodeById exposed from mutations!
-          if (copyNodeById(item.id, destPath, destUser, item.sourceUserContext)) {
-             successCount++;
-          }
-       } else {
-          // Cut -> Move
-          if (moveNodeById(item.id, destPath, destUser, item.sourceUserContext)) {
-             successCount++;
-          }
-       }
+      if (clipboard.operation === 'copy') {
+        // We need copyNodeById exposed from mutations!
+        if (copyNodeById(item.id, destPath, destUser, item.sourceUserContext)) {
+          successCount++;
+        }
+      } else {
+        // Cut -> Move
+        if (moveNodeById(item.id, destPath, destUser, item.sourceUserContext)) {
+          successCount++;
+        }
+      }
     });
 
     if (successCount > 0) {
-       // Optional: Clear clipboard on cut? Standard OS behavior is usually clear or keep?
-       // Windows/Mac keeps it until next copy/cut usually, but "Cut" fails if file gone.
-       // Actually "Cut" usually grays out item. Here we don't visual gray out yet.
-       // If we move it, the ID might change if we didn't support proper move, but moveNodeById preserves node (and ID usually).
-       // Actually moveNodeById removes from source and adds to dest. ID persists.
-       // So we can paste again? No, "Cut" is usually one-time paste.
-       if (clipboard.operation === 'cut') {
-          setClipboard({ items: [], operation: 'copy' }); // Reset
-       }
-       notify.system('success', 'Clipboard', `Pasted ${successCount} item(s)`);
+      // Optional: Clear clipboard on cut? Standard OS behavior is usually clear or keep?
+      // Windows/Mac keeps it until next copy/cut usually, but "Cut" fails if file gone.
+      // Actually "Cut" usually grays out item. Here we don't visual gray out yet.
+      // If we move it, the ID might change if we didn't support proper move, but moveNodeById preserves node (and ID usually).
+      // Actually moveNodeById removes from source and adds to dest. ID persists.
+      // So we can paste again? No, "Cut" is usually one-time paste.
+      if (clipboard.operation === 'cut') {
+        setClipboard({ items: [], operation: 'copy' }); // Reset
+      }
+      notify.system('success', 'Clipboard', `Pasted ${successCount} item(s)`);
     }
   }, [clipboard, moveNodeById, copyNodeById, currentUser]);
 
@@ -387,7 +389,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
   const resetFileSystem = useCallback((silent: boolean = false) => {
     // Reset installed apps to core apps only
     setInstalledApps(new Set(CORE_APP_IDS));
-    localStorage.removeItem("aurora-installed-apps");
+    localStorage.removeItem(STORAGE_KEYS.INSTALLED_APPS);
 
     // Reset filesystem and auth
     resetFileSystemState();
@@ -486,6 +488,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     resetFileSystem,
     login,
     logout,
+    suspendSession,
     chmod,
     chown,
     verifyPassword: verifyUserPassword,
@@ -530,6 +533,7 @@ export function FileSystemProvider({ children }: { children: ReactNode }) {
     resetFileSystem,
     login,
     logout,
+    suspendSession,
     chmod,
     chown,
     verifyUserPassword,

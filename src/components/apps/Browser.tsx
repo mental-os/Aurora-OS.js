@@ -1,11 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, RotateCw, Home, Star, Lock, AlertTriangle, X, Plus, Globe } from 'lucide-react';
-import { AppTemplate } from './AppTemplate';
-import { useAppStorage } from '../../hooks/useAppStorage';
-import { cn } from '../ui/utils';
-import { useI18n } from '../../i18n/index';
-import { getWebsiteByDomain } from '../websites/registry';
-import type { HistoryEntry } from '../websites/types';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight, RotateCw, Home, Star, Lock, AlertTriangle, X, Plus, Globe, WifiOff } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { GlassButton } from '@/components/ui/GlassButton';
+import { AppTemplate } from '@/components/apps/AppTemplate';
+import { useAppStorage } from '@/hooks/useAppStorage';
+import { cn } from '@/components/ui/utils';
+import { useI18n } from '@/i18n/index';
+import { useThemeColors } from '@/hooks/useThemeColors';
+import { getWebsiteByDomain } from '@/components/websites/registry';
+import type { HistoryEntry } from '@/components/websites/types';
+import { useAppContext } from '@/components/AppContext';
+import { useFileSystem } from '@/components/FileSystemContext';
+import { useNetworkContext } from '@/components/NetworkContext';
+import { parseHostsFile, resolveHost } from '@/utils/network';
+import { incrementSessionDataUsage } from '@/utils/memory';
 
 interface Tab {
   id: string;
@@ -24,10 +32,10 @@ const FALLBACK_TAB: Tab = {
   url: 'browser://welcome',
   renderedUrl: 'browser://welcome',
   title: 'Welcome', // This is state, might need t() at render time or initial state? 
-                    // State usually keeps the raw 'title'. Let's check where it's used.
-                    // It's used in TabBar (tab.title).
-                    // If we store 'Welcome', we can't translate easily later unless we store key?
-                    // For now, let's look at the error screen which is easier.
+  // State usually keeps the raw 'title'. Let's check where it's used.
+  // It's used in TabBar (tab.title).
+  // If we store 'Welcome', we can't translate easily later unless we store key?
+  // For now, let's look at the error screen which is easier.
   isLoading: false,
   progress: 0,
   history: [{ url: 'browser://welcome', title: 'Welcome', timestamp: new Date() }],
@@ -36,6 +44,19 @@ const FALLBACK_TAB: Tab = {
 
 export function Browser({ owner }: { owner?: string }) {
   const { t } = useI18n();
+  const { accentColor } = useAppContext();
+  const { readFile } = useFileSystem();
+  const { wifiEnabled, currentNetwork, availableNetworks } = useNetworkContext();
+  const { titleBarBackground, blurStyle, getBackgroundColor } = useThemeColors();
+
+  // Refs for network state to access inside setInterval
+  const networkRef = useRef({ wifiEnabled, currentNetwork, availableNetworks });
+  useEffect(() => {
+    networkRef.current = { wifiEnabled, currentNetwork, availableNetworks };
+  }, [wifiEnabled, currentNetwork, availableNetworks]);
+
+  // Track active interval to clear on re-navigation
+  const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Persisted state
   const [appState, setAppState] = useAppStorage('browser', {
@@ -47,7 +68,7 @@ export function Browser({ owner }: { owner?: string }) {
   // Tabs State
   const [tabs, setTabs] = useState<Tab[]>(() => {
     const initialUrl = appState.url || 'browser://welcome';
-    
+
     const sanitizedHistory = (appState.history || []).map(h => ({
       ...h,
       timestamp: new Date(h.timestamp)
@@ -67,10 +88,10 @@ export function Browser({ owner }: { owner?: string }) {
   });
 
   const [activeTabId, setActiveTabId] = useState<string>('default');
-  
+
   // FIX: Safe access to activeTab with fallback
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0] || FALLBACK_TAB;
-  
+
   // FIX: Ensure activeTab is defined before accessing .url
   const [urlInput, setUrlInput] = useState(activeTab ? activeTab.url : 'browser://welcome');
 
@@ -158,11 +179,11 @@ export function Browser({ owner }: { owner?: string }) {
 
     const newTabs = tabs.filter(t => t.id !== tabId);
     setTabs(newTabs);
-    
+
     if (tabId === activeTabId) {
       const index = tabs.findIndex(t => t.id === tabId);
       const nextTab = newTabs[index - 1] || newTabs[0];
-      
+
       if (nextTab) {
         setActiveTabId(nextTab.id);
         setUrlInput(nextTab.url);
@@ -172,35 +193,94 @@ export function Browser({ owner }: { owner?: string }) {
 
   // --- Navigation Logic ---
   const navigate = (url: string) => {
-    const website = getWebsiteByDomain(url);
-    const finalUrl = website ? website.domain : url;
+    // 1. Resolve Host from /etc/hosts (DNS Poisoning Simulation)
+    let targetDomain = url;
+    try {
+      const hostsContent = readFile('/etc/hosts');
+      if (hostsContent) {
+        const hostsMap = parseHostsFile(hostsContent);
+        // Extract domain from URL
+        const urlObj = new URL(url.includes('://') ? url : `http://${url}`);
+        const hostname = urlObj.hostname;
 
-    // 1. Update Tab to Loading State
+        const resolvedIP = resolveHost(hostname, hostsMap);
+
+        if (resolvedIP !== hostname) {
+          targetDomain = url.replace(hostname, resolvedIP);
+        }
+      }
+    } catch {
+      // Invalid URL or other error, proceed with original
+    }
+
+    const website = getWebsiteByDomain(targetDomain);
+    const finalUrl = website ? website.domain : targetDomain;
+    const isLocalPage = finalUrl.startsWith('browser://');
+    const isConnected = wifiEnabled && currentNetwork;
+
+    // Check Offline State immediately
+    if (!isConnected && !isLocalPage) {
+      setTabs(prev => prev.map(t => {
+        if (t.id !== activeTabId) return t;
+        return { ...t, url: finalUrl, renderedUrl: finalUrl, isLoading: false, progress: 0 };
+      }));
+      setUrlInput(finalUrl);
+      return;
+    }
+
+    // 2. Update Tab to Loading State
     setTabs(prev => prev.map(t => {
       if (t.id !== activeTabId) return t;
-      return { ...t, url: finalUrl, isLoading: true, progress: 10 };
+      // We keep the ORIGINAL url for the address bar if it was a redirect, 
+      // mimicking how a browser shows the domain you typed even if DNS points elsewhere (until it loads)
+      // BUT if it's a valid website config (like if 127.0.0.1 was mapped to a 'Localhost' site), we might show that.
+      return { ...t, url: finalUrl, isLoading: true, progress: 0 };
     }));
-    setUrlInput(finalUrl);
+    setUrlInput(url);
 
-    // 2. Simulated Loading Sequence
-    let currentProgress = 10;
-    const interval = setInterval(() => {
-      currentProgress += Math.random() * 20;
+    let currentProgress = 0;
+    const PAGE_SIZE_MB = 2.5; // Average page size
+    const TICK_RATE_MS = 100;
 
-      if (currentProgress >= 80) {
-        clearInterval(interval);
-        updateTabProgress(activeTabId, 80);
-        
-        setTimeout(() => {
-          updateTabProgress(activeTabId, 100);
-          setTimeout(() => {
-            finishNavigation(activeTabId, finalUrl, website);
-          }, 150);
-        }, 400); 
+    loadingIntervalRef.current = setInterval(() => {
+      // Local pages load instantly regardless of network
+      if (isLocalPage) {
+        currentProgress += 20;
       } else {
-        updateTabProgress(activeTabId, currentProgress);
+        const { wifiEnabled, currentNetwork, availableNetworks } = networkRef.current;
+        const activeNetwork = availableNetworks.find(n => n.ssid === currentNetwork);
+
+        // Speed in Mbps (Megabits per second)
+        // If not connected, speed is 0
+        const speedMbps = (wifiEnabled && activeNetwork) ? activeNetwork.speed : 0;
+
+        // Convert to MB/s (Megabytes per second)
+        const speedMBps = speedMbps / 8;
+
+        // Downloaded in this tick
+        const downloadedMB = speedMBps * (TICK_RATE_MS / 1000);
+
+        // Track usage
+        incrementSessionDataUsage(downloadedMB);
+
+        // Progress increment (percentage of page size)
+        const percentIncrement = (downloadedMB / PAGE_SIZE_MB) * 100;
+
+        currentProgress += percentIncrement;
       }
-    }, 50);
+
+      if (currentProgress >= 100) {
+        if (loadingIntervalRef.current) clearInterval(loadingIntervalRef.current);
+        updateTabProgress(activeTabId, 100);
+        setTimeout(() => {
+          finishNavigation(activeTabId, finalUrl, website);
+        }, 100);
+      } else {
+        // Cap at 95% until finished
+        updateTabProgress(activeTabId, Math.min(95, currentProgress));
+      }
+
+    }, TICK_RATE_MS);
   };
 
   const updateTabProgress = (tabId: string, progress: number) => {
@@ -220,7 +300,7 @@ export function Browser({ owner }: { owner?: string }) {
 
       // If we navigated while in the middle of history, discard forward history
       const cleanHistory = t.history.slice(0, t.historyIndex + 1);
-      
+
       return {
         ...t,
         isLoading: false,
@@ -240,12 +320,12 @@ export function Browser({ owner }: { owner?: string }) {
 
   const reload = () => navigate(activeTab.renderedUrl);
   const goHome = () => navigate('browser://welcome');
-  
+
   const goBack = () => {
     if (activeTab.historyIndex > 0) {
       const prevIndex = activeTab.historyIndex - 1;
       const prevEntry = activeTab.history[prevIndex];
-      
+
       setTabs(prev => prev.map(t => t.id === activeTabId ? {
         ...t,
         renderedUrl: prevEntry.url,
@@ -253,7 +333,7 @@ export function Browser({ owner }: { owner?: string }) {
         title: prevEntry.title,
         historyIndex: prevIndex,
         // Don't show full loading bar for back navigation (snappier feel)
-        isLoading: false 
+        isLoading: false
       } : t));
       setUrlInput(prevEntry.url);
     }
@@ -263,7 +343,7 @@ export function Browser({ owner }: { owner?: string }) {
     if (activeTab.historyIndex < activeTab.history.length - 1) {
       const nextIndex = activeTab.historyIndex + 1;
       const nextEntry = activeTab.history[nextIndex];
-      
+
       setTabs(prev => prev.map(t => t.id === activeTabId ? {
         ...t,
         renderedUrl: nextEntry.url,
@@ -299,33 +379,41 @@ export function Browser({ owner }: { owner?: string }) {
   };
 
   const TabBar = (
-    <div className="flex items-center w-full gap-1 overflow-x-auto no-scrollbar pl-1">
+    <div className="flex items-center w-full gap-1 overflow-x-auto no-scrollbar pt-2 px-2">
       {tabs.map((tab) => (
         <div
           key={tab.id}
           onClick={() => setActiveTabId(tab.id)}
+          style={{
+            borderColor: tab.id === activeTabId ? accentColor : "transparent",
+            background: tab.id === activeTabId
+              ? `linear-gradient(to top, ${accentColor}15, transparent)`
+              : "transparent"
+          }}
           className={cn(
-            "group h-8 px-3 rounded-t-md flex items-center gap-2 min-w-[120px] max-w-[200px] transition-all cursor-pointer select-none border-b-2 relative",
-            tab.id === activeTabId 
-              ? "bg-white/10 border-blue-500" 
-              : "hover:bg-white/5 border-transparent opacity-70 hover:opacity-100"
+            "group flex items-center gap-2 px-4 py-2 text-xs font-medium cursor-pointer transition-all min-w-[140px] max-w-[220px] border-b-2",
+            tab.id === activeTabId
+              ? "text-white"
+              : "text-white/40 hover:text-white/80 hover:bg-white/5"
           )}
         >
           {tab.isLoading ? (
-             <RotateCw className="w-3 h-3 animate-spin text-blue-400" />
+            <RotateCw className="w-3.5 h-3.5 animate-spin text-blue-400" />
           ) : (
-             <span className="w-2 h-2 rounded-full bg-white/20 group-hover:bg-blue-400/50" />
+            <div className={cn("w-3.5 h-3.5 flex items-center justify-center")}>
+              <span className={cn("w-1.5 h-1.5 rounded-full", tab.id === activeTabId ? "bg-white" : "bg-white/40 group-hover:bg-white/60")} style={{ backgroundColor: tab.id === activeTabId ? accentColor : undefined }} />
+            </div>
           )}
-          <span className="text-white/90 text-xs truncate flex-1 font-medium">{tab.title}</span>
-          <button 
+          <span className="truncate flex-1">{tab.title}</span>
+          <button
             onClick={(e) => closeTab(e, tab.id)}
-            className="text-white/20 hover:text-white/90 hover:bg-red-500/20 rounded p-0.5 transition-colors opacity-0 group-hover:opacity-100"
+            className="opacity-0 group-hover:opacity-100 hover:bg-white/10 rounded-full p-0.5 transition-all"
           >
-            <X className="w-3 h-3" />
+            <X className="w-3 h-3 text-white/70 hover:text-white" />
           </button>
         </div>
       ))}
-      <button 
+      <button
         onClick={addTab}
         className="h-7 w-7 flex items-center justify-center rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors ml-1"
       >
@@ -335,22 +423,25 @@ export function Browser({ owner }: { owner?: string }) {
   );
 
   const content = (
-    <div className="flex flex-col min-h-full bg-gray-900 relative">
+    <div className="flex flex-col min-h-full relative">
       {/* Navbar Container */}
-      <div className="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-md border-b border-white/10 shadow-sm flex flex-col">
+      <div
+        className="sticky top-0 z-20 border-b border-white/10 shadow-sm flex flex-col"
+        style={{ background: titleBarBackground, ...blurStyle }}
+      >
         {/* Top Row: Navigation & URL */}
         <div className="flex items-center px-3 py-2 gap-2">
           <div className="flex items-center gap-1">
-            <button 
-              onClick={goBack} 
-              disabled={activeTab.historyIndex <= 0} 
+            <button
+              onClick={goBack}
+              disabled={activeTab.historyIndex <= 0}
               className="p-1.5 rounded hover:bg-white/10 text-white/70 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <button 
-              onClick={goForward} 
-              disabled={activeTab.historyIndex >= activeTab.history.length - 1} 
+            <button
+              onClick={goForward}
+              disabled={activeTab.historyIndex >= activeTab.history.length - 1}
               className="p-1.5 rounded hover:bg-white/10 text-white/70 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
@@ -375,16 +466,16 @@ export function Browser({ owner }: { owner?: string }) {
                 placeholder={t('browser.searchPlaceholder')}
                 className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-white/30"
               />
-              <button 
+              <button
                 type="button"
                 onClick={toggleBookmark}
                 className="focus:outline-none"
               >
-                <Star 
+                <Star
                   className={cn(
-                    "w-3.5 h-3.5 cursor-pointer transition-colors", 
+                    "w-3.5 h-3.5 cursor-pointer transition-colors",
                     isBookmarked ? "text-yellow-400 fill-yellow-400" : "text-white/30 hover:text-white/80"
-                  )} 
+                  )}
                 />
               </button>
             </div>
@@ -414,7 +505,7 @@ export function Browser({ owner }: { owner?: string }) {
       {/* Loading Bar */}
       {activeTab.isLoading && (
         <div className="absolute top-[53px] left-0 w-full h-0.5 bg-transparent z-30 pointer-events-none">
-          <div 
+          <div
             className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all ease-out duration-300"
             style={{ width: `${activeTab.progress}%` }}
           />
@@ -422,12 +513,39 @@ export function Browser({ owner }: { owner?: string }) {
       )}
 
       {/* Website Content */}
-      <div className="flex-1 overflow-y-auto relative bg-white h-full">
-        {currentWebsite && WebsiteComponent ? (
+      <div className={cn("flex-1 overflow-y-auto relative h-full safe-scroll browser-scrollbar", (activeTab.renderedUrl === 'browser://welcome' || (!wifiEnabled || !currentNetwork) && !activeTab.renderedUrl.startsWith('browser://')) ? "bg-transparent" : "bg-white")}>
+        {(!wifiEnabled || !currentNetwork) && !activeTab.renderedUrl.startsWith('browser://') ? (
+          <div className="h-full flex items-center justify-center p-4">
+            <div
+              className="w-full max-w-sm border border-white/10 rounded-xl shadow-2xl transition-all duration-300"
+              style={{
+                background: getBackgroundColor(0.8),
+                ...blurStyle,
+                boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.5)`
+              }}
+            >
+              <EmptyState
+                icon={WifiOff}
+                title={t('browser.error.offlineTitle') || "No Internet Connection"}
+                description={t('browser.error.offlineDesc') || "You are not connected to the internet. Please connect to a network to browse the web."}
+                action={
+                  <GlassButton
+                    onClick={() => navigate(activeTab.renderedUrl)}
+                    className="w-full justify-center font-medium transition-all hover:brightness-110 mt-2"
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    Try Again
+                  </GlassButton>
+                }
+                className="p-8"
+              />
+            </div>
+          </div>
+        ) : currentWebsite && WebsiteComponent ? (
           <WebsiteComponent
             domain={currentWebsite.domain}
             onNavigate={navigate}
-            params={getParams()} 
+            params={getParams()}
             owner={owner}
           />
         ) : (
@@ -439,7 +557,7 @@ export function Browser({ owner }: { owner?: string }) {
                 {t('browser.error.pageNotFoundDesc', { url: activeTab.renderedUrl })}
               </p>
               <button onClick={goHome} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md transition-colors text-sm font-medium">
-                 {t('browser.error.goHome')}
+                {t('browser.error.goHome')}
               </button>
             </div>
           </div>
@@ -450,21 +568,3 @@ export function Browser({ owner }: { owner?: string }) {
 
   return <AppTemplate toolbar={TabBar} content={content} hasSidebar={false} contentClassName="overflow-hidden" />;
 }
-
-// Menu Configuration
-export const browserMenuConfig = {
-  menus: ['File', 'Edit', 'View', 'Bookmarks', 'History'],
-  items: {
-    'File': [
-      { label: 'New Tab', labelKey: 'browser.menu.newTab', shortcut: '⌘T', action: 'new-tab' },
-      { label: 'Close Tab', labelKey: 'browser.menu.closeTab', shortcut: '⌘W', action: 'close-tab' },
-    ],
-    'Bookmarks': [
-       { label: 'Bookmark This Tab', labelKey: 'browser.menu.bookmark', shortcut: '⌘D', action: 'bookmark' },
-       { label: 'Show All Bookmarks', labelKey: 'browser.menu.showBookmarks', action: 'show-bookmarks' }
-    ],
-    'History': [
-      { label: 'Clear History', labelKey: 'browser.menu.clearHistory', action: 'clear-history' }
-    ]
-  }
-};

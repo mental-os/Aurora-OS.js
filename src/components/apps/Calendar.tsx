@@ -19,6 +19,7 @@ import { STORAGE_KEYS } from '@/utils/memory';
 import { notify } from '@/services/notifications';
 import { useI18n } from '@/i18n/index';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { safeParseLocal } from '@/utils/safeStorage';
 
 
 // --- Types ---
@@ -113,18 +114,28 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
 
 const getMockEvents = (t: (key: string, vars?: Record<string, string | number>) => string): CalendarEvent[] => {
   let startDate = new Date();
-  
+
   // Try to use system install date for historical accuracy
   try {
-     const installDateStr = localStorage.getItem(STORAGE_KEYS.INSTALL_DATE);
-     if (installDateStr) {
-        startDate = new Date(installDateStr);
-     } else {
-        // Fallback: If no install date (dev/legacy), stick to "Today at 10:00"
-        startDate.setHours(10, 0, 0, 0);
-     }
+    // safeParseLocal returns null for non-JSON strings usually, but INSTALL_DATE might be a raw string.
+    // safeStorage is designed for JSON.
+    // However, safeParseLocal handles non-JSON by catching and returning null? 
+    // Actually safeParseLocal expects JSON. If INSTALL_DATE is a plain string, it might fail.
+    // Let's check safeStorage implementation again. It does `JSON.parse(raw)`.
+    // IF INSTALL_DATE is just "2024-01-01...", JSON.parse will fail if not quoted?
+    // Actually Date strings are usually stored as simple strings or JSON strings.
+    // Let's assume it's a raw string for date? 
+    // Wait, STORAGE_KEYS.INSTALL_DATE is likely set via `new Date().toISOString()`.
+    // Use raw localStorage for simple strings if determining they are safe (Dates are safe).
+    const installDateStr = localStorage.getItem(STORAGE_KEYS.INSTALL_DATE);
+    if (installDateStr) {
+      startDate = new Date(installDateStr);
+    } else {
+      // Fallback: If no install date (dev/legacy), stick to "Today at 10:00"
+      startDate.setHours(10, 0, 0, 0);
+    }
   } catch {
-     startDate.setHours(10, 0, 0, 0);
+    startDate.setHours(10, 0, 0, 0);
   }
 
   // Ensure it's 10:00 AM regardless of day (unless it's the exact install time we want, but "Ten AM" feels canonical for a start event)
@@ -133,7 +144,7 @@ const getMockEvents = (t: (key: string, vars?: Record<string, string | number>) 
   // Let's use the exact time or rounded to start of hour.
   // "Loop Started" usually implies the moment the system booted.
   // Let's round to nearest minute for clean JSON.
-  
+
   return [
     {
       id: '1',
@@ -166,7 +177,7 @@ export function Calendar({ owner }: CalendarProps) {
   // Helper to shift date for display if in Server Time (UTC)
   const toDisplayDate = useCallback((date: Date) => {
     if (timeMode === 'server') {
-       return addMinutes(date, date.getTimezoneOffset());
+      return addMinutes(date, date.getTimezoneOffset());
     }
     return date;
   }, [timeMode]);
@@ -174,7 +185,7 @@ export function Calendar({ owner }: CalendarProps) {
   // Helper to unshift date from display back to real date
   const fromDisplayDate = useCallback((date: Date) => {
     if (timeMode === 'server') {
-       return subMinutes(date, date.getTimezoneOffset());
+      return subMinutes(date, date.getTimezoneOffset());
     }
     return date;
   }, [timeMode]);
@@ -224,15 +235,15 @@ export function Calendar({ owner }: CalendarProps) {
   const userHome = activeUser === 'root' ? '/root' : `/home/${activeUser}`;
   const configDir = `${userHome}/.Config`;
   const configFile = `${configDir}/calendar.json`;
-  const softStateKey = `${STORAGE_KEYS.APP_PREFIX}calendar-state-${activeUser}`;
+  const softStateKey = `${STORAGE_KEYS.APP_DATA_PREFIX}calendar-state-${activeUser}`;
 
   // --- State ---
 
   // Soft Memory (UI State)
   const [currentDate, setCurrentDate] = useState(() => {
     try {
-      const saved = localStorage.getItem(softStateKey);
-      if (saved) return new Date(JSON.parse(saved).currentDate);
+      const saved = safeParseLocal<{ currentDate: string, view: 'month' | 'day' }>(softStateKey);
+      if (saved && saved.currentDate) return new Date(saved.currentDate);
     } catch {
       // Ignore invalid/missing state
     }
@@ -241,8 +252,8 @@ export function Calendar({ owner }: CalendarProps) {
 
   const [view, setView] = useState<'month' | 'day'>(() => {
     try {
-      const saved = localStorage.getItem(softStateKey);
-      if (saved) return JSON.parse(saved).view || 'month';
+      const saved = safeParseLocal<{ currentDate: string, view: 'month' | 'day' }>(softStateKey);
+      if (saved && saved.view) return saved.view;
     } catch {
       // Ignore invalid/missing state
     }
@@ -260,19 +271,19 @@ export function Calendar({ owner }: CalendarProps) {
 
   // Local helper to resolve category style dynamically
   const resolveCategoryClass = (categoryId: string) => {
-     // 1. Try static map first (fast path for default categories)
-     if (CATEGORY_BORDER_COLORS[categoryId]) return CATEGORY_BORDER_COLORS[categoryId];
-     
-     // 2. Find in dynamic categories
-     const cat = categories.find(c => c.id === categoryId);
-     if (cat) {
-        // If it has a color name that matches our tokens
-        if (CATEGORY_BORDER_COLORS[cat.color]) return CATEGORY_BORDER_COLORS[cat.color];
-        
-        // If it has a raw color (future proof), we might return inline style, but for now fallback
-     }
-     
-     return "border-gray-500";
+    // 1. Try static map first (fast path for default categories)
+    if (CATEGORY_BORDER_COLORS[categoryId]) return CATEGORY_BORDER_COLORS[categoryId];
+
+    // 2. Find in dynamic categories
+    const cat = categories.find(c => c.id === categoryId);
+    if (cat) {
+      // If it has a color name that matches our tokens
+      if (CATEGORY_BORDER_COLORS[cat.color]) return CATEGORY_BORDER_COLORS[cat.color];
+
+      // If it has a raw color (future proof), we might return inline style, but for now fallback
+    }
+
+    return "border-gray-500";
   };
 
   const filteredEvents = events.filter(event => {
@@ -387,7 +398,7 @@ export function Calendar({ owner }: CalendarProps) {
       writeFile(configFile, JSON.stringify(dataToSave, null, 2), activeUser);
     }
   };
-  
+
 
 
   // Save Soft State (UI Preferences)
@@ -419,7 +430,7 @@ export function Calendar({ owner }: CalendarProps) {
 
   const handleEventClick = (event: HydratedCalendarEvent) => {
     // Convert to Visual Date for editing
-    setEditingEvent({ 
+    setEditingEvent({
       ...event,
       start: toDisplayDate(event.start)
     });
@@ -503,11 +514,11 @@ export function Calendar({ owner }: CalendarProps) {
       color: newCategoryColor,
       labelKey: undefined
     };
-    
+
     const newCategories = [...categories, newCategory];
     setCategories(newCategories);
     saveEventsToDisk(events, newCategories); // Explicit Save
-    
+
     setIsCategoryModalOpen(false);
     setNewCategoryName("");
     setNewCategoryColor("blue");
@@ -516,13 +527,13 @@ export function Calendar({ owner }: CalendarProps) {
   const handleDeleteCategory = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (DEFAULT_CATEGORIES.find(c => c.id === id)) {
-       notify.system('error', 'Calendar', t('calendar.toasts.cannotDeleteSystemCategory'), t('notifications.subtitles.error'));
-       return;
+      notify.system('error', 'Calendar', t('calendar.toasts.cannotDeleteSystemCategory'), t('notifications.subtitles.error'));
+      return;
     }
     const newCategories = categories.filter(c => c.id !== id);
     setCategories(newCategories);
     saveEventsToDisk(events, newCategories); // Explicit Save
-    
+
     if (selectedCategory === id) setSelectedCategory('all');
   };
 
@@ -541,7 +552,7 @@ export function Calendar({ owner }: CalendarProps) {
     e.preventDefault();
     const eventId = e.dataTransfer.getData('text/plain');
     const event = events.find(ev => ev.id === eventId);
-    
+
     if (event) {
       // Logic: targetDate is the Visual Day (e.g. Sep 1 UTC).
       // Event Start is Real Date.
@@ -552,9 +563,9 @@ export function Calendar({ owner }: CalendarProps) {
       const visualEventStart = toDisplayDate(event.start);
       const newStartVisual = new Date(targetDate);
       newStartVisual.setHours(getHours(visualEventStart), getMinutes(visualEventStart));
-      
+
       const newStartReal = fromDisplayDate(newStartVisual);
-      
+
       handleUpdateEvent(event.id, { start: newStartReal });
     }
   };
@@ -673,7 +684,7 @@ export function Calendar({ owner }: CalendarProps) {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const visualCurrentDate = toDisplayDate(currentDate);
     const visualToday = toDisplayDate(new Date());
-    
+
     // Filter events that visually appear on this day
     const rawDayEvents = filteredEvents.filter(e => isSameDay(toDisplayDate(e.start), visualCurrentDate));
 
@@ -774,7 +785,7 @@ export function Calendar({ owner }: CalendarProps) {
               const height = event.durationMinutes;
               const showTime = height >= 30;
               const showLocation = height >= 50;
-              
+
               const layoutInfo = layout.get(event.id) || { indent: 0 };
               const indent = layoutInfo.indent;
               const xOffset = 64 + (indent * 24); // Shift right by 24px per level for better visibility
@@ -787,7 +798,7 @@ export function Calendar({ owner }: CalendarProps) {
                 <Rnd
                   key={event.id}
                   default={{
-                    x: xOffset, 
+                    x: xOffset,
                     y: startMinutes,
                     width: width,
                     height: height
@@ -799,7 +810,7 @@ export function Calendar({ owner }: CalendarProps) {
                   dragAxis="y"
                   bounds="parent"
                   enableResizing={{ top: false, right: false, bottom: true, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
-                  onDragStart={() => {}} // Don't block clicks on start
+                  onDragStart={() => { }} // Don't block clicks on start
                   onDrag={() => {
                     if (draggingId !== event.id) setDraggingId(event.id);
                   }}
@@ -809,14 +820,14 @@ export function Calendar({ owner }: CalendarProps) {
                     const newStartMinutes = d.y;
                     // Calculate based on Visual Date
                     const newStartVisual = new Date(visualCurrentDate);
-                    newStartVisual.setHours(0, newStartMinutes, 0, 0); 
-                    
+                    newStartVisual.setHours(0, newStartMinutes, 0, 0);
+
                     // Snap to 15 mins
                     const snappedMinutes = Math.round(newStartMinutes / 15) * 15;
                     const hours = Math.floor(snappedMinutes / 60);
                     const minutes = snappedMinutes % 60;
                     newStartVisual.setHours(hours, minutes);
-                    
+
                     const newStartReal = fromDisplayDate(newStartVisual);
 
                     handleUpdateEvent(event.id, { start: newStartReal });
@@ -826,7 +837,7 @@ export function Calendar({ owner }: CalendarProps) {
                     setDraggingId(null);
 
                     const newHeight = parseInt(ref.style.height, 10);
-                     // Snap duration to 15 mins
+                    // Snap duration to 15 mins
                     const snappedDuration = Math.round(newHeight / 15) * 15;
                     handleUpdateEvent(event.id, { durationMinutes: Math.max(15, snappedDuration) });
                   }}
@@ -838,12 +849,12 @@ export function Calendar({ owner }: CalendarProps) {
                     zIndex: isDragging ? 50 : zIndex
                   }}
                 >
-                  <div 
-                    className={cn("absolute inset-0 w-full h-full", EVENT_BG_COLORS[event.color] || EVENT_BG_COLORS.blue)} 
+                  <div
+                    className={cn("absolute inset-0 w-full h-full", EVENT_BG_COLORS[event.color] || EVENT_BG_COLORS.blue)}
                     style={{ pointerEvents: draggingId === event.id ? 'none' : 'auto' }}
                     onClick={(e) => {
-                        e.stopPropagation();
-                        handleEventClick(event);
+                      e.stopPropagation();
+                      handleEventClick(event);
                     }}
                   />
 
@@ -934,7 +945,7 @@ export function Calendar({ owner }: CalendarProps) {
               {!isSidebarCompact && (
                 <div className="flex items-center justify-between px-2">
                   <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest">{t('calendar.sidebar.myCalendars')}</h3>
-                  <button 
+                  <button
                     onClick={() => setIsCategoryModalOpen(true)}
                     className="text-white/40 hover:text-white transition-colors"
                   >
@@ -959,21 +970,21 @@ export function Calendar({ owner }: CalendarProps) {
                     title={(category as any).label || t((category as any).labelKey)}
                   >
                     <div className="flex items-center gap-2">
-                        <div className={cn(
+                      <div className={cn(
                         "rounded-full ring-2 ring-white/5",
                         isSidebarCompact ? "w-3 h-3" : "w-3 h-3",
                         getColorClass(category.color || 'white')
-                        )} />
-                        {!isSidebarCompact && ((category as any).label || t((category as any).labelKey))}
+                      )} />
+                      {!isSidebarCompact && ((category as any).label || t((category as any).labelKey))}
                     </div>
-                    
+
                     {!isSidebarCompact && !DEFAULT_CATEGORIES.some(c => c.id === category.id) && (
-                        <button
-                          onClick={(e) => handleDeleteCategory(category.id, e)}
-                          className="text-white/20 hover:text-white opacity-0 group-hover/cat:opacity-100 transition-all font-bold"
-                        >
-                            &times;
-                        </button>
+                      <button
+                        onClick={(e) => handleDeleteCategory(category.id, e)}
+                        className="text-white/20 hover:text-white opacity-0 group-hover/cat:opacity-100 transition-all font-bold"
+                      >
+                        &times;
+                      </button>
                     )}
                   </div>
                 ))}
@@ -1121,7 +1132,7 @@ export function Calendar({ owner }: CalendarProps) {
       {/* Wait, my previous replacement put Dialog INSIDE AppTemplate? No, it was outside in my mental model but inside the return. */}
       {/* Standard practice: Dialogs can be anywhere. */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent 
+        <DialogContent
           overlayClassName="bg-black/20 backdrop-blur-[12px]"
           className="sm:max-w-[425px] border-white/10 text-white shadow-2xl bg-transparent"
           style={{
@@ -1539,7 +1550,7 @@ export function Calendar({ owner }: CalendarProps) {
         </DialogContent>
 
       </Dialog>
-      
+
       <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
         <DialogContent className="sm:max-w-[425px] bg-[#1E1E1E]/95 border-white/10 text-white backdrop-blur-2xl shadow-2xl">
           <DialogHeader>
@@ -1563,22 +1574,22 @@ export function Calendar({ owner }: CalendarProps) {
               </Label>
               <div className="col-span-3 flex gap-2">
                 {colors.filter(c => c.value !== 'white').map(color => (
-                    <button
-                        key={color.value}
-                        type="button"
-                        onClick={() => setNewCategoryColor(color.value)}
-                        className={cn(
-                            "w-6 h-6 rounded-full transition-transform ring-offset-2 ring-offset-black",
-                            color.tw,
-                            newCategoryColor === color.value ? "scale-110 ring-2 ring-white" : "hover:scale-105"
-                        )}
-                    />
+                  <button
+                    key={color.value}
+                    type="button"
+                    onClick={() => setNewCategoryColor(color.value)}
+                    className={cn(
+                      "w-6 h-6 rounded-full transition-transform ring-offset-2 ring-offset-black",
+                      color.tw,
+                      newCategoryColor === color.value ? "scale-110 ring-2 ring-white" : "hover:scale-105"
+                    )}
+                  />
                 ))}
               </div>
             </div>
           </div>
           <DialogFooter>
-             <Button variant="outline" onClick={() => setIsCategoryModalOpen(false)} className="border-white/10 text-white hover:bg-white/10">{t('common.cancel')}</Button>
+            <Button variant="outline" onClick={() => setIsCategoryModalOpen(false)} className="border-white/10 text-white hover:bg-white/10">{t('common.cancel')}</Button>
             <Button onClick={handleAddCategory} style={{ backgroundColor: accentColor }} className="text-white hover:brightness-110 border-0">{t('common.save')}</Button>
           </DialogFooter>
         </DialogContent>
@@ -1587,16 +1598,3 @@ export function Calendar({ owner }: CalendarProps) {
   );
 }
 
-import { AppMenuConfig } from '@/types';
-
-export const calendarMenuConfig: AppMenuConfig = {
-  menus: ['File', 'Edit', 'View', 'Window', 'Help'],
-  items: {
-    'View': [
-      { label: 'Day', labelKey: 'calendar.menu.day', shortcut: '⌘1', action: 'view-day' },
-      { label: 'Week', labelKey: 'calendar.menu.week', shortcut: '⌘2', action: 'view-week' },
-      { label: 'Month', labelKey: 'calendar.menu.month', shortcut: '⌘3', action: 'view-month' },
-      { label: 'Year', labelKey: 'calendar.menu.year', shortcut: '⌘4', action: 'view-year' }
-    ]
-  }
-};

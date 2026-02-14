@@ -18,7 +18,7 @@ export function useSessionStorage<T>(key: string, initialState: T, owner?: strin
 
     // We need to access the current user. AppContext provides activeUser.
 
-    const storageKey = `${STORAGE_KEYS.SESSION_PREFIX}${activeUser || 'system'}-${key}`;
+    const storageKey = `${STORAGE_KEYS.SESSION_META}${activeUser || 'system'}-${key}`;
 
     // Load initial state
     const [state, setStateInternal] = useState<T>(() => {
@@ -41,7 +41,7 @@ export function useSessionStorage<T>(key: string, initialState: T, owner?: strin
             // Check if state matches initial default
             // This prevents cluttering storage with default values on mount
             const isDefault = JSON.stringify(state) === JSON.stringify(initialState);
-            
+
             if (isDefault) {
                 localStorage.removeItem(storageKey);
             } else {
@@ -51,7 +51,7 @@ export function useSessionStorage<T>(key: string, initialState: T, owner?: strin
             console.warn(`Failed to save session state ${key}:`, e);
         }
     }, [state, storageKey, activeUser, key, initialState]);
-    
+
     // Wrapper for setState
     const setState = useCallback((value: T | ((prev: T) => T)) => {
         setStateInternal(prev => {

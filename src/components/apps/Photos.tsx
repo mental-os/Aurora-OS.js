@@ -34,13 +34,13 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
   const windowContext = useWindow();
   const { getBackgroundColor, blurStyle } = useThemeColors();
   const { resolvePath, getNodeAtPath } = useFileSystem();
-  
-  const { 
-    libraryPhotos, 
-    recentPhotos, 
-    favorites, 
-    activeCategory, 
-    setActiveCategory, 
+
+  const {
+    libraryPhotos,
+    recentPhotos,
+    favorites,
+    activeCategory,
+    setActiveCategory,
     toggleFavorite,
     openPhoto,
     setPhotosOpen,
@@ -55,8 +55,8 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
   // Reactive lookup for the selected photo to ensure state sync (favorites, etc.)
   const activeSelectedPhoto = useMemo(() => {
     if (!selectedPhotoId) return null;
-    return libraryPhotos.find(p => p.id === selectedPhotoId) || 
-           recentPhotos.find(p => p.id === selectedPhotoId);
+    return libraryPhotos.find(p => p.id === selectedPhotoId) ||
+      recentPhotos.find(p => p.id === selectedPhotoId);
   }, [selectedPhotoId, libraryPhotos, recentPhotos]);
 
   const handlePhotoClick = (photo: Photo) => {
@@ -139,7 +139,7 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
       <div className="flex flex-col">
         <h2 className="text-white/90 leading-tight">{toolbarTitle}</h2>
         {showUserContext && (
-           <span className="text-[10px] text-white/40 font-mono uppercase tracking-wider">{activeUser}'s Library</span>
+          <span className="text-[10px] text-white/40 font-mono uppercase tracking-wider">{t('photos.library.userLibrary', { user: activeUser })}</span>
         )}
       </div>
       <div className="flex items-center gap-2">
@@ -170,69 +170,69 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
       {displayPhotos.length === 0 ? (
         <div className="h-full flex items-center justify-center">
           {(() => {
-             if (activeCategory === 'recent') {
-               return (
-                 <EmptyState
-                   icon={Clock}
-                   title={t('photos.empty.recent.title')}
-                   description={t('photos.empty.recent.description')}
-                 />
-               );
-             } else if (activeCategory === 'favorites') {
-               return (
-                 <EmptyState
-                   icon={Heart}
-                   title={t('photos.empty.favorites.title')}
-                   description={t('photos.empty.favorites.description')}
-                 />
-               );
-             } else {
-               const picturesPath = resolvePath("~/Pictures", activeUser);
-               const picturesNode = getNodeAtPath(picturesPath, activeUser);
-               
-               if (!picturesNode) {
-                 return (
-                   <EmptyState
-                     icon={FolderOpen}
-                     title={t('photos.empty.noFolder.title', { user: activeUser })}
-                     description={t('photos.empty.noFolder.description', { path: picturesPath })}
-                     action={
-                       <Button
-                         variant="outline"
-                         onClick={() => {
-                           const home = resolvePath("~", activeUser);
-                           onOpenApp?.('finder', { path: home }, owner);
-                         }}
-                         className="gap-2 border-white/20 text-white hover:bg-white/10"
-                       >
-                         <FolderOpen className="w-4 h-4" />
-                         {t('photos.empty.openHome')}
-                       </Button>
-                     }
-                   />
-                 );
-               }
+            if (activeCategory === 'recent') {
+              return (
+                <EmptyState
+                  icon={Clock}
+                  title={t('photos.empty.recent.title')}
+                  description={t('photos.empty.recent.description')}
+                />
+              );
+            } else if (activeCategory === 'favorites') {
+              return (
+                <EmptyState
+                  icon={Heart}
+                  title={t('photos.empty.favorites.title')}
+                  description={t('photos.empty.favorites.description')}
+                />
+              );
+            } else {
+              const picturesPath = resolvePath("~/Pictures", activeUser);
+              const picturesNode = getNodeAtPath(picturesPath, activeUser);
 
-               return (
-                 <EmptyState
-                   icon={Image}
-                   title={t('photos.empty.library.title')}
-                   description={t('photos.empty.library.description')}
-                   action={
-                     <Button
-                       variant="outline"
-                       onClick={() => {
-                         onOpenApp?.('finder', { path: picturesPath }, owner);
-                       }}
-                       className="gap-2 border-white/20 text-white hover:bg-white/10"
-                     >
-                       <FolderOpen className="w-4 h-4" />
-                       {t('photos.empty.library.openFolder', { folder: activeCategory.startsWith('album-') ? activeCategory.replace('album-', '') : t('photos.folders.pictures') })}
-                     </Button>
-                   }
-                 />
-               );
-             }
+              if (!picturesNode) {
+                return (
+                  <EmptyState
+                    icon={FolderOpen}
+                    title={t('photos.empty.noFolder.title', { user: activeUser })}
+                    description={t('photos.empty.noFolder.description', { path: picturesPath })}
+                    action={
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          const home = resolvePath("~", activeUser);
+                          onOpenApp?.('finder', { path: home }, owner);
+                        }}
+                        className="gap-2 border-white/20 text-white hover:bg-white/10"
+                      >
+                        <FolderOpen className="w-4 h-4" />
+                        {t('photos.empty.openHome')}
+                      </Button>
+                    }
+                  />
+                );
+              }
+
+              return (
+                <EmptyState
+                  icon={Image}
+                  title={t('photos.empty.library.title')}
+                  description={t('photos.empty.library.description')}
+                  action={
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        onOpenApp?.('finder', { path: picturesPath }, owner);
+                      }}
+                      className="gap-2 border-white/20 text-white hover:bg-white/10"
+                    >
+                      <FolderOpen className="w-4 h-4" />
+                      {t('photos.empty.library.openFolder', { folder: activeCategory.startsWith('album-') ? activeCategory.replace('album-', '') : t('photos.folders.pictures') })}
+                    </Button>
+                  }
+                />
+              );
+            }
           })()}
         </div>
       ) : viewMode === 'grid' ? (
@@ -266,7 +266,7 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
       ) : (
         <div className="space-y-1">
           {displayPhotos.map((photo) => (
-             <div
+            <div
               key={photo.id}
               className="flex items-center gap-4 p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer"
               onClick={() => handlePhotoClick(photo)}
@@ -275,9 +275,9 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white truncate">{photo.name}</div>
                 <div className="text-xs text-white/50 truncate flex items-center gap-1.5">
-                    <span>{photo.album}</span>
-                    <span>•</span>
-                    <span>{new Date(photo.modified).toLocaleDateString()}</span>
+                  <span>{photo.album}</span>
+                  <span>•</span>
+                  <span>{new Date(photo.modified).toLocaleDateString()}</span>
                 </div>
                 {activeCategory === 'recent' && (
                   <div className="text-[10px] text-white/30 truncate font-mono mt-0.5" title={photo.path}>
@@ -301,10 +301,10 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
 
       {/* Lightbox Overlay */}
       {activeSelectedPhoto && (
-        <Lightbox 
-          photo={activeSelectedPhoto} 
-          onClose={() => setSelectedPhotoId(null)} 
-          onToggleFavorite={toggleFavorite} 
+        <Lightbox
+          photo={activeSelectedPhoto}
+          onClose={() => setSelectedPhotoId(null)}
+          onToggleFavorite={toggleFavorite}
         />
       )}
     </div >
@@ -325,16 +325,6 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
   );
 }
 
-import { AppMenuConfig } from '../../types';
 
-export const photosMenuConfig: AppMenuConfig = {
-  menus: ['File', 'Edit', 'Image', 'View', 'Window', 'Help'],
-  items: {
-    'Image': [
-      { label: 'Slideshow', labelKey: 'photos.menu.slideshow', action: 'slideshow' },
-      { type: 'separator' },
-      { label: 'Rotate Clockwise', labelKey: 'photos.menu.rotateClockwise', shortcut: '⌘R', action: 'rotate-cw' },
-      { label: 'Rotate Counter Clockwise', labelKey: 'photos.menu.rotateCounterClockwise', shortcut: '⇧⌘R', action: 'rotate-ccw' }
-    ]
-  }
-};
+
+

@@ -196,6 +196,7 @@ export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) 
                             }}
                         >
                             <div className="flex items-center relative z-10" style={{ gap: 'clamp(0.75rem, 2vh, 1.25rem)' }}>
+
                                 {/* Icon Box - Fluid Size */}
                                 <div className={cn(
                                     "flex items-center justify-center transition-colors shrink-0",

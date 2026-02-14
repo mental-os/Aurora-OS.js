@@ -1,12 +1,12 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { ShieldCheck, AlertTriangle, Orbit } from "lucide-react";
 import { motion } from "motion/react";
-import pkg from "../../../package.json";
-import { validateIntegrity } from "../../utils/integrity";
-import { ConnectivityBadge } from "../ui/ConnectivityBadge";
-import { useI18n } from "../../i18n/index";
-import { useAppContext } from "../AppContext";
-import background from "../../assets/images/background.png"; // Restored legacy background
+import pkg from "@/../package.json";
+import { validateIntegrity } from "@/utils/integrity";
+import { ConnectivityBadge } from "@/components/ui/ConnectivityBadge";
+import { useI18n } from "@/i18n/index";
+import { useAppContext } from "@/components/AppContext";
+import background from "@/assets/images/wallpaper-nebula.avif"; // Restored legacy background
 
 interface GameScreenLayoutProps {
     children: ReactNode;
@@ -25,6 +25,7 @@ export function GameScreenLayout({
 }: GameScreenLayoutProps) {
     const { t } = useI18n();
     const { accentColor } = useAppContext();
+    const [isIntegrityValid] = useState(() => validateIntegrity());
 
     // Terminal Styles (Current)
     const terminalStyle = {
@@ -239,7 +240,7 @@ export function GameScreenLayout({
                             {mode === 'terminal' ? (
                                 /* TERMINAL STYLE BADGES */
                                 <>
-                                    {validateIntegrity() ? (
+                                    {isIntegrityValid ? (
                                         <span className="text-emerald-500/50 flex items-center gap-1.5">
                                             <ShieldCheck className="w-3 h-3" />
                                             <span className="hidden sm:inline">{t("game.footer.originalDistribution")}</span>
@@ -258,7 +259,7 @@ export function GameScreenLayout({
                                 /* GLASS STYLE BADGES (Pill Design) */
                                 <>
                                     <span className="text-white/10 hidden md:inline">•</span>
-                                    {validateIntegrity() ? (
+                                    {isIntegrityValid ? (
                                         <span className="text-emerald-500/50 flex items-center gap-1.5 bg-emerald-500/5 px-2 py-0.5 rounded-full border border-emerald-500/10">
                                             <ShieldCheck className="w-3 h-3" />
                                             <span className="hidden sm:inline">{t("game.footer.originalDistribution")}</span>
@@ -281,8 +282,8 @@ export function GameScreenLayout({
                         <div className={`flex items-center justify-center ${mode === 'glass' ? 'gap-2 md:gap-4 text-[10px] md:text-xs font-mono text-white/50' : 'gap-2 text-white/20'}`}>
                             {footerActions || (
                                 <>
-                                    <span>©2025 <a href={pkg.homepage} target="_blank" rel="noreferrer" className="hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">{pkg.build.productName} {pkg.version}</a> // <a href="https://instagram.com/mental.os" target="_blank" rel="noreferrer" className="hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">mental.os()</a> // <a href="https://facebook.com/dopepxls" target="_blank" rel="noreferrer" className="hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">Dope Pixels</a><br/>
-                                    Open-source (<a href="https://github.com/mental-os/Aurora-OS.js/blob/main/LICENSE" target="_blank" rel="noreferrer" className="hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">{pkg.license}</a>) · All rights reserved beyond license terms</span>
+                                    <span>©2026 <a href={pkg.homepage} target="_blank" rel="noreferrer" className="hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">{pkg.build.productName} {pkg.version}</a> // <a href="https://instagram.com/mental-os" target="_blank" rel="noreferrer" className="hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">mental.os()</a> // <a href="https://facebook.com/dopepxls" target="_blank" rel="noreferrer" className="hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">{pkg.author}</a><br />
+                                        Open-source (<a href="https://github.com/mental-os/Aurora-OS.js/blob/main/LICENSE" target="_blank" rel="noreferrer" className="hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">{pkg.license}</a>) · All rights reserved beyond license terms</span>
                                 </>
                             )}
                         </div>

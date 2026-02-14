@@ -46,10 +46,38 @@ export const pt: TranslationDict = {
     },
     "bios": {
       "title": "Configurações da BIOS",
-      "fullScreen": "Tela cheia",
-      "immersiveMode": "Modo imersivo",
-      "fullScreenEnter": "Entrar",
-      "fullScreenExit": "Sair",
+      "hardwareAcceleration": "Aceleração de Hardware",
+      "displayMode": "Modo de Exibição",
+      "fullscreen": "Tela Cheia",
+      "borderless": "Sem Bordas",
+      "windowed": "Janela",
+      "resolution": "Resolução",
+      "windowSettings": "Configurações de Janela",
+      "windowFrame": "Moldura da Janela",
+      "windowFrameHint": "Barra de título e bordas (Requer reinício)",
+      "configurationUtility": "Utilitário de Configuração",
+      "tabs": {
+        "display": "Ecrã",
+        "audio": "Áudio",
+        "system": "Sistema"
+      },
+      "graphicsQuality": "Qualidade Gráfica",
+      "presets": {
+        "highFidelity": {
+          "label": "Alta Fidelidade",
+          "desc": "Desfoque, Sombras, Vibração ativados. visual++"
+        },
+        "performance": {
+          "label": "Desempenho",
+          "desc": "Max FPS. Efeitos mínimos. velocidade++"
+        }
+      },
+      "reduceMotion": "Reduzir Movimento",
+      "simpleColors": "Cores Simples",
+      "solidBackgrounds": "Fundos Sólidos",
+      "noShadows": "Sem Sombras",
+      "dangerZone": "Zona de Perigo",
+      "configFooter": "CONFIG",
       "softReset": "Reinicialização suave",
       "softResetHint": "Recarregar aplicativo",
       "softResetConfirm": "Reinicialização suave: isso vai recarregar o aplicativo e manter seus dados. Continuar?",
@@ -148,9 +176,6 @@ export const pt: TranslationDict = {
       "bookmarks": "Favoritos",
       "mailbox": "Caixa de Correio",
       "message": "Mensagem",
-      "devCenter": "Centro DEV",
-      "tools": "Ferramentas",
-      "image": "Imagem",
       "conversations": "Conversas"
     },
     "items": {
@@ -232,7 +257,8 @@ export const pt: TranslationDict = {
       "fileError": "Erro de Arquivo"
     },
     "empty": "Sem notificações",
-    "clearApp": "Limpar tudo deste app"
+    "clearApp": "Limpar tudo deste app",
+    "messageFrom": "Message from {{sender}}"
   },
   "memory": {
     "title": "Memória",
@@ -298,6 +324,8 @@ export const pt: TranslationDict = {
       "closeTab": "Fechar Aba"
     },
     "welcome": {
+      "title": "Browser",
+      "description": "Search for information or enter a URL to start browsing.",
       "searchPlaceholder": "Buscar sites ou digitar endereço...",
       "favorites": "Favoritos",
       "recentActivity": "Atividade Recente"
@@ -306,7 +334,9 @@ export const pt: TranslationDict = {
     "error": {
       "pageNotFound": "Página Não Encontrada",
       "pageNotFoundDesc": "O site {{url}} não pôde ser encontrado.",
-      "goHome": "Ir para o Início"
+      "goHome": "Ir para o Início",
+      "offlineTitle": "No Internet Connection",
+      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
     }
   },
   "music": {
@@ -619,7 +649,8 @@ export const pt: TranslationDict = {
     "library": {
       "allPhotos": "Todas as fotos",
       "favorites": "Favoritas",
-      "recent": "Recentes"
+      "recent": "Recentes",
+      "userLibrary": "{{user}}'s Library"
     },
     "menu": {
       "slideshow": "Apresentação",
@@ -647,7 +678,9 @@ export const pt: TranslationDict = {
       "openHome": "Abrir pasta pessoal"
     },
     "folders": {
-      "pictures": "Imagens"
+      "pictures": "Imagens",
+      "recent": "Recent",
+      "misc": "Misc"
     }
   },
   "mail": {
@@ -1023,15 +1056,34 @@ export const pt: TranslationDict = {
       "disableShadowsTitle": "Desativar sombras",
       "disableShadowsDescription": "Remover sombras das janelas para melhorar desempenho",
       "disableGradientsTitle": "Desativar gradientes",
-      "disableGradientsDescription": "Usar cores sólidas em vez de gradientes nos ícones"
+      "disableGradientsDescription": "Usar cores sólidas em vez de gradientes nos ícones",
+      "gpuTitle": "Usar aceleração gráfica",
+      "gpuDescription": "Usar aceleração de hardware quando disponível (após reinício)"
+    },
+    "network": {
+      "wifiTitle": "Wi-Fi",
+      "wifinotConnected": "Not Connected",
+      "wifiDisabled": "Wi-Fi desligado",
+      "wifiNetworks": "Redes disponíveis",
+      "scanning": "Procurando...",
+      "passwordPlaceholder": "Senha",
+      "disconnect": "Desconectar",
+      "configurationMode": "Modo de configuração",
+      "automatic": "Automático (DHCP)",
+      "manual": "Manual",
+      "autoConfigTitle": "Configuração automática",
+      "manualConfigTitle": "Configuração manual",
+      "ipAddress": "Endereço IP",
+      "subnetMask": "Máscara de sub-rede",
+      "gateway": "Gateway",
+      "dns": "Servidor DNS",
+      "validateConfig": "Validar configuração",
+      "configSaved": "Configuração de rede salva com sucesso",
+      "dhcpAttributionProgress": "Recuperando um endereço IP via DHCP"
     },
     "placeholders": {
-      "displaysTitle": "Configurações de exibição",
-      "displaysDescription": "Resolução, escala e brilho em breve.",
       "notificationsTitle": "Notificações",
       "notificationsDescription": "Configurações da central de notificações em breve.",
-      "networkTitle": "Rede",
-      "networkDescription": "Configuração de Wi‑Fi e Bluetooth em breve.",
       "securityTitle": "Segurança e privacidade",
       "securityDescription": "Firewall, permissões e privacidade em breve.",
       "storageTitle": "Armazenamento",

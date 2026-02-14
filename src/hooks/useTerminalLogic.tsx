@@ -41,14 +41,14 @@ const tokenize = (input: string): string[] => {
   const tokens: string[] = [];
   let current = '';
   let inQuote: "'" | '"' | null = null;
-   
+
   for (let i = 0; i < input.length; i++) {
     const char = input[i];
     const next = input[i + 1];
 
     if (inQuote) {
       if (char === inQuote) {
-        inQuote = null; 
+        inQuote = null;
         current += char; // Keep quotes for arg parsing later
       } else {
         current += char;
@@ -84,18 +84,18 @@ const tokenize = (input: string): string[] => {
 const parseShellInput = (input: string): Pipeline[] => {
   const tokens = tokenize(input);
   const pipelines: Pipeline[] = [];
-   
-  let buffer: string[] = []; 
 
-  for(let i=0; i<tokens.length; i++) {
-     const t = tokens[i];
-     if (['&&', '||', ';'].includes(t)) {
-        if (buffer.length > 0) pipelines.push({ steps: processBufferToSteps(buffer), operator: t as any });
-        else if (pipelines.length > 0) pipelines[pipelines.length-1].operator = t as any;
-        buffer = [];
-     } else {
-        buffer.push(t);
-     }
+  let buffer: string[] = [];
+
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (['&&', '||', ';'].includes(t)) {
+      if (buffer.length > 0) pipelines.push({ steps: processBufferToSteps(buffer), operator: t as any });
+      else if (pipelines.length > 0) pipelines[pipelines.length - 1].operator = t as any;
+      buffer = [];
+    } else {
+      buffer.push(t);
+    }
   }
   if (buffer.length > 0) pipelines.push({ steps: processBufferToSteps(buffer), operator: null });
 
@@ -103,54 +103,54 @@ const parseShellInput = (input: string): Pipeline[] => {
 };
 
 const processBufferToSteps = (tokens: string[]): CommandStep[] => {
-    const steps: CommandStep[] = [];
-    let currentCmd: CommandStep = { command: '', args: [], redirectOp: null, redirectPath: null };
-    
-    const parseArgs = (str: string) => {
-         const args: string[] = [];
-         let curr = '';
-         let quote: string | null = null;
-         for(let i=0; i<str.length; i++) {
-            const c = str[i];
-            if(quote) {
-                if(c === quote) { quote = null; } 
-                else { curr += c; }
-            } else {
-                if(c === '"' || c === "'") { quote = c; }
-                else if (/\s/.test(c)) {
-                    if(curr) { args.push(curr); curr = ''; }
-                } else {
-                    curr += c;
-                }
-            }
-         }
-         if(curr) args.push(curr);
-         return args;
-    };
+  const steps: CommandStep[] = [];
+  let currentCmd: CommandStep = { command: '', args: [], redirectOp: null, redirectPath: null };
 
-    for(let i=0; i<tokens.length; i++) {
-        const t = tokens[i];
-        if (t === '|') {
-            steps.push(currentCmd);
-            currentCmd = { command: '', args: [], redirectOp: null, redirectPath: null };
-        } else if (t === '>' || t === '>>') {
-            currentCmd.redirectOp = t;
-            if (i+1 < tokens.length) {
-                const pathToken = tokens[++i];
-                currentCmd.redirectPath = pathToken; 
-            }
+  const parseArgs = (str: string) => {
+    const args: string[] = [];
+    let curr = '';
+    let quote: string | null = null;
+    for (let i = 0; i < str.length; i++) {
+      const c = str[i];
+      if (quote) {
+        if (c === quote) { quote = null; }
+        else { curr += c; }
+      } else {
+        if (c === '"' || c === "'") { quote = c; }
+        else if (/\s/.test(c)) {
+          if (curr) { args.push(curr); curr = ''; }
         } else {
-            const parts = parseArgs(t);
-            if (!currentCmd.command && parts.length > 0) {
-                currentCmd.command = parts[0];
-                currentCmd.args.push(...parts.slice(1));
-            } else {
-                currentCmd.args.push(...parts);
-            }
+          curr += c;
         }
+      }
     }
-    if (currentCmd.command) steps.push(currentCmd);
-    return steps;
+    if (curr) args.push(curr);
+    return args;
+  };
+
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t === '|') {
+      steps.push(currentCmd);
+      currentCmd = { command: '', args: [], redirectOp: null, redirectPath: null };
+    } else if (t === '>' || t === '>>') {
+      currentCmd.redirectOp = t;
+      if (i + 1 < tokens.length) {
+        const pathToken = tokens[++i];
+        currentCmd.redirectPath = pathToken;
+      }
+    } else {
+      const parts = parseArgs(t);
+      if (!currentCmd.command && parts.length > 0) {
+        currentCmd.command = parts[0];
+        currentCmd.args.push(...parts.slice(1));
+      } else {
+        currentCmd.args.push(...parts);
+      }
+    }
+  }
+  if (currentCmd.command) steps.push(currentCmd);
+  return steps;
 };
 
 export function useTerminalLogic(
@@ -185,13 +185,13 @@ export function useTerminalLogic(
   // Session Stack for su/sudo (independent of global desktop session)
   // RESOLVED: Using lazy initializer from nightly, but keeping isRootSession logic
   const [sessionStack, setSessionStack] = useState<string[]>(() => {
-      if (initialUser) return [initialUser];
-      if (currentUser) return [currentUser];
-      return [];
+    if (initialUser) return [initialUser];
+    if (currentUser) return [currentUser];
+    return [];
   });
-  
+
   const isRootSession = sessionStack.length <= 1;
-   
+
   // Interactive Prompting
   const [promptState, setPromptState] = useState<{ message: string; type: 'text' | 'password'; callingHistoryId?: string } | null>(null);
   const promptResolverRef = useRef<((value: string) => void) | null>(null);
@@ -203,8 +203,8 @@ export function useTerminalLogic(
       : currentUser || "guest";
 
   // Determine the user scope for persistence
-  const historyKey = `${STORAGE_KEYS.TERMINAL_HISTORY}${activeTerminalUser}`;
-  const inputKey = `${STORAGE_KEYS.TERMINAL_INPUT}${activeTerminalUser}`;
+  const historyKey = `${STORAGE_KEYS.TERM_HISTORY_PREFIX}${activeTerminalUser}`;
+  const inputKey = `${STORAGE_KEYS.TERM_INPUT_PREFIX}${activeTerminalUser}`;
 
   // Helper to load history
   const loadHistory = (key: string): CommandHistory[] => {
@@ -254,19 +254,19 @@ export function useTerminalLogic(
         if (typeof o === 'string') return o;
         if (typeof o === 'number') return String(o);
         if (Array.isArray(o)) return o.map(serializeOutput).join('\n');
-        
+
         // React Element / Object handling
         if (typeof o === 'object') {
-            const children = o.props?.children;
-            if (children) {
-                if (Array.isArray(children)) {
-                    return children.map(serializeOutput).join(''); 
-                }
-                return serializeOutput(children);
+          const children = o.props?.children;
+          if (children) {
+            if (Array.isArray(children)) {
+              return children.map(serializeOutput).join('');
             }
-            if (o.textContent) return o.textContent;
+            return serializeOutput(children);
+          }
+          if (o.textContent) return o.textContent;
         }
-        
+
         return "[Complex Output]";
       };
 
@@ -297,7 +297,7 @@ export function useTerminalLogic(
     const available: TerminalCommand[] = [];
     const seen = new Set<string>();
 
-    const BUILTINS = ["cd", "exit", "logout", "help", "dev-unlock"]; 
+    const BUILTINS = ["cd", "exit", "logout", "help", "dev-unlock"];
 
     // 1. Add built-ins
     BUILTINS.forEach((name) => {
@@ -402,11 +402,11 @@ export function useTerminalLogic(
   // Optimize Command Lookup: Pre-calculate available commands
   const availableCommands = useMemo(() => {
     const cmds = new Set<string>();
-    
+
     // 1. Built-ins
     const BUILTINS = ["cd", "exit", "logout", "help", "dev-unlock"];
     BUILTINS.forEach(c => cmds.add(c));
-    
+
     // 2. Registry Commands
     getAllCommands().forEach(c => cmds.add(c.name));
 
@@ -415,12 +415,12 @@ export function useTerminalLogic(
       const files = listDirectory(dir, activeTerminalUser);
       if (files) {
         files.forEach(f => {
-            if (f.type === 'file') {
-                if (f.name) cmds.add(f.name);
-                if (f.content?.startsWith("#!app ")) {
-                    cmds.add(f.content.replace("#!app ", "").trim());
-                }
+          if (f.type === 'file') {
+            if (f.name) cmds.add(f.name);
+            if (f.content?.startsWith("#!app ")) {
+              cmds.add(f.content.replace("#!app ", "").trim());
             }
+          }
         });
       }
     }
@@ -461,11 +461,11 @@ export function useTerminalLogic(
   // Ghost Text
   const ghostText = useMemo(() => {
     if (!input) return "";
-    
+
     const parts = input.split(" ");
     const isCommand = parts.length === 1 && !input.endsWith(" ");
     const partial = isCommand ? parts[0] : parts[parts.length - 1];
-    
+
     const candidates = getAutocompleteCandidates(partial, isCommand);
     if (candidates.length === 1 && candidates[0].startsWith(partial)) {
       return candidates[0].substring(partial.length);
@@ -493,7 +493,7 @@ export function useTerminalLogic(
         completion = `"${completion}"`;
       }
 
-      let newInput = input;
+      let newInput: string;
       if (isCommand) {
         newInput = completion + " ";
       } else {
@@ -553,35 +553,35 @@ export function useTerminalLogic(
    */
   const executeCommand = async (cmdInput: string) => {
     if (promptState && promptResolverRef.current) {
-        const resolver = promptResolverRef.current;
-        promptResolverRef.current = null;
-        const { message, type, callingHistoryId } = promptState;
-        setPromptState(null);
+      const resolver = promptResolverRef.current;
+      promptResolverRef.current = null;
+      const { message, type, callingHistoryId } = promptState;
+      setPromptState(null);
 
-        if (callingHistoryId) {
-            setHistory((prev) => {
-                const newHistory = [...prev];
-                const idx = newHistory.findIndex((h) => h.id === callingHistoryId);
-                if (idx !== -1) {
-                    const displayInput = type === "password" ? "********" : cmdInput;
-                    newHistory[idx] = {
-                        ...newHistory[idx],
-                        output: [...newHistory[idx].output, `${message} ${displayInput}`],
-                    };
-                }
-                return newHistory;
-            });
-        }
-        resolver(cmdInput);
-        setInput("");
-        return;
+      if (callingHistoryId) {
+        setHistory((prev) => {
+          const newHistory = [...prev];
+          const idx = newHistory.findIndex((h) => h.id === callingHistoryId);
+          if (idx !== -1) {
+            const displayInput = type === "password" ? "********" : cmdInput;
+            newHistory[idx] = {
+              ...newHistory[idx],
+              output: [...newHistory[idx].output, `${message} ${displayInput}`],
+            };
+          }
+          return newHistory;
+        });
+      }
+      resolver(cmdInput);
+      setInput("");
+      return;
     }
 
     const trimmed = cmdInput.trim();
     if (trimmed) setCommandHistory((prev) => [...prev, trimmed]);
     if (!trimmed) {
-        setHistory([...history, { id: crypto.randomUUID(), command: "", output: [], path: currentPath }]);
-        return;
+      setHistory([...history, { id: crypto.randomUUID(), command: "", output: [], path: currentPath }]);
+      return;
     }
 
     const historyId = crypto.randomUUID();
@@ -611,213 +611,213 @@ export function useTerminalLogic(
     });
 
     const pipelines = parseShellInput(expandedInput);
-    
+
     // Execution State
-    let lastExitCode = 0; 
+    let lastExitCode = 0;
     const overallOutput: (string | ReactNode)[] = [];
     let shouldClearScreen = false;
 
     const appendOutput = (content: string | ReactNode | (string | ReactNode)[]) => {
-        setHistory((prev) => {
-            const newHistory = [...prev];
-            const idx = newHistory.findIndex((h) => h.id === historyId);
-            if (idx !== -1) {
-                const newLines = Array.isArray(content) ? content : [content];
-                newHistory[idx] = {
-                    ...newHistory[idx],
-                    output: [...newHistory[idx].output, ...newLines],
-                    error: lastExitCode !== 0
-                };
-            }
-            return newHistory;
-        });
+      setHistory((prev) => {
+        const newHistory = [...prev];
+        const idx = newHistory.findIndex((h) => h.id === historyId);
+        if (idx !== -1) {
+          const newLines = Array.isArray(content) ? content : [content];
+          newHistory[idx] = {
+            ...newHistory[idx],
+            output: [...newHistory[idx].output, ...newLines],
+            error: lastExitCode !== 0
+          };
+        }
+        return newHistory;
+      });
     };
 
     // Internal function to run a single command step
-    const runStep = async (step: CommandStep, stdinData?: string[]): Promise<{ output: (string|ReactNode)[], error: boolean, exitCode: number, newCwd?: string }> => {
-        const { command, redirectOp, redirectPath } = step;
-        
-        const args: string[] = [];
-        step.args.forEach((arg) => {
-            if (arg.includes("*")) {
-                args.push(...expandGlob(arg));
+    const runStep = async (step: CommandStep, stdinData?: string[]): Promise<{ output: (string | ReactNode)[], error: boolean, exitCode: number, newCwd?: string }> => {
+      const { command, redirectOp, redirectPath } = step;
+
+      const args: string[] = [];
+      step.args.forEach((arg) => {
+        if (arg.includes("*")) {
+          args.push(...expandGlob(arg));
+        } else {
+          args.push(arg);
+        }
+      });
+
+      // RESOLVED: Define FileSystem Scope here (from nightly)
+      const createScopedFileSystem = (asUser: string) => ({
+        currentUser: asUser,
+        users,
+        groups,
+        homePath,
+        resetFileSystem,
+        login,
+        logout,
+        resolvePath: contextResolvePath,
+        listDirectory: (p: string) => listDirectory(p, asUser),
+        getNodeAtPath: (p: string) => getNodeAtPath(p, asUser),
+        createFile: (p: string, n: string, c?: string) => createFile(p, n, c, asUser),
+        createDirectory: (p: string, n: string) => createDirectory(p, n, asUser),
+        moveToTrash: (p: string) => moveToTrash(p, asUser),
+        readFile: (p: string) => readFile(p, asUser),
+        moveNode: (from: string, to: string) => moveNode(from, to, asUser),
+        writeFile: (p: string, c: string) => writeFile(p, c, asUser),
+        chmod: (p: string, m: string) => chmod(p, m, asUser),
+        chown: (p: string, o: string, g?: string) => chown(p, o, g, asUser),
+        as: (user: string) => createScopedFileSystem(user),
+      });
+
+      const availableCmds = getAvailableCommands();
+      let cmdToRun = getCommand(command);
+      let isAppLaunch = false;
+      let launchAppId = '';
+
+      if (!cmdToRun) {
+        let binPath: string | null = null;
+
+        if (command.includes('/')) {
+          const resolved = resolvePath(command);
+          const node = getNodeAtPath(resolved, activeTerminalUser);
+          if (node && node.type === 'file') {
+            const actingUserObj = users.find(u => u.username === activeTerminalUser);
+            if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
+              binPath = resolved;
             } else {
-                args.push(arg);
+              return { output: [`zsh: permission denied: ${command}`], error: true, exitCode: 126 };
             }
+          }
+        } else {
+          for (const dir of PATH) {
+            const check = (dir === '/' ? '' : dir) + '/' + command;
+            const node = getNodeAtPath(check, activeTerminalUser);
+            if (node && node.type === 'file') {
+              const actingUserObj = users.find(u => u.username === activeTerminalUser);
+              if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
+                binPath = check;
+                break;
+              }
+            }
+          }
+        }
+
+        if (binPath) {
+          const content = readFile(binPath, activeTerminalUser);
+          if (content) {
+            if (content.startsWith('#!app ')) {
+              isAppLaunch = true;
+              launchAppId = content.replace('#!app ', '').trim();
+            } else {
+              const match = content.match(/#command\s+([a-zA-Z0-9_-]+)/);
+              if (match) cmdToRun = getCommand(match[1]);
+            }
+          }
+        }
+      }
+
+      if (isAppLaunch) {
+        if (onLaunchApp) {
+          onLaunchApp(launchAppId, args, activeTerminalUser);
+          return { output: [`Launched ${launchAppId} as ${activeTerminalUser}`], error: false, exitCode: 0 };
+        }
+        return { output: [`Cannot launch ${launchAppId}`], error: true, exitCode: 1 };
+      }
+
+      if (cmdToRun) {
+        // RESOLVED: Merge main and nightly props
+        // Using nightly's execute signature (stdin, return objects)
+        // But injecting main's capabilities (closeWindow, isRootSession)
+        const result = await cmdToRun.execute({
+          args,
+          stdin: stdinData,
+          fileSystem: createScopedFileSystem(activeTerminalUser) as any,
+          currentPath,
+          setCurrentPath,
+          resolvePath,
+          allCommands: availableCmds,
+          terminalUser: activeTerminalUser,
+          spawnSession: pushSession,
+          closeSession,
+          onLaunchApp,
+          getNodeAtPath,
+          readFile,
+          prompt: (m, t) => prompt(m, t, historyId),
+          print: appendOutput,
+          isSudoAuthorized,
+          setIsSudoAuthorized,
+          verifyPassword,
+          t,
+          getCommandHistory: getCommandHistoryFn,
+          clearCommandHistory: clearCommandHistoryFn,
+          // Injected from Main:
+          closeWindow: onClose,
+          isRootSession: isRootSession,
         });
 
-        // RESOLVED: Define FileSystem Scope here (from nightly)
-        const createScopedFileSystem = (asUser: string) => ({
-            currentUser: asUser,
-            users,
-            groups,
-            homePath,
-            resetFileSystem,
-            login,
-            logout,
-            resolvePath: contextResolvePath,
-            listDirectory: (p: string) => listDirectory(p, asUser),
-            getNodeAtPath: (p: string) => getNodeAtPath(p, asUser),
-            createFile: (p: string, n: string, c?: string) => createFile(p, n, c, asUser),
-            createDirectory: (p: string, n: string) => createDirectory(p, n, asUser),
-            moveToTrash: (p: string) => moveToTrash(p, asUser),
-            readFile: (p: string) => readFile(p, asUser),
-            moveNode: (from: string, to: string) => moveNode(from, to, asUser),
-            writeFile: (p: string, c: string) => writeFile(p, c, asUser),
-            chmod: (p: string, m: string) => chmod(p, m, asUser),
-            chown: (p: string, o: string, g?: string) => chown(p, o, g, asUser),
-            as: (user: string) => createScopedFileSystem(user),
-        });
+        if (result.shouldClear) shouldClearScreen = true;
 
-        const availableCmds = getAvailableCommands();
-        let cmdToRun = getCommand(command);
-        let isAppLaunch = false;
-        let launchAppId = '';
+        let finalOutput = result.output;
+        if (redirectOp && redirectPath) {
+          const textContent = finalOutput
+            .map(o => typeof o === 'string' ? o : '')
+            .filter(s => s !== '')
+            .join('\n');
 
-        if (!cmdToRun) {
-             let binPath: string | null = null;
-             
-             if (command.includes('/')) {
-                 const resolved = resolvePath(command);
-                 const node = getNodeAtPath(resolved, activeTerminalUser);
-                 if (node && node.type === 'file') {
-                     const actingUserObj = users.find(u => u.username === activeTerminalUser);
-                     if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
-                       binPath = resolved;
-                     } else {
-                       return { output: [`zsh: permission denied: ${command}`], error: true, exitCode: 126 };
-                     }
-                 }
-             } else {
-                 for (const dir of PATH) {
-                    const check = (dir === '/' ? '' : dir) + '/' + command;
-                    const node = getNodeAtPath(check, activeTerminalUser);
-                     if (node && node.type === 'file') {
-                        const actingUserObj = users.find(u => u.username === activeTerminalUser);
-                        if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
-                            binPath = check;
-                            break;
-                        }
-                     }
-                 }
-             }
+          const absPath = resolvePath(redirectPath);
+          const success = writeFile(absPath, textContent, activeTerminalUser);
 
-             if (binPath) {
-                 const content = readFile(binPath, activeTerminalUser);
-                 if (content) {
-                     if (content.startsWith('#!app ')) {
-                         isAppLaunch = true;
-                         launchAppId = content.replace('#!app ', '').trim();
-                     } else {
-                         const match = content.match(/#command\s+([a-zA-Z0-9_-]+)/);
-                         if (match) cmdToRun = getCommand(match[1]);
-                     }
-                 }
-             }
+          if (!success) {
+            return { output: [`zsh: permission denied: ${redirectPath}`], error: true, exitCode: 1 };
+          }
+          finalOutput = [];
         }
 
-        if (isAppLaunch) {
-             if (onLaunchApp) {
-                 onLaunchApp(launchAppId, args, activeTerminalUser);
-                 return { output: [`Launched ${launchAppId} as ${activeTerminalUser}`], error: false, exitCode: 0 };
-             }
-             return { output: [`Cannot launch ${launchAppId}`], error: true, exitCode: 1 };
-        }
+        return {
+          output: finalOutput,
+          error: !!result.error,
+          exitCode: result.error ? 1 : 0,
+          newCwd: result.newCwd
+        };
+      }
 
-        if (cmdToRun) {
-             // RESOLVED: Merge main and nightly props
-             // Using nightly's execute signature (stdin, return objects)
-             // But injecting main's capabilities (closeWindow, isRootSession)
-             const result = await cmdToRun.execute({
-                args,
-                stdin: stdinData,
-                fileSystem: createScopedFileSystem(activeTerminalUser) as any,
-                currentPath,
-                setCurrentPath,
-                resolvePath,
-                allCommands: availableCmds,
-                terminalUser: activeTerminalUser,
-                spawnSession: pushSession,
-                closeSession,
-                onLaunchApp,
-                getNodeAtPath,
-                readFile,
-                prompt: (m, t) => prompt(m, t, historyId),
-                print: appendOutput, 
-                isSudoAuthorized,
-                setIsSudoAuthorized,
-                verifyPassword,
-                t,
-                getCommandHistory: getCommandHistoryFn,
-                clearCommandHistory: clearCommandHistoryFn,
-                // Injected from Main:
-                closeWindow: onClose,
-                isRootSession: isRootSession,
-             });
-
-             if (result.shouldClear) shouldClearScreen = true;
-             
-             let finalOutput = result.output;
-             if (redirectOp && redirectPath) {
-                 const textContent = finalOutput
-                    .map(o => typeof o === 'string' ? o : '')
-                    .filter(s => s !== '')
-                    .join('\n');
-                 
-                 const absPath = resolvePath(redirectPath);
-                 const success = writeFile(absPath, textContent, activeTerminalUser); 
-                 
-                 if (!success) {
-                     return { output: [`zsh: permission denied: ${redirectPath}`], error: true, exitCode: 1 };
-                 }
-                 finalOutput = []; 
-             }
-
-             return { 
-                 output: finalOutput, 
-                 error: !!result.error, 
-                 exitCode: result.error ? 1 : 0, 
-                 newCwd: result.newCwd 
-             };
-        }
-
-        return { output: [`${command}: command not found`], error: true, exitCode: 127 };
+      return { output: [`${command}: command not found`], error: true, exitCode: 127 };
     };
 
     // Iterate Pipelines
     for (const pipeline of pipelines) {
-        let pipeInput: string[] | undefined = undefined; 
-        
-        for (let i = 0; i < pipeline.steps.length; i++) {
-             const step = pipeline.steps[i];
-             const result = await runStep(step, pipeInput);
-             
-             if (i < pipeline.steps.length - 1) {
-                 pipeInput = result.output
-                    .map(o => typeof o === 'string' ? o : '')
-                    .filter(s => s !== '');
-             } else {
-                 overallOutput.push(...result.output);
-                 if (result.output.length > 0) {
-                     appendOutput(result.output);
-                 }
-             }
-             
-             lastExitCode = result.exitCode;
-             
-             if (result.newCwd) {
-                 setCurrentPath(result.newCwd);
-                 interactiveEnv['PWD'] = result.newCwd;
-             }
+      let pipeInput: string[] | undefined = undefined;
+
+      for (let i = 0; i < pipeline.steps.length; i++) {
+        const step = pipeline.steps[i];
+        const result = await runStep(step, pipeInput);
+
+        if (i < pipeline.steps.length - 1) {
+          pipeInput = result.output
+            .map(o => typeof o === 'string' ? o : '')
+            .filter(s => s !== '');
+        } else {
+          overallOutput.push(...result.output);
+          if (result.output.length > 0) {
+            appendOutput(result.output);
+          }
         }
-        
-        if (pipeline.operator === '&&' && lastExitCode !== 0) break;
-        if (pipeline.operator === '||' && lastExitCode === 0) break;
+
+        lastExitCode = result.exitCode;
+
+        if (result.newCwd) {
+          setCurrentPath(result.newCwd);
+          interactiveEnv['PWD'] = result.newCwd;
+        }
+      }
+
+      if (pipeline.operator === '&&' && lastExitCode !== 0) break;
+      if (pipeline.operator === '||' && lastExitCode === 0) break;
     }
 
     if (shouldClearScreen) {
-        setHistory([]);
-        setHistoryIndex(-1);
+      setHistory([]);
+      setHistoryIndex(-1);
     }
   };
 

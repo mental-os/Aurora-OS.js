@@ -20,7 +20,7 @@ interface DockProps {
 
 function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: DockProps) {
   const { t } = useI18n();
-  const { dockBackground, blurStyle } = useThemeColors();
+  const { dockBackground, blurStyle, getBackgroundColor } = useThemeColors();
   const { reduceMotion, disableShadows, disableGradients, accentColor, devMode } = useAppContext();
   const { getNodeAtPath, homePath, installedApps } = useFileSystem();
 
@@ -170,7 +170,7 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
           onMouseEnter={() => !isOverflow && setHoveredIndex(index)}
           onMouseLeave={() => !isOverflow && setHoveredIndex(null)}
           onClick={(e) => handleAppClick(app.id, e)}
-          whileHover={reduceMotion ? { scale: 1, x: 0 } : { scale: 1.1, x: 8 }}
+          whileHover={reduceMotion ? { scale: 1, x: 0 } : (isOverflow ? { scale: 1.1, x: 0 } : { scale: 1.1, x: 8 })}
           whileTap={reduceMotion ? { scale: 1 } : { scale: 0.95 }}
         >
           <AppIcon
@@ -271,7 +271,14 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
                   side="right"
                   align="center"
                   sideOffset={16}
-                  className="w-80 p-4 bg-gray-900/80 backdrop-blur-xl border-white/20 flex flex-col gap-4"
+                  className={cn(
+                    "w-80 p-4 border-white/20 flex flex-col gap-4 text-white",
+                    !disableShadows ? 'shadow-2xl' : 'shadow-none'
+                  )}
+                  style={{
+                    background: getBackgroundColor(0.8),
+                    ...blurStyle,
+                  }}
                 >
                   {/* Search Input */}
                   <div className="relative">
@@ -286,7 +293,7 @@ function DockComponent({ onOpenApp, onRestoreWindow, onFocusWindow, windows }: D
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4 max-h-[300px] overflow-y-auto scrollbar-hide">
+                  <div className="grid grid-cols-3 gap-4 max-h-[300px] overflow-y-auto scrollbar-hide p-2">
                     {filteredOverflowApps.length > 0 ? (
                       filteredOverflowApps.map((app, index) => renderAppIcon(app, index + MAX_VISIBLE_APPS, true))
                     ) : (

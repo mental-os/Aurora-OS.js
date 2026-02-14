@@ -11,6 +11,7 @@ import { ja } from './locales/ja';
 import { pl } from './locales/pl';
 import { ko } from './locales/ko';
 import { tr } from './locales/tr';
+import { hi } from './locales/hi';
 
 export { SUPPORTED_LOCALES, type SupportedLocale, type TranslationDict } from './types';
 export const translations: Record<string, TranslationDict> = {
@@ -26,5 +27,6 @@ export const translations: Record<string, TranslationDict> = {
   pl,
   ko,
   tr,
+  hi,
 };
 

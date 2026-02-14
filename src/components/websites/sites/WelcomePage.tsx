@@ -31,10 +31,20 @@ export function WelcomePage({ onNavigate }: WebsiteProps) {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-8">
+    <div className="min-h-full text-white p-8">
       <div className="max-w-4xl mx-auto">
+        {/* Welcome Text */}
+        <div className="mt-24 mb-12 text-center">
+          <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
+            {t('browser.welcome.title')}
+          </h1>
+          <p className="text-xl text-white/60 font-light max-w-lg mx-auto">
+            {t('browser.welcome.description')}
+          </p>
+        </div>
+
         {/* Search Box */}
-        <div className="mt-24 mb-16">
+        <div className="mb-16">
           <form onSubmit={handleSearch}>
             <div className="relative">
               {isSearching ? (

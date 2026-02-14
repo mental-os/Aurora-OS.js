@@ -15,6 +15,7 @@ export const SUPPORTED_LOCALES = [
   { locale: 'pl-PL', label: 'Polski' },
   { locale: 'ko-KR', label: '한국어' },
   { locale: 'tr-TR', label: 'Türkçe' },
+  { locale: 'hi-IN', label: 'हिंदी (Hindi)' }
 ] as const;
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]['locale'];

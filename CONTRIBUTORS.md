@@ -42,6 +42,10 @@ Website: [devbanhmi.com](https://devbanhmi.com/)
 **मृत्यु // [@mriityu](https://github.com/mriityu)**  
 Contribution: Code, Testing
 
+**Swarit Garewal // GDEV [@SGBHAI](https://github.com/SGBHAI)**  
+Contribution: Code, Security
+Social: [IG/garewal.swarit](https://www.instagram.com/garewal.swarit)
+
 ## 🎨 Design & UX
 
 _(Visual systems, interaction concepts, UI explorations)_

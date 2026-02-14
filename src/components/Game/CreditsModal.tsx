@@ -90,8 +90,19 @@ const CREDITS_DATA: ContributorCategory[] = [
             },
             { name: "masterofmagic999", role: "Code, Testing", github: "https://github.com/masterofmagic999" },
             { name: "Marcx5", role: "Code", github: "https://github.com/Marcx5" },
-            { name: "0xGP // gaupoit", role: "Code", github: "https://github.com/gaupoit", socials: [{ label: "Website", url: "https://www.instagram.com/0xgp" }] },
+            {
+                name: "0xGP // gaupoit",
+                role: "Code",
+                github: "https://github.com/gaupoit",
+                socials: [{ label: "Website", url: "https://www.instagram.com/0xgp" }]
+            },
             { name: "मृत्यु // mriityu", role: "Code, Testing", github: "https://github.com/mriityu" },
+            {
+                name: "Swarit Garewal // GDEV SGBHAI",
+                role: "Code, Security",
+                github: "https://github.com/SGBHAI",
+                socials: [{ label: "IG/garewal.swarit", url: "https://www.instagram.com/garewal.swarit" }]
+            },
         ]
     },
     {
@@ -392,8 +403,8 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                 {/* Footer */}
                 <div className="p-3 border-t border-white bg-black text-[10px] text-white/40 font-mono tracking-widest flex justify-between items-start px-4">
                     <span className="text-left text-[10px] leading-tight">
-                        <span className="uppercase">©2025 <a href={pkg.homepage} target="_blank" rel="noreferrer" className="text-white hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">{pkg.build.productName}</a> // <a href="https://instagram.com/mental.os" target="_blank" rel="noreferrer" className="text-white hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">mental.os()</a> // <a href="https://facebook.com/dopepxls" target="_blank" rel="noreferrer" className="text-white hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">Dope Pixels</a> // MOONHOUND Studio</span><br/>
-                        {pkg.build.productName} and its original concepts, architecture, and visual identity are protected by copyright.<br/>
+                        <span className="uppercase">©2025 <a href={pkg.homepage} target="_blank" rel="noreferrer" className="text-white hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">{pkg.build.productName}</a> // <a href="https://instagram.com/mental.os" target="_blank" rel="noreferrer" className="text-white hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">mental.os()</a> // <a href="https://facebook.com/dopepxls" target="_blank" rel="noreferrer" className="text-white hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">Dope Pixels</a> // MOONHOUND Studio</span><br />
+                        {pkg.build.productName} and its original concepts, architecture, and visual identity are protected by copyright.<br />
                         Source code is licensed under {pkg.license}. See <a href="https://github.com/mental-os/Aurora-OS.js/blob/main/LICENSE" target="_blank" rel="noreferrer" className="text-white hover:text-(--accent-user) decoration-white/30 hover:decoration-(--accent-user)">LICENSE</a> for details.
                     </span>
                     <span>{activeTab.toUpperCase()}</span>

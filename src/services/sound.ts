@@ -2,17 +2,17 @@ import { Howl, Howler } from 'howler';
 import { STORAGE_KEYS } from '@/utils/memory';
 
 // Sound constants
-import successSound from '@/assets/sounds/success.mp3';
-import warningSound from '@/assets/sounds/warning.mp3';
-import errorSound from '@/assets/sounds/error.mp3';
-import folderSound from '@/assets/sounds/folder.wav';
-import windowOpenSound from '@/assets/sounds/window-open.wav';
-import windowCloseSound from '@/assets/sounds/window-close.wav';
-import clickSound from '@/assets/sounds/click.wav';
-import hoverSound from '@/assets/sounds/hover.wav';
-import ambianceSound from '@/assets/sounds/ambience.mp3';
-import computerStartSound from '@/assets/sounds/computerStart.mp3';
-import biosStartSound from '@/assets/sounds/biosStart.mp3';
+import successSound from '@/assets/sounds/success.opus';
+import warningSound from '@/assets/sounds/warning.opus';
+import errorSound from '@/assets/sounds/error.opus';
+import folderSound from '@/assets/sounds/folder.opus';
+import windowOpenSound from '@/assets/sounds/window-open.opus';
+import windowCloseSound from '@/assets/sounds/window-close.opus';
+import clickSound from '@/assets/sounds/click.opus';
+import hoverSound from '@/assets/sounds/hover.opus';
+import ambianceSound from '@/assets/sounds/ambience.opus';
+import computerStartSound from '@/assets/sounds/computerStart.opus';
+import biosStartSound from '@/assets/sounds/biosStart.opus';
 
 const SOUNDS = {
 

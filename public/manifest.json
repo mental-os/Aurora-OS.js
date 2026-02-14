@@ -1,0 +1,17 @@
+{
+  "name": "Aurora OS.js",
+  "short_name": "AuroraOS",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "description": "A high-fidelity browser-based OS hacking simulator.",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { STORAGE_KEYS } from '@/utils/memory';
+import { safeParseLocal } from '@/utils/safeStorage';
 import { SUPPORTED_LOCALES } from '@/i18n/translations';
 import { BRAND, DEFAULT_SYSTEM_MEMORY_GB } from '@/config/systemConfig';
 
@@ -20,6 +21,8 @@ interface AppContextType {
   setDisableShadows: (enabled: boolean) => void;
   disableGradients: boolean;
   setDisableGradients: (enabled: boolean) => void;
+  gpuEnabled: boolean;
+  setGpuEnabled: (enabled: boolean) => void;
   wallpaper: string;
   setWallpaper: (id: string) => void;
   timeMode: 'server' | 'local';
@@ -28,7 +31,7 @@ interface AppContextType {
   setDevMode: (enabled: boolean) => void;
   exposeRoot: boolean;
   setExposeRoot: (enabled: boolean) => void;
-  
+
   // System Resources
   totalMemoryGB: number;
   setTotalMemoryGB: (gb: number) => void;
@@ -40,7 +43,7 @@ interface AppContextType {
   setOnboardingComplete: (complete: boolean) => void;
 
   // System Reset
-  resetSystemConfig: () => void;
+  resetSystemConfig: (overrides?: Partial<SystemConfig>) => void;
 
   // Lock user session without logging out
   isLocked: boolean;
@@ -49,14 +52,29 @@ interface AppContextType {
   // User Context Switching
   switchUser: (username: string) => void;
   activeUser: string;
+
+  // Network
+  wifiEnabled: boolean;
+  setWifiEnabled: (enabled: boolean) => void;
+
+  wifiNetwork: string;
+  setWifiNetwork: (network: string) => void;
+  networkConfigMode: 'auto' | 'manual';
+  setNetworkConfigMode: (mode: 'auto' | 'manual') => void;
+  networkIP: string;
+  setNetworkIP: (ip: string) => void;
+  networkGateway: string;
+  setNetworkGateway: (gateway: string) => void;
+  networkSubnetMask: string;
+  setNetworkSubnetMask: (mask: string) => void;
+  networkDNS: string;
+  setNetworkDNS: (dns: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Legacy Global Key for Migration
-const LEGACY_STORAGE_KEY = 'aurora-os-settings';
-
-const SYSTEM_CONFIG_KEY = 'aurora-system-config';
+// Helper: Get key for specific user
+const getUserKey = (username: string) => `${STORAGE_KEYS.SETTINGS}_${username}`;
 
 interface UserPreferences {
   accentColor: string;
@@ -67,18 +85,29 @@ interface UserPreferences {
   reduceMotion?: boolean;
   disableShadows?: boolean;
   disableGradients?: boolean;
+  gpuEnabled?: boolean;
 }
 
-interface SystemConfig {
+export interface SystemConfig {
   devMode: boolean;
   exposeRoot: boolean;
-  totalMemoryGB: number;
   locale: AppLocale;
   onboardingComplete: boolean;
+  totalMemoryGB: number;
+  // Global defaults that can be overridden by users
   blurEnabled: boolean;
   reduceMotion: boolean;
   disableShadows: boolean;
   disableGradients: boolean;
+  wifiEnabled: boolean;
+
+  wifiNetwork: string;
+  networkConfigMode: 'auto' | 'manual';
+  networkIP: string;
+  networkGateway: string;
+  networkSubnetMask: string;
+  networkDNS: string;
+  gpuEnabled: boolean;
 }
 
 const DEFAULT_PREFERENCES: UserPreferences = {
@@ -130,102 +159,62 @@ const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   reduceMotion: false,
   disableShadows: false,
   disableGradients: false,
+  wifiEnabled: false,
+
+  wifiNetwork: '',
+  networkConfigMode: 'auto',
+  networkIP: '192.168.1.100',
+  networkGateway: '192.168.1.1',
+  networkSubnetMask: '255.255.255.0',
+  networkDNS: '8.8.8.8',
+  gpuEnabled: true,
 };
 
-// Helper: Get key for specific user
-const getUserKey = (username: string) => `aurora-os-settings-${username}`;
+
 
 function loadUserPreferences(username: string, systemDefaults: SystemConfig): UserPreferences {
   try {
     const key = getUserKey(username);
-    const stored = localStorage.getItem(key);
+    const stored = safeParseLocal<UserPreferences>(key);
 
     if (stored) {
       // Merge: Defaults (System) -> Default (Static) -> Stored
       // Note: We use system defaults for performance settings if explicit user override is missing
-      const parsed = JSON.parse(stored);
-      
+
       return {
         ...DEFAULT_PREFERENCES,
         blurEnabled: systemDefaults.blurEnabled,
         reduceMotion: systemDefaults.reduceMotion,
         disableShadows: systemDefaults.disableShadows,
         disableGradients: systemDefaults.disableGradients,
-        ...parsed 
+        gpuEnabled: systemDefaults.gpuEnabled,
+        ...stored
       };
     }
 
-    // Migration Check: If loading for 'root' (system default) and no root settings exist,
-    // check for legacy global settings to migrate them.
-    if (username === 'root') {
-      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (legacy) {
-        console.log('Migrating legacy settings to root');
-        const legacyParsed = JSON.parse(legacy);
 
-        // Extract preferences
-        const migratedProps: Partial<UserPreferences> = {};
-        (Object.keys(DEFAULT_PREFERENCES) as Array<keyof UserPreferences>).forEach(k => {
-          if (k in legacyParsed) migratedProps[k] = legacyParsed[k];
-        });
-
-        const migrated = { 
-            ...DEFAULT_PREFERENCES, 
-            blurEnabled: systemDefaults.blurEnabled,
-            reduceMotion: systemDefaults.reduceMotion,
-            disableShadows: systemDefaults.disableShadows,
-            disableGradients: systemDefaults.disableGradients,
-            ...migratedProps 
-        };
-        // Save immediately to new key
-        localStorage.setItem(key, JSON.stringify(migrated));
-        return migrated;
-      }
-    }
   } catch (e) {
     console.warn(`Failed to load settings for ${username}:`, e);
   }
-  
+
   // fallback to system defaults
   return {
-      ...DEFAULT_PREFERENCES,
-      blurEnabled: systemDefaults.blurEnabled,
-      reduceMotion: systemDefaults.reduceMotion,
-      disableShadows: systemDefaults.disableShadows,
-      disableGradients: systemDefaults.disableGradients,
+    ...DEFAULT_PREFERENCES,
+    blurEnabled: systemDefaults.blurEnabled,
+    reduceMotion: systemDefaults.reduceMotion,
+    disableShadows: systemDefaults.disableShadows,
+    disableGradients: systemDefaults.disableGradients,
   };
 }
 
 function loadSystemConfig(): SystemConfig {
   try {
-    const stored = localStorage.getItem(SYSTEM_CONFIG_KEY);
+    const stored = safeParseLocal<SystemConfig>(STORAGE_KEYS.SYSTEM_CONFIG);
     if (stored) {
-      return { ...DEFAULT_SYSTEM_CONFIG, ...JSON.parse(stored) };
+      return { ...DEFAULT_SYSTEM_CONFIG, ...stored };
     }
 
-    // Migration: Check legacy global storage for devMode stuff if not found in new key
-    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-    if (legacy) {
-      const legacyParsed = JSON.parse(legacy);
 
-      // Only migrate if they actually exist in legacy
-      const migrated: SystemConfig = { ...DEFAULT_SYSTEM_CONFIG };
-      let hasMigration = false;
-
-      if ('devMode' in legacyParsed) { migrated.devMode = legacyParsed.devMode; hasMigration = true; }
-      if ('exposeRoot' in legacyParsed) { migrated.exposeRoot = legacyParsed.exposeRoot; hasMigration = true; }
-      if ('blurEnabled' in legacyParsed) { migrated.blurEnabled = legacyParsed.blurEnabled; hasMigration = true; }
-      if ('reduceMotion' in legacyParsed) { migrated.reduceMotion = legacyParsed.reduceMotion; hasMigration = true; }
-      if ('disableShadows' in legacyParsed) { migrated.disableShadows = legacyParsed.disableShadows; hasMigration = true; }
-      if ('disableGradients' in legacyParsed) { migrated.disableGradients = legacyParsed.disableGradients; hasMigration = true; }
-      if ('totalMemoryGB' in legacyParsed) { migrated.totalMemoryGB = legacyParsed.totalMemoryGB; hasMigration = true; }
-
-      if (hasMigration) {
-        console.log('Migrated system config from legacy storage');
-        localStorage.setItem(SYSTEM_CONFIG_KEY, JSON.stringify(migrated));
-        return migrated;
-      }
-    }
 
   } catch (e) {
     console.warn('Failed to load system config:', e);
@@ -248,8 +237,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [preferences, setPreferences] = useState<UserPreferences>(() => loadUserPreferences('root', systemConfig));
 
   // Destructure for easy access (User preferences take precedence/contain the effective value)
-  const { accentColor, themeMode, wallpaper, blurEnabled, reduceMotion, disableShadows, disableGradients } = preferences;
-  const { devMode, exposeRoot, locale, onboardingComplete, totalMemoryGB } = systemConfig;
+  const { accentColor, themeMode, wallpaper, blurEnabled, reduceMotion, disableShadows, disableGradients, gpuEnabled } = preferences;
+  const { devMode, exposeRoot, locale, onboardingComplete, totalMemoryGB, wifiEnabled, wifiNetwork, networkConfigMode, networkIP, networkGateway, networkSubnetMask, networkDNS } = systemConfig;
 
   // Function to switch context to a different user
   const switchUser = useCallback((username: string) => {
@@ -274,7 +263,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Persistence: System Config
   useEffect(() => {
     try {
-      localStorage.setItem(SYSTEM_CONFIG_KEY, JSON.stringify(systemConfig));
+      localStorage.setItem(STORAGE_KEYS.SYSTEM_CONFIG, JSON.stringify(systemConfig));
     } catch (e) {
       console.warn('Failed to save system config:', e);
     }
@@ -284,20 +273,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setAccentColor = (color: string) => setPreferences(s => ({ ...s, accentColor: color }));
   const setThemeMode = (mode: ThemeMode) => setPreferences(s => ({ ...s, themeMode: mode }));
   const setBlurEnabled = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, blurEnabled: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, blurEnabled: enabled }));
+    setPreferences(s => ({ ...s, blurEnabled: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, blurEnabled: enabled }));
   };
   const setReduceMotion = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, reduceMotion: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, reduceMotion: enabled }));
+    setPreferences(s => ({ ...s, reduceMotion: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, reduceMotion: enabled }));
   };
   const setDisableShadows = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, disableShadows: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableShadows: enabled }));
+    setPreferences(s => ({ ...s, disableShadows: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableShadows: enabled }));
   };
   const setDisableGradients = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, disableGradients: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableGradients: enabled }));
+    setPreferences(s => ({ ...s, disableGradients: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableGradients: enabled }));
+  };
+  const setGpuEnabled = (enabled: boolean) => {
+    setPreferences(s => ({ ...s, gpuEnabled: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, gpuEnabled: enabled }));
   };
   const setWallpaper = (id: string) => setPreferences(s => ({ ...s, wallpaper: id }));
   const setTimeMode = (mode: 'server' | 'local') => setPreferences(s => ({ ...s, timeMode: mode }));
@@ -308,10 +301,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setTotalMemoryGB = (gb: number) => setSystemConfig(s => ({ ...s, totalMemoryGB: gb }));
   const setLocale = useCallback((newLocale: AppLocale) => setSystemConfig(s => ({ ...s, locale: newLocale })), []);
   const setOnboardingComplete = (complete: boolean) => setSystemConfig(s => ({ ...s, onboardingComplete: complete }));
+  const setWifiEnabled = (enabled: boolean) => setSystemConfig(s => ({ ...s, wifiEnabled: enabled }));
 
-  const resetSystemConfig = useCallback(() => {
-    setSystemConfig(DEFAULT_SYSTEM_CONFIG);
-    localStorage.removeItem(SYSTEM_CONFIG_KEY);
+  const setWifiNetwork = (network: string) => setSystemConfig(s => ({ ...s, wifiNetwork: network }));
+
+  const setNetworkConfigMode = (mode: 'auto' | 'manual') => setSystemConfig(s => ({ ...s, networkConfigMode: mode }));
+  const setNetworkIP = (ip: string) => setSystemConfig(s => ({ ...s, networkIP: ip }));
+  const setNetworkGateway = (gateway: string) => setSystemConfig(s => ({ ...s, networkGateway: gateway }));
+  const setNetworkSubnetMask = (mask: string) => setSystemConfig(s => ({ ...s, networkSubnetMask: mask }));
+  const setNetworkDNS = (dns: string) => setSystemConfig(s => ({ ...s, networkDNS: dns }));
+
+  const resetSystemConfig = useCallback((overrides?: Partial<SystemConfig>) => {
+    setSystemConfig({ ...DEFAULT_SYSTEM_CONFIG, ...overrides });
+    localStorage.removeItem(STORAGE_KEYS.SYSTEM_CONFIG);
     // Also clear all user preferences by resetting active user to root and clearing keys
     // Implementation detail: The GameRoot handles hard FS reset, here we just handle config
   }, []);
@@ -337,7 +339,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     };
     syncElectronLocale();
-  }, [locale, setLocale]);
+  }, [setLocale, locale]);
 
   // Sync accent color to CSS variable for global theming
   useEffect(() => {
@@ -372,6 +374,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [devMode]);
 
+  // Sync GPU Enabled state
+  useEffect(() => {
+    document.documentElement.dataset.gpuEnabled = gpuEnabled ? 'true' : 'false';
+  }, [gpuEnabled]);
+
   return (
     <AppContext.Provider value={{
       accentColor,
@@ -386,6 +393,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDisableShadows,
       disableGradients: disableGradients ?? systemConfig.disableGradients,
       setDisableGradients,
+      gpuEnabled: gpuEnabled ?? systemConfig.gpuEnabled,
+      setGpuEnabled,
       wallpaper,
       setWallpaper,
       timeMode: preferences.timeMode,
@@ -400,6 +409,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLocale,
       onboardingComplete,
       setOnboardingComplete,
+      wifiEnabled,
+      setWifiEnabled,
+      wifiNetwork,
+      setWifiNetwork,
+      networkConfigMode,
+      setNetworkConfigMode,
+      networkIP,
+      setNetworkIP,
+      networkGateway,
+      setNetworkGateway,
+      networkSubnetMask,
+      setNetworkSubnetMask,
+      networkDNS,
+      setNetworkDNS,
       resetSystemConfig,
       switchUser,
       activeUser,

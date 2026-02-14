@@ -83,6 +83,8 @@ import { useWindow } from "@/components/WindowContext";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import { getAppStateKey } from "@/utils/memory";
 import { useI18n } from "@/i18n/index";
+import { safeParseLocal } from "@/utils/safeStorage";
+import { useDebounce } from "@/hooks/useDebounce";
 
 // ... interface
 
@@ -127,12 +129,12 @@ const SUPPORTED_LANGUAGES = [
   { value: "markup", labelKey: "notepad.languages.markup" },
   { value: "bash", labelKey: "notepad.languages.bash" },
   { value: "txt", labelKey: "notepad.languages.txt" },
-];const TabItem = memo(({ tab, activeTabId, accentColor, onClick, onClose }: { 
-  tab: Tab; 
-  activeTabId: string | null; 
-  accentColor: string; 
-  onClick: (id: string) => void; 
-  onClose: (id: string, e: any) => void; 
+]; const TabItem = memo(({ tab, activeTabId, accentColor, onClick, onClose }: {
+  tab: Tab;
+  activeTabId: string | null;
+  accentColor: string;
+  onClick: (id: string) => void;
+  onClose: (id: string, e: any) => void;
 }) => {
   return (
     <div
@@ -146,17 +148,15 @@ const SUPPORTED_LANGUAGES = [
       }}
       className={`
           group flex items-center gap-2 px-4 py-2 text-xs font-medium cursor-pointer transition-all min-w-[140px] max-w-[220px] border-b-2
-          ${
-            activeTabId === tab.id
-              ? "text-white"
-              : "text-white/40 hover:text-white/80 hover:bg-white/5"
-          }
+          ${activeTabId === tab.id
+          ? "text-white"
+          : "text-white/40 hover:text-white/80 hover:bg-white/5"
+        }
       `}
     >
       <FileText
-        className={`w-3.5 h-3.5 shrink-0 ${
-          activeTabId === tab.id ? "opacity-100" : "opacity-50 group-hover:opacity-80"
-        }`}
+        className={`w-3.5 h-3.5 shrink-0 ${activeTabId === tab.id ? "opacity-100" : "opacity-50 group-hover:opacity-80"
+          }`}
       />
       <span className={`truncate flex-1 ${tab.isModified ? "italic" : ""}`}>
         {tab.name}
@@ -173,14 +173,14 @@ const SUPPORTED_LANGUAGES = [
 });
 TabItem.displayName = "TabItem";
 
-const NotepadToolbar = memo(({ 
-  titleBarBackground, 
-  blurStyle, 
-  tabs, 
-  activeTabId, 
-  accentColor, 
-  onTabClick, 
-  onTabClose, 
+const NotepadToolbar = memo(({
+  titleBarBackground,
+  blurStyle,
+  tabs,
+  activeTabId,
+  accentColor,
+  onTabClick,
+  onTabClose,
   onNewTab,
   onOpenClick,
   onSaveClick,
@@ -224,9 +224,8 @@ const NotepadToolbar = memo(({
             onClick={onSaveClick}
             style={{ color: activeTab?.isModified ? accentColor : undefined }}
             disabled={!activeTab}
-            className={`p-1.5 hover:bg-white/10 rounded-md transition-colors flex items-center gap-2 ${
-              activeTab?.isModified ? "" : "text-white/70 hover:text-white"
-            } disabled:opacity-20 disabled:cursor-not-allowed`}
+            className={`p-1.5 hover:bg-white/10 rounded-md transition-colors flex items-center gap-2 ${activeTab?.isModified ? "" : "text-white/70 hover:text-white"
+              } disabled:opacity-20 disabled:cursor-not-allowed`}
             title={t("notepad.actions.saveFile")}
           >
             <Save className="w-4 h-4" />
@@ -274,11 +273,10 @@ const NotepadToolbar = memo(({
               style={{ backgroundColor: isPreviewMode ? accentColor : undefined }}
               className={`
             flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors
-            ${
-              isPreviewMode
-                ? "text-white"
-                : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-            }
+            ${isPreviewMode
+                  ? "text-white"
+                  : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                }
         `}
             >
               {isPreviewMode ? (
@@ -442,12 +440,9 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
     try {
       if (!activeUser) return [];
       const key = getAppStateKey("notepad", activeUser);
-      const saved = localStorage.getItem(key);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.tabs)) {
-          return parsed.tabs;
-        }
+      const parsed = safeParseLocal<{ tabs: Tab[] }>(key);
+      if (parsed && Array.isArray(parsed.tabs)) {
+        return parsed.tabs;
       }
     } catch (e) {
       console.warn(e);
@@ -460,9 +455,8 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
     try {
       if (!activeUser) return null;
       const key = getAppStateKey("notepad", activeUser);
-      const saved = localStorage.getItem(key);
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      const parsed = safeParseLocal<{ activeTabId: string }>(key);
+      if (parsed) {
         return parsed.activeTabId || null;
       }
     } catch {
@@ -472,20 +466,14 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
   });
 
   // Persist State Effect
+  const stateToPersist = useMemo(() => ({ tabs, activeTabId }), [tabs, activeTabId]);
+  const debouncedState = useDebounce(stateToPersist, 500);
+
   useEffect(() => {
     if (!activeUser) return;
     const key = getAppStateKey("notepad", activeUser);
-
-    const saveState = setTimeout(() => {
-      const state = {
-        tabs,
-        activeTabId,
-      };
-      localStorage.setItem(key, JSON.stringify(state));
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(saveState);
-  }, [tabs, activeTabId, activeUser]);
+    localStorage.setItem(key, JSON.stringify(debouncedState));
+  }, [debouncedState, activeUser]);
 
   const [filePickerMode, setFilePickerMode] = useState<"open" | "save" | null>(
     null
@@ -527,7 +515,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
   // -- Window Data / Initial Path Interception (File Opening) --
   const tabsRefForOpening = useRef(tabs);
   const processedTimestampRef = useRef<number | null>(null);
-  
+
   useEffect(() => {
     tabsRefForOpening.current = tabs;
   }, [tabs]);
@@ -536,13 +524,13 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
     const path = initialPath || windowContext?.data?.path;
     const timestamp = windowContext?.data?.timestamp;
     const isFresh = timestamp && (Date.now() - timestamp < 2000);
-    
+
     // Logic: Only process if it's a new and fresh timestamp
     const isNewTimestamp = timestamp && timestamp !== processedTimestampRef.current;
-    
+
     if (path && isNewTimestamp && isFresh) {
       if (timestamp) processedTimestampRef.current = timestamp;
-      
+
       // Use ref to avoid closure staleness and dependency on tabs
       const currentTabs = tabsRefForOpening.current;
       const existingTab = currentTabs.find((t) => t.path === path);
@@ -839,7 +827,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
       const selection = text.substring(start, end);
       const after = text.substring(end);
 
-      let newContent = "";
+      let newContent: string;
 
       switch (syntax) {
         case "bold":
@@ -921,7 +909,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
       const customEvent = e as CustomEvent;
       const { action, appId, windowId } = customEvent.detail;
       if (appId !== "notepad" || (windowId && windowId !== id)) return;
-      
+
       const handlers = actionHandlers.current;
       if (action === "new") {
         handlers.handleNewTab();
@@ -937,7 +925,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
       switch (action) {
         case "close-tab":
           if (handlers.activeTabId) {
-            handlers.handleCloseTab(handlers.activeTabId, { stopPropagation: () => {} });
+            handlers.handleCloseTab(handlers.activeTabId, { stopPropagation: () => { } });
           }
           break;
         case "copy":
@@ -978,7 +966,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
         hasSidebar={false}
         content={
           <div className="h-full flex flex-col relative">
-            <NotepadToolbar 
+            <NotepadToolbar
               titleBarBackground={titleBarBackground}
               blurStyle={blurStyle}
               tabs={tabs}
@@ -1035,7 +1023,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
               activeTab &&
               (isPreviewMode ? (
                 activeTab.context === "markdown" ? (
-                  <MarkdownPreview 
+                  <MarkdownPreview
                     content={activeTab.content}
                     accentColor={accentColor}
                     onCopy={handleCopy}
@@ -1052,14 +1040,14 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
                   </div>
                 )
               ) : (
-                <NotepadEditor 
-                   content={activeTab.content}
-                   context={activeTab.context}
-                   onChange={handleContentChange}
-                   onCopy={handleCopy}
-                   onCut={handleCut}
-                   onPaste={handlePaste}
-                   t={t}
+                <NotepadEditor
+                  content={activeTab.content}
+                  context={activeTab.context}
+                  onChange={handleContentChange}
+                  onCopy={handleCopy}
+                  onCut={handleCut}
+                  onPaste={handlePaste}
+                  t={t}
                 />
               ))
             )}
@@ -1207,8 +1195,8 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
               ? activeTab.context === "txt"
                 ? ".txt"
                 : activeTab.context === "markdown"
-                ? ".md"
-                : `.${activeTab.context}`
+                  ? ".md"
+                  : `.${activeTab.context}`
               : ".txt"
           }
           owner={activeUser}
@@ -1219,7 +1207,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
         open={!!pendingCloseTabId}
         onOpenChange={(open) => !open && setPendingCloseTabId(null)}
       >
-        <AlertDialogContent 
+        <AlertDialogContent
           overlayClassName="bg-black/20 backdrop-blur-[12px]"
           className="border-white/10 text-white bg-transparent shadow-2xl"
           style={{
@@ -1258,43 +1246,5 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
     </div>
   );
 }
-import { AppMenuConfig } from "@/types";
 
-export const notepadMenuConfig: AppMenuConfig = {
-  menus: ["File", "Edit", "Format", "View", "Window", "Help"],
-  items: {
-    File: [
-      { labelKey: "notepad.menu.new", shortcut: "⌘N", action: "new" },
-      { labelKey: "notepad.menu.open", shortcut: "⌘O", action: "open" },
-      { labelKey: "notepad.menu.save", shortcut: "⌘S", action: "save" },
-      { type: "separator" },
-      {
-        labelKey: "notepad.menu.closeTab",
-        shortcut: "⌘W",
-        action: "close-tab",
-      },
-    ],
-    Format: [
-      { labelKey: "notepad.menu.bold", shortcut: "⌘B", action: "format-bold" },
-      {
-        labelKey: "notepad.menu.italic",
-        shortcut: "⌘I",
-        action: "format-italic",
-      },
-      { labelKey: "notepad.menu.list", shortcut: "⌘L", action: "format-list" },
-      { type: "separator" },
-      { labelKey: "notepad.menu.heading1", action: "format-h1" },
-      { labelKey: "notepad.menu.heading2", action: "format-h2" },
-    ],
-    View: [
-      {
-        labelKey: "notepad.menu.togglePreview",
-        shortcut: "⌘P",
-        action: "toggle-preview",
-      },
-      { type: "separator" },
-      { labelKey: "notepad.menu.zoomIn", shortcut: "⌘+", action: "zoom-in" },
-      { labelKey: "notepad.menu.zoomOut", shortcut: "⌘-", action: "zoom-out" },
-    ],
-  },
-};
+

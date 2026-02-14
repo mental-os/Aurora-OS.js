@@ -46,10 +46,38 @@ export const ko: TranslationDict = {
     },
     "bios": {
       "title": "BIOS 설정",
-      "fullScreen": "전체 화면",
-      "immersiveMode": "몰입 모드",
-      "fullScreenEnter": "진입",
-      "fullScreenExit": "종료",
+      "hardwareAcceleration": "하드웨어 가속",
+      "displayMode": "디스플레이 모드",
+      "fullscreen": "전체 화면",
+      "borderless": "테두리 없음",
+      "windowed": "창 모드",
+      "resolution": "해상도",
+      "windowSettings": "창 설정",
+      "windowFrame": "창 테두리",
+      "windowFrameHint": "제목 표시줄 및 테두리 (재시작 필요)",
+      "configurationUtility": "구성 유틸리티",
+      "tabs": {
+        "display": "디스플레이",
+        "audio": "오디오",
+        "system": "시스템"
+      },
+      "graphicsQuality": "그래픽 품질",
+      "presets": {
+        "highFidelity": {
+          "label": "고화질",
+          "desc": "블러, 그림자, 생동감 활성화. 비주얼++"
+        },
+        "performance": {
+          "label": "성능",
+          "desc": "최대 FPS. 최소 효과. 속도++"
+        }
+      },
+      "reduceMotion": "동작 줄이기",
+      "simpleColors": "단순한 색상",
+      "solidBackgrounds": "단색 배경",
+      "noShadows": "그림자 없음",
+      "dangerZone": "위험 구역",
+      "configFooter": "설정",
       "softReset": "소프트 리셋",
       "softResetHint": "애플리케이션 다시 로드",
       "softResetConfirm": "소프트 리셋: 애플리케이션을 다시 로드하지만 데이터는 유지됩니다. 계속하시겠습니까?",
@@ -148,9 +176,6 @@ export const ko: TranslationDict = {
       "bookmarks": "북마크",
       "mailbox": "메일함",
       "message": "메시지",
-      "devCenter": "DEV 센터",
-      "tools": "도구",
-      "image": "이미지",
       "conversations": "대화"
     },
     "items": {
@@ -232,7 +257,8 @@ export const ko: TranslationDict = {
       "fileError": "파일 오류"
     },
     "empty": "알림 없음",
-    "clearApp": "이 앱의 모든 알림 지우기"
+    "clearApp": "이 앱의 모든 알림 지우기",
+    "messageFrom": "Message from {{sender}}"
   },
   "memory": {
     "title": "메모리",
@@ -298,6 +324,8 @@ export const ko: TranslationDict = {
       "closeTab": "탭 닫기"
     },
     "welcome": {
+      "title": "Browser",
+      "description": "Search for information or enter a URL to start browsing.",
       "searchPlaceholder": "웹사이트 검색 또는 주소 입력...",
       "favorites": "즐겨찾기",
       "recentActivity": "최근 활동"
@@ -306,7 +334,9 @@ export const ko: TranslationDict = {
     "error": {
       "pageNotFound": "페이지를 찾을 수 없음",
       "pageNotFoundDesc": "웹사이트 {{url}}을(를) 찾을 수 없습니다.",
-      "goHome": "홈으로"
+      "goHome": "홈으로",
+      "offlineTitle": "No Internet Connection",
+      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
     }
   },
   "music": {
@@ -619,7 +649,8 @@ export const ko: TranslationDict = {
     "library": {
       "allPhotos": "모든 사진",
       "favorites": "즐겨찾기",
-      "recent": "최근 항목"
+      "recent": "최근 항목",
+      "userLibrary": "{{user}}'s Library"
     },
     "menu": {
       "slideshow": "슬라이드쇼",
@@ -647,7 +678,9 @@ export const ko: TranslationDict = {
       "openHome": "홈 디렉토리 열기"
     },
     "folders": {
-      "pictures": "사진"
+      "pictures": "사진",
+      "recent": "Recent",
+      "misc": "Misc"
     }
   },
   "mail": {
@@ -1023,15 +1056,34 @@ export const ko: TranslationDict = {
       "disableShadowsTitle": "그림자 비활성화",
       "disableShadowsDescription": "렌더링 성능 향상을 위해 창 그림자 제거",
       "disableGradientsTitle": "그라디언트 비활성화",
-      "disableGradientsDescription": "아이콘에 그라디언트 대신 단색 사용"
+      "disableGradientsDescription": "아이콘에 그라디언트 대신 단색 사용",
+      "gpuTitle": "그래픽 가속 사용",
+      "gpuDescription": "가능한 경우 하드웨어 가속 사용 (재시작 필요)"
+    },
+    "network": {
+      "wifiTitle": "Wi-Fi",
+      "wifinotConnected": "Not Connected",
+      "wifiDisabled": "Wi-Fi 꺼짐",
+      "wifiNetworks": "사용 가능한 네트워크",
+      "scanning": "검색 중...",
+      "passwordPlaceholder": "비밀번호",
+      "disconnect": "연결 해제",
+      "configurationMode": "구성 모드",
+      "automatic": "자동 (DHCP)",
+      "manual": "수동",
+      "autoConfigTitle": "자동 구성",
+      "manualConfigTitle": "수동 구성",
+      "ipAddress": "IP 주소",
+      "subnetMask": "서브넷 마스크",
+      "gateway": "게이트웨이",
+      "dns": "DNS 서버",
+      "validateConfig": "구성 검증",
+      "configSaved": "네트워크 구성이 성공적으로 저장되었습니다",
+      "dhcpAttributionProgress": "DHCP를 통해 IP 주소 검색 중"
     },
     "placeholders": {
-      "displaysTitle": "디스플레이 설정",
-      "displaysDescription": "해상도, 배율 및 밝기 제어 곧 출시 예정.",
       "notificationsTitle": "알림",
       "notificationsDescription": "알림 센터 환경 설정 곧 출시 예정.",
-      "networkTitle": "네트워크",
-      "networkDescription": "Wi‑Fi 및 Bluetooth 구성 곧 출시 예정.",
       "securityTitle": "보안 및 개인 정보 보호",
       "securityDescription": "방화벽, 권한 및 개인 정보 설정 곧 출시 예정.",
       "storageTitle": "스토리지",

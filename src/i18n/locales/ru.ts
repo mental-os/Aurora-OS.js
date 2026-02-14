@@ -46,10 +46,38 @@ export const ru: TranslationDict = {
     },
     "bios": {
       "title": "Настройки BIOS",
-      "fullScreen": "Полноэкранный режим",
-      "immersiveMode": "Иммерсивный режим",
-      "fullScreenEnter": "Войти",
-      "fullScreenExit": "Выйти",
+      "hardwareAcceleration": "Аппаратное ускорение",
+      "displayMode": "Режим экрана",
+      "fullscreen": "Полноэкранный",
+      "borderless": "Без полей",
+      "windowed": "В окне",
+      "resolution": "Разрешение",
+      "windowSettings": "Настройки окна",
+      "windowFrame": "Рамка окна",
+      "windowFrameHint": "Заголовок и границы (Требуется перезапуск)",
+      "configurationUtility": "Утилита настройки",
+      "tabs": {
+        "display": "Экран",
+        "audio": "Аудио",
+        "system": "Система"
+      },
+      "graphicsQuality": "Качество графики",
+      "presets": {
+        "highFidelity": {
+          "label": "Высокое качество",
+          "desc": "Размытие, Тени, Насыщенность включены. визуал++"
+        },
+        "performance": {
+          "label": "Производительность",
+          "desc": "Макс. FPS. Мин. эффектов. скорость++"
+        }
+      },
+      "reduceMotion": "Уменьшение движения",
+      "simpleColors": "Простые цвета",
+      "solidBackgrounds": "Сплошной фон",
+      "noShadows": "Без теней",
+      "dangerZone": "Опасная зона",
+      "configFooter": "КОНФИГ",
       "softReset": "Мягкий сброс",
       "softResetHint": "Перезагрузить приложение",
       "softResetConfirm": "Мягкий сброс: это перезагрузит приложение, но сохранит ваши данные. Продолжить?",
@@ -148,9 +176,6 @@ export const ru: TranslationDict = {
       "bookmarks": "Закладки",
       "mailbox": "Почтовый ящик",
       "message": "Сообщение",
-      "devCenter": "DEV Центр",
-      "tools": "Инструменты",
-      "image": "Изображение",
       "conversations": "Разговоры"
     },
     "items": {
@@ -232,7 +257,8 @@ export const ru: TranslationDict = {
       "fileError": "Ошибка файла"
     },
     "empty": "Нет уведомлений",
-    "clearApp": "Очистить все от этого приложения"
+    "clearApp": "Очистить все от этого приложения",
+    "messageFrom": "Message from {{sender}}"
   },
   "memory": {
     "title": "Память",
@@ -298,6 +324,8 @@ export const ru: TranslationDict = {
       "closeTab": "Закрыть вкладку"
     },
     "welcome": {
+      "title": "Browser",
+      "description": "Search for information or enter a URL to start browsing.",
       "searchPlaceholder": "Искать веб-сайты или ввести адрес...",
       "favorites": "Избранное",
       "recentActivity": "Недавняя активность"
@@ -306,7 +334,9 @@ export const ru: TranslationDict = {
     "error": {
       "pageNotFound": "Страница не найдена",
       "pageNotFoundDesc": "Веб-сайт {{url}} не найден.",
-      "goHome": "На главную"
+      "goHome": "На главную",
+      "offlineTitle": "No Internet Connection",
+      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
     }
   },
   "music": {
@@ -619,7 +649,8 @@ export const ru: TranslationDict = {
     "library": {
       "allPhotos": "Все фото",
       "favorites": "Избранное",
-      "recent": "Недавние"
+      "recent": "Недавние",
+      "userLibrary": "{{user}}'s Library"
     },
     "menu": {
       "slideshow": "Слайд-шоу",
@@ -647,7 +678,9 @@ export const ru: TranslationDict = {
       "openHome": "Открыть домашнюю директорию"
     },
     "folders": {
-      "pictures": "Изображения"
+      "pictures": "Изображения",
+      "recent": "Recent",
+      "misc": "Misc"
     }
   },
   "mail": {
@@ -1023,15 +1056,34 @@ export const ru: TranslationDict = {
       "disableShadowsTitle": "Отключить тени",
       "disableShadowsDescription": "Убрать тени окон для улучшения отрисовки",
       "disableGradientsTitle": "Отключить градиенты",
-      "disableGradientsDescription": "Использовать сплошные цвета вместо градиентов для значков"
+      "disableGradientsDescription": "Использовать сплошные цвета вместо градиентов для значков",
+      "gpuTitle": "Использовать графическое ускорение",
+      "gpuDescription": "Использовать аппаратное ускорение, если доступно (требуется перезагрузка)"
+    },
+    "network": {
+      "wifiTitle": "Wi-Fi",
+      "wifinotConnected": "Not Connected",
+      "wifiDisabled": "Wi-Fi выключен",
+      "wifiNetworks": "Доступные сети",
+      "scanning": "Сканирование...",
+      "passwordPlaceholder": "Пароль",
+      "disconnect": "Отключить",
+      "configurationMode": "Режим настройки",
+      "automatic": "Автоматически (DHCP)",
+      "manual": "Вручную",
+      "autoConfigTitle": "Автоматическая настройка",
+      "manualConfigTitle": "Ручная настройка",
+      "ipAddress": "IP-адрес",
+      "subnetMask": "Маска подсети",
+      "gateway": "Шлюз",
+      "dns": "DNS-сервер",
+      "validateConfig": "Проверить настройки",
+      "configSaved": "Настройки сети успешно сохранены",
+      "dhcpAttributionProgress": "Получение IP-адреса через DHCP"
     },
     "placeholders": {
-      "displaysTitle": "Настройки дисплея",
-      "displaysDescription": "Разрешение, масштабирование и яркость скоро появятся.",
       "notificationsTitle": "Уведомления",
       "notificationsDescription": "Настройки центра уведомлений скоро появятся.",
-      "networkTitle": "Сеть",
-      "networkDescription": "Настройки Wi‑Fi и Bluetooth скоро появятся.",
       "securityTitle": "Безопасность и Приватность",
       "securityDescription": "Брандмауэр, права доступа и настройки приватности скоро появятся.",
       "storageTitle": "Хранилище",

@@ -12,6 +12,8 @@ import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useSessionStorage } from '@/hooks/useSessionStorage';
+import { NetworkSettings } from '@/components/NetworkSettings';
+import { DisplaySettings } from '@/components/DisplaySettings';
 import {
   Select,
   SelectContent,
@@ -111,12 +113,28 @@ export function Settings({ owner }: { owner?: string }) {
     locale,
     setLocale,
     wallpaper,
-    setWallpaper
+    setWallpaper,
+    wifiEnabled,
+    setWifiEnabled,
+    wifiNetwork,
+
+    networkConfigMode,
+    setNetworkConfigMode,
+    networkIP,
+    setNetworkIP,
+    networkGateway,
+    setNetworkGateway,
+    networkSubnetMask,
+    setNetworkSubnetMask,
+    networkDNS,
+    setNetworkDNS,
+    gpuEnabled,
+    setGpuEnabled
   } = useAppContext();
   const { users, addUser, updateUser, deleteUser, currentUser, logout } = useFileSystem();
   const { activeUser: desktopUser } = useAppContext();
   const activeUser = owner || desktopUser;
-  
+
   // Permission Check
   const currentUserObj = users.find(u => u.username === activeUser);
   const currentUserGroups = currentUserObj?.groups || [];
@@ -128,7 +146,7 @@ export function Settings({ owner }: { owner?: string }) {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordHint, setNewPasswordHint] = useState('');
   const [isAddingUser, setIsAddingUser] = useState(false);
-  
+
   // Edit User State
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -139,8 +157,9 @@ export function Settings({ owner }: { owner?: string }) {
   // About section state
   const storageStats = useMemo(() => {
     return activeSection === 'about' ? getStorageStats() : {
-      softMemory: { keys: 0, bytes: 0 },
-      hardMemory: { keys: 0, bytes: 0 },
+      biosMemory: { keys: 0, bytes: 0 },
+      hddMemory: { keys: 0, bytes: 0 },
+      ramMemory: { keys: 0, bytes: 0 },
       total: { keys: 0, bytes: 0 }
     };
   }, [activeSection]);
@@ -171,42 +190,42 @@ export function Settings({ owner }: { owner?: string }) {
               </p>
 
               <div className="max-w-sm">
-                  <Select
-                    value={locale}
-                    onValueChange={(val) => {
-                      setLocale(val);
+                <Select
+                  value={locale}
+                  onValueChange={(val) => {
+                    setLocale(val);
+                  }}
+                >
+                  <SelectTrigger
+                    className="bg-black/20 border-white/10 text-white hover:bg-white/5 transition-colors"
+                    style={{
+                      '--ring': accentColor
+                    } as React.CSSProperties}
+                  >
+                    <SelectValue placeholder={t('settings.appearance.languagePlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent
+                    className="backdrop-blur-xl border-white/10 text-white"
+                    style={{
+                      backgroundColor: 'rgba(28, 28, 30, 0.95)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
                     }}
                   >
-                    <SelectTrigger 
-                      className="bg-black/20 border-white/10 text-white hover:bg-white/5 transition-colors"
-                      style={{
-                        '--ring': accentColor
-                      } as React.CSSProperties}
-                    >
-                      <SelectValue placeholder={t('settings.appearance.languagePlaceholder')} />
-                    </SelectTrigger>
-                    <SelectContent 
-                      className="backdrop-blur-xl border-white/10 text-white"
-                      style={{
-                        backgroundColor: 'rgba(28, 28, 30, 0.95)',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
-                      }}
-                    >
-                      {SUPPORTED_LOCALES.map((opt) => (
-                        <SelectItem 
-                          key={opt.locale} 
-                          value={opt.locale}
-                          className="focus:bg-white/10 focus:text-white data-[state=checked]:bg-(--active-bg)! data-[state=checked]:text-(--active-text)! cursor-pointer transition-colors"
-                          style={{
-                            '--active-bg': `${accentColor}15`,
-                            '--active-text': accentColor
-                          } as React.CSSProperties}
-                        >
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {SUPPORTED_LOCALES.map((opt) => (
+                      <SelectItem
+                        key={opt.locale}
+                        value={opt.locale}
+                        className="focus:bg-white/10 focus:text-white data-[state=checked]:bg-(--active-bg)! data-[state=checked]:text-(--active-text)! cursor-pointer transition-colors"
+                        style={{
+                          '--active-bg': `${accentColor}15`,
+                          '--active-text': accentColor
+                        } as React.CSSProperties}
+                      >
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -430,8 +449,32 @@ export function Settings({ owner }: { owner?: string }) {
         {activeSection === 'performance' && (
           <div>
             <h2 className="text-2xl text-white mb-6">{t('settings.sections.performance')}</h2>
-            {/* Blur & Transparency Toggle */}
+            {/* GPU Acceleration Toggle */}
             <div className="bg-black/20 rounded-xl p-6 mb-6 border border-white/5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg text-white mb-1">{t('settings.performance.gpuTitle')}</h3>
+                  <p className="text-sm text-white/60">
+                    {t('settings.performance.gpuDescription')}
+                  </p>
+                </div>
+                <Checkbox
+                  checked={gpuEnabled}
+                  onCheckedChange={(checked) => {
+                    const enabled = checked === true;
+                    setGpuEnabled(enabled);
+                    if (!enabled) {
+                      setBlurEnabled(false);
+                      setDisableShadows(true);
+                      setReduceMotion(true); // Assuming we want this consistency check even if not explicitly requested for Settings app, but user asked for it in general.
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Blur & Transparency Toggle */}
+            <div className={cn("bg-black/20 rounded-xl p-6 mb-6 border border-white/5 transition-opacity", !gpuEnabled && "opacity-50 pointer-events-none")}>
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <h3 className="text-lg text-white mb-1">{t('settings.performance.blurTitle')}</h3>
@@ -442,6 +485,7 @@ export function Settings({ owner }: { owner?: string }) {
                 <Checkbox
                   checked={blurEnabled}
                   onCheckedChange={(checked) => setBlurEnabled(checked === true)}
+                  disabled={!gpuEnabled}
                 />
               </div>
             </div>
@@ -461,7 +505,7 @@ export function Settings({ owner }: { owner?: string }) {
               </div>
             </div>
             {/* Disable Shadows Toggle */}
-            <div className="bg-black/20 rounded-xl p-6 border border-white/5 mb-6">
+            <div className={cn("bg-black/20 rounded-xl p-6 border border-white/5 mb-6 transition-opacity", !gpuEnabled && "opacity-50 pointer-events-none")}>
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <h3 className="text-lg text-white mb-1">{t('settings.performance.disableShadowsTitle')}</h3>
@@ -472,6 +516,7 @@ export function Settings({ owner }: { owner?: string }) {
                 <Checkbox
                   checked={disableShadows}
                   onCheckedChange={(checked) => setDisableShadows(checked === true)}
+                  disabled={!gpuEnabled}
                 />
               </div>
             </div>
@@ -494,16 +539,7 @@ export function Settings({ owner }: { owner?: string }) {
         )}
 
         {activeSection === 'displays' && (
-          <div>
-            <h2 className="text-2xl text-white mb-6">{t('settings.sections.displays')}</h2>
-            <div className="bg-black/20 rounded-xl border border-white/5">
-              <EmptyState
-                icon={Monitor}
-                title={t('settings.placeholders.displaysTitle')}
-                description={t('settings.placeholders.displaysDescription')}
-              />
-            </div>
-          </div>
+          <DisplaySettings />
         )}
 
         {activeSection === 'notifications' && (
@@ -520,16 +556,23 @@ export function Settings({ owner }: { owner?: string }) {
         )}
 
         {activeSection === 'network' && (
-          <div>
-            <h2 className="text-2xl text-white mb-6">{t('settings.sections.network')}</h2>
-            <div className="bg-black/20 rounded-xl border border-white/5">
-              <EmptyState
-                icon={Wifi}
-                title={t('settings.placeholders.networkTitle')}
-                description={t('settings.placeholders.networkDescription')}
-              />
-            </div>
-          </div>
+          <NetworkSettings
+            accentColor={accentColor}
+            wifiEnabled={wifiEnabled}
+            setWifiEnabled={setWifiEnabled}
+            wifiNetwork={wifiNetwork}
+
+            networkConfigMode={networkConfigMode}
+            setNetworkConfigMode={setNetworkConfigMode}
+            networkIP={networkIP}
+            setNetworkIP={setNetworkIP}
+            networkGateway={networkGateway}
+            setNetworkGateway={setNetworkGateway}
+            networkSubnetMask={networkSubnetMask}
+            setNetworkSubnetMask={setNetworkSubnetMask}
+            networkDNS={networkDNS}
+            setNetworkDNS={setNetworkDNS}
+          />
         )}
 
         {activeSection === 'security' && (
@@ -687,7 +730,7 @@ export function Settings({ owner }: { owner?: string }) {
                                     if (logout) {
                                       logout();
                                     } else {
-                                      window.location.reload(); 
+                                      window.location.reload();
                                     }
                                   }
                                 }
@@ -856,11 +899,12 @@ export function Settings({ owner }: { owner?: string }) {
               <div className="space-y-3">
                 <div className="flex justify-between items-center gap-4 flex-wrap">
                   <span className="text-white/60">{t('settings.about.preferencesSoft')}</span>
-                  <span className="text-white text-right">{formatBytes(storageStats.softMemory.bytes)} ({storageStats.softMemory.keys} items)</span>
+                  {/* Combine BIOS + RAM for "Soft" representation or just show RAM */}
+                  <span className="text-white text-right">{formatBytes(storageStats.ramMemory.bytes + storageStats.biosMemory.bytes)} ({storageStats.ramMemory.keys + storageStats.biosMemory.keys} items)</span>
                 </div>
                 <div className="flex justify-between items-center gap-4 flex-wrap">
                   <span className="text-white/60">{t('settings.about.filesystemHard')}</span>
-                  <span className="text-white text-right">{formatBytes(storageStats.hardMemory.bytes)} ({storageStats.hardMemory.keys} items)</span>
+                  <span className="text-white text-right">{formatBytes(storageStats.hddMemory.bytes)} ({storageStats.hddMemory.keys} items)</span>
                 </div>
                 <div className="flex justify-between items-center gap-4 flex-wrap border-t border-white/10 pt-3">
                   <span className="text-white/80 font-medium">{t('settings.about.total')}</span>
@@ -988,19 +1032,3 @@ export function Settings({ owner }: { owner?: string }) {
     />
   );
 }
-
-import { AppMenuConfig } from '../types';
-
-export const settingsMenuConfig: AppMenuConfig = {
-  menus: ['File', 'Edit', 'View', 'Window', 'Help'],
-  items: {
-    'File': [
-      { label: 'Close Window', labelKey: 'menubar.items.closeWindow', shortcut: '⌘W', action: 'close-window' }
-    ],
-    'View': [
-      { label: 'General', labelKey: 'settings.sidebar.general', action: 'view-general' },
-      { label: 'Appearance', labelKey: 'settings.sidebar.appearance', action: 'view-appearance' },
-      { label: 'Display', labelKey: 'settings.sidebar.display', action: 'view-display' }
-    ]
-  }
-};

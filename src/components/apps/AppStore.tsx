@@ -20,29 +20,29 @@ interface AppStoreProps {
 }
 
 export function AppStore({ owner, onOpenApp }: AppStoreProps) {
-    const { accentColor } = useAppContext();
+    const { accentColor, devMode } = useAppContext();
     const { t } = useI18n();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<'all' | AppMetadata['category']>('all');
 
     // Use custom installer hook
-    const { installingApps, handleInstall, handleUninstall, isAppInstalled, isAppBroken, handleRestore } = useAppInstaller({ owner });
+    const { installingApps, handleInstall, handleUninstall, cancelInstall, isAppInstalled, isAppBroken, handleRestore } = useAppInstaller({ owner });
     const windowContext = useWindow();
 
     // Prevent window close if installing
     const installingAppsCount = Object.keys(installingApps).length;
     const installingAppsRef = useRef(installingAppsCount);
-    
+
     useEffect(() => {
         installingAppsRef.current = installingAppsCount;
     }, [installingAppsCount]);
 
     useEffect(() => {
         if (!windowContext) return;
-        
+
         windowContext.setBeforeClose(() => async () => {
             if (installingAppsRef.current > 0) {
-                 notify.system(
+                notify.system(
                     'warning',
                     'App Store',
                     t('appStore.installingWarning'),
@@ -79,8 +79,12 @@ export function AppStore({ owner, onOpenApp }: AppStoreProps) {
             );
         }
 
+        if (!devMode) {
+            apps = apps.filter(app => app.id !== 'dev-center');
+        }
+
         return apps;
-    }, [searchQuery, selectedCategory, t]);
+    }, [searchQuery, selectedCategory, t, devMode]);
 
     return (
         <AppTemplate
@@ -142,6 +146,7 @@ export function AppStore({ owner, onOpenApp }: AppStoreProps) {
                                     progress={installingApps[app.id]}
                                     onInstall={handleInstall}
                                     onUninstall={handleUninstall}
+                                    onCancel={cancelInstall} // Passing cancelInstall
                                     onRestore={handleRestore}
                                     onOpenApp={onOpenApp}
                                 />
@@ -154,16 +159,3 @@ export function AppStore({ owner, onOpenApp }: AppStoreProps) {
     );
 }
 
-import { AppMenuConfig } from '@/types';
-
-export const appStoreMenuConfig: AppMenuConfig = {
-    menus: ['File', 'Edit', 'Store', 'Window', 'Help'],
-    items: {
-        'Store': [
-            { label: 'Reload', labelKey: 'menubar.items.reload', shortcut: '⌘R', action: 'reload' },
-            { type: 'separator' },
-            { label: 'Check for Updates...', labelKey: 'appStore.menu.checkForUpdates', action: 'check-updates' },
-            { label: 'View My Account', labelKey: 'appStore.menu.viewMyAccount', action: 'view-account' }
-        ]
-    }
-};

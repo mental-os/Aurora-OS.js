@@ -636,45 +636,6 @@ function MusicInner({ owner, initialPath, onOpenApp }: MusicProps) {
   );
 }
 
-import { AppMenuConfig } from "../../types";
 
-export const musicMenuConfig: AppMenuConfig = {
-  menus: ["File", "Edit", "Song", "View", "Controls", "Window", "Help"],
-  items: {
-    File: [
-      {
-        labelKey: "music.menu.newPlaylist",
-        shortcut: "⌘N",
-        action: "new-playlist",
-      },
-      { labelKey: "music.menu.import", shortcut: "⌘O", action: "import" },
-      { type: "separator" },
-      {
-        labelKey: "music.menu.closeWindow",
-        shortcut: "⌘W",
-        action: "close-window",
-      },
-    ],
-    Song: [
-      {
-        labelKey: "music.menu.showInFinder",
-        shortcut: "⌘R",
-        action: "show-in-finder",
-      },
-      { labelKey: "music.menu.addToPlaylist", action: "add-to-playlist" },
-    ],
-    Controls: [
-      { labelKey: "music.menu.play", shortcut: "Space", action: "play-pause" },
-      { type: "separator" },
-      { labelKey: "music.menu.previousSong", shortcut: "⌘←", action: "prev" },
-      { labelKey: "music.menu.nextSong", shortcut: "⌘→", action: "next" },
-      { type: "separator" },
-      { labelKey: "music.menu.volumeUp", shortcut: "⌘↑", action: "volume-up" },
-      {
-        labelKey: "music.menu.volumeDown",
-        shortcut: "⌘↓",
-        action: "volume-down",
-      },
-    ],
-  },
-};
+
+

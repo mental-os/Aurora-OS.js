@@ -1,7 +1,7 @@
-import nebulaWallpaper from '@/assets/images/background.png';
-import orbitWallpaper from '@/assets/images/wallpaper-orbit.png';
-import meshWallpaper from '@/assets/images/wallpaper-mesh.png';
-import dunesWallpaper from '@/assets/images/wallpaper-dunes.png';
+import nebulaWallpaper from '@/assets/images/wallpaper-nebula.avif';
+import cityWallpaper from '@/assets/images/wallpaper-city.avif';
+import auroraWallpaper from '@/assets/images/wallpaper-aurora.avif';
+import lakeWallpaper from '@/assets/images/wallpaper-lake.avif';
 
 export const DEFAULT_SYSTEM_MEMORY_GB = 2;
 
@@ -24,12 +24,22 @@ export const BRAND = {
   // Desktop wallpapers
   wallpapers: [
     { id: 'default', name: 'Nebula', src: nebulaWallpaper },
-    { id: 'orbit', name: 'Orbit', src: orbitWallpaper },
-    { id: 'mesh', name: 'Flux', src: meshWallpaper },
-    { id: 'dunes', name: 'Midnight Dunes', src: dunesWallpaper },
+    { id: 'city', name: 'City', src: cityWallpaper },
+    { id: 'aurora', name: 'Aurora', src: auroraWallpaper },
+    { id: 'lake', name: 'Lake', src: lakeWallpaper },
   ],
 } as const;
 
 // Type exports for consumers
 export type AccentColor = (typeof BRAND.accentPalette)[number];
 export type Wallpaper = (typeof BRAND.wallpapers)[number];
+
+// Keys in SystemConfig that should survive a "New Game" reset (BIOS settings)
+export const PERSISTENT_CONFIG_KEYS = [
+  'locale',
+  'gpuEnabled',
+  'blurEnabled',
+  'reduceMotion',
+  'disableShadows',
+  'disableGradients'
+] as const;

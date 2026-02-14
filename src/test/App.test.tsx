@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import App from '../App';
+import { STORAGE_KEYS } from '../utils/memory';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -72,7 +73,7 @@ describe('Aurora OS Integration', () => {
     it('boots and renders the Login Screen', () => {
         // Skip first-run language onboarding for this test
         localStorageMock.setItem(
-            'aurora-system-config',
+            STORAGE_KEYS.SYSTEM_CONFIG,
             JSON.stringify({ devMode: false, exposeRoot: false, locale: 'en-US', onboardingComplete: true })
         );
 
@@ -89,7 +90,7 @@ describe('Aurora OS Integration', () => {
 
     it('loads persistence data on boot', () => {
         render(<App />);
-        expect(localStorageMock.getItem).toHaveBeenCalledWith('aurora-os-settings');
-        expect(localStorageMock.getItem).toHaveBeenCalledWith('aurora-filesystem');
+        expect(localStorageMock.getItem).toHaveBeenCalledWith(STORAGE_KEYS.SYSTEM_CONFIG);
+        expect(localStorageMock.getItem).toHaveBeenCalledWith(STORAGE_KEYS.FILESYSTEM);
     });
 });

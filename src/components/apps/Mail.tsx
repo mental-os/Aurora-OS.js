@@ -14,7 +14,7 @@ import { decodePassword, encodePassword } from "@/utils/authUtils";
 import { useFileSystem } from "@/components/FileSystemContext";
 import { notify } from "@/services/notifications";
 import { useThemeColors } from "@/hooks/useThemeColors";
-import { AppMenuConfig } from "@/types.ts";
+
 import { MailService } from "@/services/MailService";
 
 export interface EmailAttachment {
@@ -936,48 +936,3 @@ export function Mail({ owner }: { owner?: string }) {
   );
 }
 
-export const mailMenuConfig: AppMenuConfig = {
-  menus: ["File", "Edit", "View", "Mailbox", "Message", "Window", "Help"],
-  items: {
-    Mailbox: [
-      {
-        label: "New Mailbox",
-        labelKey: "mail.menu.newMailbox",
-        action: "new-mailbox",
-      },
-      { type: "separator" },
-      {
-        label: "Online Status",
-        labelKey: "mail.menu.onlineStatus",
-        action: "toggle-online",
-      },
-    ],
-    Message: [
-      {
-        label: "New Message",
-        labelKey: "mail.menu.newMessage",
-        action: "new-message",
-        shortcut: "Ctrl+N",
-      },
-      { type: "separator" },
-      {
-        label: "Reply",
-        labelKey: "mail.menu.reply",
-        action: "reply",
-        shortcut: "Ctrl+R",
-      },
-      {
-        label: "Reply All",
-        labelKey: "mail.menu.replyAll",
-        action: "reply-all",
-        shortcut: "Ctrl+Shift+R",
-      },
-      {
-        label: "Forward",
-        labelKey: "mail.menu.forward",
-        action: "forward",
-        shortcut: "Ctrl+F",
-      },
-    ],
-  },
-};
