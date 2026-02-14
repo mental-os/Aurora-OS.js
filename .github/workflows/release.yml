@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
@@ -32,20 +35,84 @@ jobs:
           node-version: 24
           cache: "npm"
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache Electron
+        if: runner.os != 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/electron
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
+
+      - name: Cache Electron (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\electron\Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Web & Electron
-        run: npm run electron:build
-        env:
-          # Required for electron-builder to publish to GitHub Releases
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Determine Version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
 
-      - name: Publish (Manual confirmation or auto-upload)
-        # The electron:build script runs electron-builder.
-        # If GH_TOKEN is present and it's a tag, it will attempt to publish if configured.
-        # Alternatively, we can use the upload-artifact action if we want to separate steps.
-        # But electron-builder's native publish is usually better for releases.
+      - name: Sync version
+        run: |
+          TARGET_VERSION=${{ steps.version.outputs.version }}
+          STRIPPED_VERSION=${TARGET_VERSION#v}
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          
+          if [ "$CURRENT_VERSION" != "$STRIPPED_VERSION" ]; then
+            npm version $TARGET_VERSION --no-git-tag-version
+          else
+            echo "Version already matches $CURRENT_VERSION"
+          fi
+        shell: bash
+
+      - name: Create Release Draft
+        # Creating a draft release explicitly ensures we have a target for all runners.
+        # We check if it exists first to avoid errors.
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          if ! gh release view "$VERSION" > /dev/null 2>&1; then
+            gh release create "$VERSION" --draft --title "Release $VERSION" --notes "Draft release for $VERSION"
+          else
+            echo "Release $VERSION already exists."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+
+      - name: Build Web
+        run: npm run build
+
+      - name: Build Electron Assets
+        run: npm run ts:electron
+
+      - name: Build & Publish Products
+        # Consolidate into a single electron-builder call to avoid double execution/upload.
+        # This prevents "already exists" errors and redundant network traffic.
         run: npx electron-builder --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Increase stability for uploads
+          NODE_OPTIONS: --max-old-space-size=4096
+          ELECTRON_BUILDER_UPLOAD_RETRY_COUNT: 5
