@@ -174,7 +174,10 @@
                   "dist-electron/**/*"
             ],
             "win": {
-                  "target": "nsis",
+                  "target": [
+                        "nsis",
+                        "portable"
+                  ],
                   "icon": "public/icon.ico",
                   "verifyUpdateCodeSignature": false
             },
@@ -192,7 +195,10 @@
                   "createStartMenuShortcut": true
             },
             "mac": {
-                  "target": "dmg",
+                  "target": [
+                        "dmg",
+                        "zip"
+                  ],
                   "icon": "public/icon.icns",
                   "hardenedRuntime": true,
                   "gatekeeperAssess": false,
