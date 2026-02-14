@@ -101,13 +101,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
-      - name: Build Web & Electron
-        run: npm run electron:build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Web
+        run: npm run build
 
-      - name: Publish Artifacts
-        # electron-builder will detect the existing draft and upload to it.
+      - name: Build Electron Assets
+        run: npm run ts:electron
+
+      - name: Build & Publish Products
+        # Consolidate into a single electron-builder call to avoid double execution/upload.
+        # This prevents "already exists" errors and redundant network traffic.
         run: npx electron-builder --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Increase stability for uploads
+          NODE_OPTIONS: --max-old-space-size=4096
