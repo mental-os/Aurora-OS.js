@@ -8,17 +8,18 @@ interface PingHostConfig {
 }
 
 const hostConfigs: Record<string, PingHostConfig> = {
-    'google.com': { ip: '142.250.185.78', baseTime: 12, variance: 8, ttl: 115 },
-    'www.google.com': { ip: '142.250.185.78', baseTime: 12, variance: 8, ttl: 115 },
     'localhost': { ip: '127.0.0.1', baseTime: 0.1, variance: 0.1, ttl: 64 },
     '127.0.0.1': { ip: '127.0.0.1', baseTime: 0.1, variance: 0.1, ttl: 64 },
-    '8.8.8.8': { ip: '8.8.8.8', baseTime: 18, variance: 5, ttl: 118 },
-    '8.8.4.4': { ip: '8.8.4.4', baseTime: 20, variance: 6, ttl: 118 },
-    'cloudflare.com': { ip: '1.1.1.1', baseTime: 15, variance: 4, ttl: 116 },
-    '1.1.1.1': { ip: '1.1.1.1', baseTime: 15, variance: 4, ttl: 116 },
-    'github.com': { ip: '140.82.121.3', baseTime: 85, variance: 15, ttl: 112 },
-    'amazon.com': { ip: '52.94.236.248', baseTime: 25, variance: 8, ttl: 114 },
-    'microsoft.com': { ip: '20.112.250.133', baseTime: 30, variance: 10, ttl: 113 },
+    'trustmail': { ip: '192.168.1.10', baseTime: 5, variance: 2, ttl: 64 },
+    'trustmail.com': { ip: '192.168.1.10', baseTime: 5, variance: 2, ttl: 64 },
+    'initech': { ip: '192.168.1.20', baseTime: 8, variance: 3, ttl: 64 },
+    'initech.com': { ip: '192.168.1.20', baseTime: 8, variance: 3, ttl: 64 },
+    'techcorp': { ip: '192.168.1.30', baseTime: 6, variance: 2, ttl: 64 },
+    'techcorp.com': { ip: '192.168.1.30', baseTime: 6, variance: 2, ttl: 64 },
+    'globalbank': { ip: '192.168.1.40', baseTime: 10, variance: 4, ttl: 64 },
+    'globalbank.com': { ip: '192.168.1.40', baseTime: 10, variance: 4, ttl: 64 },
+    'aurora': { ip: '127.0.0.1', baseTime: 0.1, variance: 0.1, ttl: 64 },
+    'mainframe': { ip: '10.0.0.1', baseTime: 2, variance: 1, ttl: 64 },
 };
 
 function parsePingArgs(args: string[]): { count: number; interval: number; ttl: number; host: string | null } {
@@ -67,7 +68,7 @@ export const ping: TerminalCommand = {
     description: 'Send ICMP echo requests',
     usage: 'ping [-c count] [-i interval] host',
     execute: async ({ args }) => {
-        const { count, interval, ttl: _customTtl, host } = parsePingArgs(args);
+        const { count, interval, host } = parsePingArgs(args);
 
         if (!host) {
             return { output: ['ping: usage: ping [-c count] [-i interval] host'], error: true };
@@ -81,22 +82,22 @@ export const ping: TerminalCommand = {
         }
 
         const output: string[] = [];
-        
+
         output.push(`PING ${host} (${config.ip}): 56 data bytes`);
 
         let transmitted = 0;
         let received = 0;
         const rttValues: number[] = [];
-        let aborted = false;
+        const aborted = false;
 
         const targetCount = count === Infinity ? 4 : count;
 
         for (let seq = 0; seq < targetCount && !aborted; seq++) {
             transmitted++;
-            
+
             const rtt = simulateRTT(config);
             const actualTtl = simulateTTL(config.ttl);
-            
+
             rttValues.push(rtt);
             received++;
 
@@ -113,17 +114,17 @@ export const ping: TerminalCommand = {
 
         output.push('');
         output.push(`--- ${host} ping statistics ---`);
-        
+
         const loss = ((transmitted - received) / transmitted) * 100;
         const lossStr = loss === 0 ? '0.0' : loss.toFixed(1);
-        
+
         output.push(`${transmitted} packets transmitted, ${received} packets received, ${lossStr}% packet loss`);
 
         if (rttValues.length > 0) {
             const min = Math.min(...rttValues);
             const avg = rttValues.reduce((a, b) => a + b, 0) / rttValues.length;
             const max = Math.max(...rttValues);
-            
+
             output.push(`round-trip min/avg/max = ${min.toFixed(3)}/${avg.toFixed(3)}/${max.toFixed(3)} ms`);
         }
 
