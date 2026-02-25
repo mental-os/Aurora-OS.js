@@ -42,7 +42,21 @@ export const ru: TranslationDict = {
           "confirm": "Выключить"
         }
       },
-      "credits": {}
+      "credits": {},
+      "external": {
+        "label": "Сообщество",
+        "discord": "Сервер Discord",
+        "github": "Репозиторий GitHub",
+        "download": "Скачать"
+      },
+      "devStatus": {
+        "buildStatus": "Статус сборки: Экспериментальный",
+        "title": "Версия для разработчиков",
+        "description": "Это экспериментальная версия, которая всё еще находится в разработке. Ожидаются ошибки, неполные системы и визуальные несоответствия.",
+        "joinDiscord": "Присоединиться к Discord",
+        "contribute": "Внести вклад",
+        "systemReady": "Система готова"
+      }
     },
     "bios": {
       "title": "Настройки BIOS",
@@ -214,6 +228,8 @@ export const ru: TranslationDict = {
       "switchUser": "Сменить пользователя",
       "user": "Пользователь",
       "logOutAs": "Выйти: {{username}}",
+      "restart": "Перезагрузка...",
+      "restartDescription": "Перезагрузить систему (Очистить сеанс)",
       "viewSystemInfo": "Просмотр информации о системе",
       "viewSystemSettings": "Просмотр настроек системы",
       "returnToLoginWhile": "Вернуться на экран входа,",
@@ -498,6 +514,11 @@ export const ru: TranslationDict = {
       "history": {
         "description": "Показать историю команд терминала",
         "usage": "history [-c] [n]"
+      }
+    },
+    "errors": {
+      "connect": {
+        "offline": "connect: network is unreachable"
       }
     }
   },

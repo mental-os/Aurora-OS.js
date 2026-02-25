@@ -5,6 +5,7 @@ import { FileSystemProvider, useFileSystem } from '@/components/FileSystemContex
 import { GameRoot } from '@/components/Game/GameRoot';
 import { MusicProvider } from '@/components/MusicContext';
 import { PhotosProvider } from '@/components/PhotosContext';
+import { WorldProvider } from '@/components/WorldContext';
 
 // Lazy load the Heavy OS component
 // This ensures we don't load Desktop/Apps/Assets until we actually start the game
@@ -12,7 +13,8 @@ const OS = lazy(() => import('@/components/OS'));
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useI18n } from './i18n';
-import { calculateTotalRamUsage } from './utils/resourceMonitor';
+import { calculateTotalRamUsage } from '@/services/resourceMonitor';
+import { emergencySave } from '@/utils/memory';
 
 function KernelLoadingFallback() {
   const { t } = useI18n();
@@ -57,6 +59,7 @@ function AppContent() {
   // Track page refresh/unload state to distinguish from app window closing
   useEffect(() => {
       const handleUnload = () => {
+          emergencySave(); // Force synchronous dump to localStorage
           sessionStorage.setItem('is_refreshing', 'true');
       };
       
@@ -107,9 +110,11 @@ export default function App() {
       <AppProvider>
         <NetworkProvider>
           <FileSystemProvider>
-            <GameRoot>
-              <AppContent />
-            </GameRoot>
+            <WorldProvider>
+              <GameRoot>
+                <AppContent />
+              </GameRoot>
+            </WorldProvider>
           </FileSystemProvider>
         </NetworkProvider>
       </AppProvider>

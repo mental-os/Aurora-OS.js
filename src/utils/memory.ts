@@ -1,51 +1,117 @@
 /**
  * Aurora OS Memory Management Utilities
  * 
- * Organizes storage into two tiers:
- * - Soft Memory: Preferences and UI state (safe to reset)
- * - Hard Memory: Core data like filesystem (dangerous to reset)
+ * MODERNIZED: Now uses an In-Memory Cache logic backed by the Save System.
+ * Replaces direct localStorage usage.
  */
 
-// Storage key prefixes/names
-// Storage key prefixes/names
+import { saveManager } from '@/utils/save/SaveManager';
+import { createSnapshot, restoreSnapshot } from '@/utils/save/SnapshotEngine';
+import pkg from '../../package.json';
+
+// --- IN-MEMORY CACHE ---
+let memoryCache: Record<string, string> = {};
+let isInitialized = false;
+
+// Mocking Storage Event for reactivity (In-memory changes)
+export const STORAGE_EVENT = 'aurora-storage-event';
+export type StorageOperation = 'read' | 'write' | 'clear';
+
+// Physical I/O tracking for the "Hard Drive" indicator
+export const PHYSICAL_IO_EVENT = 'aurora-physical-io';
+export type PhysicalIOOp = 'save' | 'load';
+
+export function dispatchPhysicalIO(op: PhysicalIOOp, active: boolean) {
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(PHYSICAL_IO_EVENT, { detail: { op, active } }));
+    }
+}
+
+function dispatchStorageEvent(op: StorageOperation) {
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { op } }));
+    }
+}
+
+// --- PUBLIC API (localStorage replacement) ---
+
+export const memory = {
+    getItem(key: string): string | null {
+        return memoryCache[key] ?? null;
+    },
+
+    setItem(key: string, value: string): void {
+        // DIRTY CHECK: Avoid redundant saves if value hasn't changed
+        if (memoryCache[key] === value) return;
+
+        memoryCache[key] = value;
+        dispatchStorageEvent('write');
+        if (isInitialized) saveGame(); // Auto-save
+    },
+
+    removeItem(key: string): void {
+        delete memoryCache[key];
+        dispatchStorageEvent('write');
+        if (isInitialized) saveGame(); // Auto-save
+    },
+
+    clear(): void {
+        memoryCache = {};
+        dispatchStorageEvent('clear');
+    },
+
+    key(index: number): string | null {
+        const keys = Object.keys(memoryCache);
+        return keys[index] || null;
+    },
+
+    get length(): number {
+        return Object.keys(memoryCache).length;
+    }
+};
+
+
+// --- CONSTANTS ---
+
 export const STORAGE_KEYS = {
     // TIER 1: BIOS / Hardware (Prefix: sys_)
-    // Persistent across ALL resets (Hard/Soft/Crash). Only wiped by manual Factory Reset.
-    SYSTEM_CONFIG: 'sys_config_v1',         // Global system settings (Dev Mode, etc)
-    LANGUAGE: 'sys_locale',                 // System Language
-    BATTERY: 'sys_battery',                 // Battery preferences
-    TIME_MODE: 'sys_time_mode',             // Clock display preference
-    INSTALL_DATE: 'sys_install_date',       // System installation timestamp
-    SOUND: 'sys_sound_settings',            // Audio Mixer
-    DISPLAY: 'sys_display_settings',        // Screen/Window config (if migrated from file)
+    SYSTEM_CONFIG: 'sys_config_v1',         
+    LANGUAGE: 'sys_locale',                 
+    BATTERY: 'sys_battery',                 
+    TIME_MODE: 'sys_time_mode',             
+    INSTALL_DATE: 'sys_install_date',       
+    SOUND: 'sys_sound_settings',            
+    DISPLAY: 'sys_display_settings',        
 
     // TIER 2: HDD / OS Storage (Prefix: os_)
-    // Persistent across Soft Resets/Reboots. Wiped on Hard Reset (New Game).
-    FILESYSTEM: 'os_filesystem',            // The VFS Tree
-    USERS: 'os_users_db',                   // /etc/passwd equivalent
-    GROUPS: 'os_groups_db',                 // /etc/group equivalent
-    VERSION: 'os_version',                  // Save Game Version / Flag
-    INSTALLED_APPS: 'os_installed_apps',    // Registry of installed apps
-    SETTINGS: 'os_settings',                // User preferences (if not in VFS)
-    DESKTOP_ICONS: 'os_desktop_icons',      // Icon positions
-    APP_DATA_PREFIX: 'os_app_data_',        // App-specific persistent data (e.g. notes)
-    MAIL_DB: 'os_mail_db',                  // Simulated Cloud Mail DB
-    MESSAGES_DB: 'os_messages_db',          // Simulated Cloud Messages DB
-    KNOWN_NETWORKS: 'os_networks_db',       // Known Wifi Networks (Security/Pass/BSSID)
+    FILESYSTEM: 'os_filesystem',            
+    USERS: 'os_users_db',                   
+    GROUPS: 'os_groups_db',                 
+    VERSION: 'os_version',                  
+    INSTALLED_APPS: 'os_installed_apps',    
+    SETTINGS: 'os_settings',                
+    DESKTOP_ICONS: 'os_desktop_icons',      
+    APP_DATA_PREFIX: 'os_app_data_',        
+    MAIL_DB: 'os_mail_db',                  
+    MESSAGES_DB: 'os_messages_db',          
+    KNOWN_NETWORKS: 'os_networks_db',       
+    NPC_STATE_PREFIX: 'os_npc_',            // NPC computer state (VFS, runtime). Wiped on hardReset().
 
     // TIER 3: RAM / Session State (Prefix: session_)
-    // Wiped on Soft Reset (Logout/Reboot) OR Hard Reset.
-    WINDOWS_PREFIX: 'session_windows_',     // Open window states
-    TERM_HISTORY_PREFIX: 'session_term_',   // Terminal command history
-    TERM_INPUT_PREFIX: 'session_term_input_', // Terminal input history
-    SESSION_META: 'session_meta_',          // Ephemeral session flags
-    CURRENT_USER: 'session_current_user',   // Currently logged in user
-    NETWORK_USAGE: 'session_net_usage',     // Data usage for current session
+    WINDOWS_PREFIX: 'session_windows_',     
+    TERM_HISTORY_PREFIX: 'session_term_',   
+    TERM_INPUT_PREFIX: 'session_term_input_', 
+    SESSION_META: 'session_meta_',          
+    CURRENT_USER: 'session_current_user',   
+    LAST_ACTIVE_USER: 'session_last_active_user',
+    NETWORK_USAGE: 'session_net_usage',     
+    SESSION_WINDOWS: 'session_windows',
+    SESSION_TERMINAL_HISTORY: 'session_terminal_history',
 } as const;
 
-/**
- * Determines the type of memory a storage key belongs to via Prefix Check
- */
+
+// --- HELPER FUNCTIONS (Refactored to use `memory`) ---
+
 function getMemoryType(key: string): 'bios' | 'hdd' | 'ram' | 'unknown' {
     if (key.startsWith('sys_')) return 'bios';
     if (key.startsWith('os_')) return 'hdd';
@@ -53,61 +119,87 @@ function getMemoryType(key: string): 'bios' | 'hdd' | 'ram' | 'unknown' {
     return 'unknown';
 }
 
+export type ResetTarget = 'session' | 'hdd' | 'bios' | 'users' | 'filesystem' | 'settings';
+
+/**
+ * Partial Reset
+ * Wipes specific subsets of memory
+ */
+export function partialReset(target: ResetTarget): void {
+    const keysToRemove: string[] = [];
+    
+    // Helper to find keys by prefix or exact match
+    const findKeys = (predicate: (key: string) => boolean) => {
+        const total = memory.length;
+        for (let i = 0; i < total; i++) {
+            const key = memory.key(i);
+            if (key && predicate(key)) {
+                keysToRemove.push(key);
+            }
+        }
+    };
+
+    switch (target) {
+        case 'session':
+            findKeys(k => k.startsWith('session_'));
+            break;
+        case 'hdd':
+            findKeys(k => k.startsWith('os_'));
+            break;
+        case 'bios':
+            findKeys(k => k.startsWith('sys_'));
+            break;
+        case 'users':
+            findKeys(k => k === STORAGE_KEYS.USERS || k === STORAGE_KEYS.GROUPS || k === STORAGE_KEYS.CURRENT_USER);
+            break;
+        case 'filesystem':
+            findKeys(k => k === STORAGE_KEYS.FILESYSTEM); // Only file tree
+            break;
+        case 'settings':
+            findKeys(k => k === STORAGE_KEYS.SETTINGS || k.startsWith(STORAGE_KEYS.APP_DATA_PREFIX));
+            break;
+    }
+
+    keysToRemove.forEach(key => memory.removeItem(key));
+    console.log(`Partial Reset [${target}]: Removed ${keysToRemove.length} keys.`);
+}
+
 /**
  * Soft Reset (Reboot/Logout)
  * Wipes RAM (Session) only.
  * Keeps BIOS + HDD.
  */
-export function softReset(): void {
-    const keysToRemove: string[] = [];
-
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && getMemoryType(key) === 'ram') {
-            keysToRemove.push(key);
-        }
-    }
-
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    console.log(`Soft Reset: Wiped RAM (${keysToRemove.length} session keys)`);
+export async function softReset(): Promise<void> {
+    partialReset('session');
+    await forceSaveGame();
+    console.log(`Soft Reset: Wiped RAM and committed to storage.`);
 }
-
 
 /**
  * Hard Reset (New Game)
  * Wipes HDD + RAM.
  * KEEPS BIOS (System Config).
  */
-export function hardReset(): void {
-    const keysToRemove: string[] = [];
-
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key) continue;
-
-        const type = getMemoryType(key);
-        // Wipe HDD and RAM, Keep BIOS
-        if (type === 'hdd' || type === 'ram' || type === 'unknown') {
-            keysToRemove.push(key);
-        }
-    }
-
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    console.log(`Hard Reset: Wiped HDD + RAM (${keysToRemove.length} keys). Preserved BIOS.`);
+export async function hardReset(): Promise<void> {
+    partialReset('hdd'); 
+    partialReset('session'); 
+    await forceSaveGame();
+    console.log(`Hard Reset: Wiped HDD + RAM. Preserved BIOS and committed to storage.`);
 }
 
 /**
  * Factory Reset (Complete Wipe)
  * Wipes EVERYTHING logic.
  */
-export function factoryReset(): void {
-    localStorage.clear();
-    console.log('Factory Reset: Wiped EVERYTHING.');
+export async function factoryReset(): Promise<void> {
+    memoryCache = {};
+    await deleteSave();
+    console.log('Factory Reset: Wiped EVERYTHING and deleted physical save.');
 }
 
-/**
- * Get storage usage statistics
- */
+
+// --- STATISTICS ---
+
 export function getStorageStats(): {
     biosMemory: { keys: number; bytes: number };
     hddMemory: { keys: number; bytes: number };
@@ -118,22 +210,15 @@ export function getStorageStats(): {
     let hddKeys = 0; let hddBytes = 0;
     let ramKeys = 0; let ramBytes = 0;
 
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) {
-            const type = getMemoryType(key);
-            const value = localStorage.getItem(key) || '';
-            const bytes = new Blob([key + value]).size;
+    Object.keys(memoryCache).forEach(key => {
+        const type = getMemoryType(key);
+        const value = memoryCache[key] || '';
+        const bytes = new Blob([key + value]).size;
 
-            if (type === 'bios') {
-                biosKeys++; biosBytes += bytes;
-            } else if (type === 'hdd') {
-                hddKeys++; hddBytes += bytes;
-            } else if (type === 'ram') {
-                ramKeys++; ramBytes += bytes;
-            }
-        }
-    }
+        if (type === 'bios') { biosKeys++; biosBytes += bytes; }
+        else if (type === 'hdd') { hddKeys++; hddBytes += bytes; }
+        else if (type === 'ram') { ramKeys++; ramBytes += bytes; }
+    });
 
     return {
         biosMemory: { keys: biosKeys, bytes: biosBytes },
@@ -143,9 +228,6 @@ export function getStorageStats(): {
     };
 }
 
-/**
- * Format bytes to human readable string
- */
 export function formatBytes(bytes: number): string {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -154,127 +236,156 @@ export function formatBytes(bytes: number): string {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-/**
- * Check if a user has a saved window session
- */
+
+// --- SESSION UTILS ---
+
 export function hasSavedSession(username: string): boolean {
     const key = `${STORAGE_KEYS.WINDOWS_PREFIX}${username}`;
-    return !!localStorage.getItem(key);
+    return !!memory.getItem(key);
 }
 
-/**
- * Clear a user's session (Windows + Ephemeral Data)
- * Called on Logout
- */
 export function clearSession(username: string): void {
-    // 1. Clear Window Session
     const windowKey = `${STORAGE_KEYS.WINDOWS_PREFIX}${username}`;
-    localStorage.removeItem(windowKey);
+    memory.removeItem(windowKey);
 
-    // 2. Clear Session Data
-    const keysToRemove: string[] = [];
     const userSessionPrefix = `${STORAGE_KEYS.SESSION_META}${username}-`;
+    Object.keys(memoryCache).forEach(key => {
+        if (key.startsWith(userSessionPrefix)) memory.removeItem(key);
+    });
 
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(userSessionPrefix)) {
-            keysToRemove.push(key);
-        }
-    }
+    memory.removeItem(`${STORAGE_KEYS.TERM_HISTORY_PREFIX}${username}`);
+    memory.removeItem(`${STORAGE_KEYS.TERM_INPUT_PREFIX}${username}`);
 
-    // Clean up localStorage
-    keysToRemove.forEach(k => localStorage.removeItem(k));
-
-    // 3. Clear Terminal History for this user
-    localStorage.removeItem(`${STORAGE_KEYS.TERM_HISTORY_PREFIX}${username}`);
-    localStorage.removeItem(`${STORAGE_KEYS.TERM_INPUT_PREFIX}${username}`);
-    // Assuming standard session prefix covers most inputs or we add a specific one.
-    // For now, let's just clear the main history which matches the new key.
-
-    console.log(`Cleared session for user: ${username} (${keysToRemove.length + 2} keys)`);
+    console.log(`Cleared session for user: ${username}`);
 }
 
-/**
- * Get the storage key for an app's persisted state
- */
 export function getAppStateKey(appId: string, username: string): string {
     return `${STORAGE_KEYS.APP_DATA_PREFIX}${appId}-${username}`;
 }
 
-/**
- * Get the storage key for a user's window session
- */
 export function getWindowKey(username: string): string {
     return `${STORAGE_KEYS.WINDOWS_PREFIX}${username}`;
 }
 
-/**
- * Initializes the storage observer to track memory access
- * This monkey-patches localStorage to emit events for UI feedback
- */
-export const STORAGE_EVENT = 'aurora-storage-event';
-
-export type StorageOperation = 'read' | 'write' | 'clear';
-
-export function initStorageObserver() {
-    const originalSetItem = localStorage.setItem;
-    const originalGetItem = localStorage.getItem;
-    const originalRemoveItem = localStorage.removeItem;
-    const originalClear = localStorage.clear;
-
-    const dispatch = (op: StorageOperation) => {
-        // Defer dispatch to avoid "Cannot update component while rendering" errors
-        // when localStorage is accessed during render (e.g. useState initializers)
-        setTimeout(() => {
-            window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { op } }));
-        }, 0);
-    };
-
-    localStorage.setItem = function (key: string, value: string) {
-        dispatch('write');
-        return originalSetItem.apply(this, [key, value]);
-    };
-
-    localStorage.getItem = function (key: string) {
-        dispatch('read');
-        return originalGetItem.apply(this, [key]);
-    };
-
-    localStorage.removeItem = function (key: string) {
-        dispatch('write');
-        return originalRemoveItem.apply(this, [key]);
-    };
-
-    localStorage.clear = function () {
-        dispatch('clear');
-        return originalClear.apply(this, []);
-    };
-
-    console.log('Storage Observer initialized');
-}
-
-
-/**
- * Get current session data usage in MB
- */
 export function getSessionDataUsage(): number {
-    const val = localStorage.getItem(STORAGE_KEYS.NETWORK_USAGE);
+    const val = memory.getItem(STORAGE_KEYS.NETWORK_USAGE);
     return val ? parseFloat(val) : 0;
 }
 
-/**
- * Increment session data usage
- * @param mb Megabytes to add
- */
 export function incrementSessionDataUsage(mb: number): void {
     const current = getSessionDataUsage();
     const newVal = current + mb;
-    localStorage.setItem(STORAGE_KEYS.NETWORK_USAGE, newVal.toString());
+    memory.setItem(STORAGE_KEYS.NETWORK_USAGE, newVal.toString());
+}
+
+export function resetSessionDataUsage(): void {
+    memory.removeItem(STORAGE_KEYS.NETWORK_USAGE);
+}
+
+
+// --- INITIALIZATION & SAVE SYSTEM ---
+
+const EMERGENCY_KEY = 'sys_emergency_save_v1';
+
+/**
+ * Emergency Synchronous Dump
+ * Used during beforeunload to capture state when async saves might be killed.
+ */
+export function emergencySave(): void {
+    try {
+        localStorage.setItem(EMERGENCY_KEY, JSON.stringify(memoryCache));
+        console.log('[Memory] Emergency dump saved to localStorage.');
+    } catch (e) {
+        console.warn('[Memory] Emergency dump failed:', e);
+    }
 }
 
 /**
- * Reset session data usage (on disconnect/new session)
+ * Initializes the memory system by loading from valid storage (Emergency Buffer > IDB/Electron).
+ * Must be called before the app renders.
  */
-export function resetSessionDataUsage(): void {
-    localStorage.removeItem(STORAGE_KEYS.NETWORK_USAGE);
+export async function initMemory(): Promise<boolean> {
+    if (isInitialized) return true;
+
+    try {
+        console.log('[Memory] Initializing...');
+        
+        // 1. Check for Emergency Buffer (localStorage)
+        const emergencyBuffer = localStorage.getItem(EMERGENCY_KEY);
+        if (emergencyBuffer) {
+            console.log('[Memory] Found emergency buffer! Recovering crash-safe state...');
+            try {
+                memoryCache = JSON.parse(emergencyBuffer);
+                localStorage.removeItem(EMERGENCY_KEY); // Purge after use
+                isInitialized = true;
+                dispatchStorageEvent('clear');
+                return true;
+            } catch {
+                console.warn('[Memory] Emergency buffer corrupt. Falling back to normal save.');
+                localStorage.removeItem(EMERGENCY_KEY);
+            }
+        }
+
+        // 2. Normal Path: Hydrate from IDB/Electron
+        const snapshot = await saveManager.loadSnapshot();
+        
+        if (snapshot) {
+            console.log('[Memory] Hydrating from save...');
+            memoryCache = restoreSnapshot(snapshot, {});
+        } else {
+            console.log('[Memory] No save found. Starting empty.');
+            memoryCache = {};
+        }
+
+        isInitialized = true;
+        // Dispatch clear/update to ensure UI is in sync if needed
+        dispatchStorageEvent('clear'); 
+        return true;
+    } catch (e) {
+        console.error('[Memory] Init failed:', e);
+        memoryCache = {}; // Fallback
+        return false;
+    }
+}
+
+export async function saveGame(): Promise<void> {
+    const snapshot = createSnapshot(memoryCache);
+    // Use scheduled save to prevent spamming IDB/IO
+    saveManager.scheduleAutoSave(snapshot);
+}
+
+export async function forceSaveGame(): Promise<boolean> {
+    const snapshot = createSnapshot(memoryCache);
+    return await saveManager.saveSnapshot(snapshot);
+}
+
+export async function loadGame(): Promise<boolean> {
+    const snapshot = await saveManager.loadSnapshot();
+    if (snapshot) {
+        memoryCache = restoreSnapshot(snapshot, memoryCache);
+        dispatchStorageEvent('clear'); // Force update
+        return true;
+    }
+    return false;
+}
+
+export async function hasSave(): Promise<boolean> {
+    return await saveManager.hasSave();
+}
+
+export async function deleteSave(): Promise<void> {
+    await saveManager.deleteSave();
+}
+
+/**
+ * Migration Helpers
+ * (Centralized version check using the core memory API)
+ */
+export function checkMigrationNeeded(): boolean {
+    const storedVersion = memory.getItem(STORAGE_KEYS.VERSION);
+    return storedVersion !== pkg.version;
+}
+
+export function updateStoredVersion(): void {
+    memory.setItem(STORAGE_KEYS.VERSION, pkg.version);
 }

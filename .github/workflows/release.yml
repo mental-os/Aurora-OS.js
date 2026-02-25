@@ -3,13 +3,13 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag to release (e.g. v0.8.6)'
+        description: "Version tag to release (e.g. v0.8.6)"
         required: true
-        default: 'v0.8.5'
+        default: "v0.8.6"
 
 permissions:
   contents: write
@@ -24,6 +24,7 @@ jobs:
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      NODE_OPTIONS: "--disable-warning=DEP0040"
 
     steps:
       - name: Checkout
@@ -79,7 +80,7 @@ jobs:
           TARGET_VERSION=${{ steps.version.outputs.version }}
           STRIPPED_VERSION=${TARGET_VERSION#v}
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          
+
           if [ "$CURRENT_VERSION" != "$STRIPPED_VERSION" ]; then
             npm version $TARGET_VERSION --no-git-tag-version
           else
@@ -113,6 +114,6 @@ jobs:
         run: npx electron-builder --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Increase stability for uploads
-          NODE_OPTIONS: --max-old-space-size=4096
+          # Increase stability for uploads and silence punycode warning
+          NODE_OPTIONS: "--max-old-space-size=4096 --disable-warning=DEP0040"
           ELECTRON_BUILDER_UPLOAD_RETRY_COUNT: 5

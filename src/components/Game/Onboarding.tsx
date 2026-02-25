@@ -10,10 +10,12 @@ import { GlassButton } from "@/components/ui/GlassButton";
 import { cn } from "@/components/ui/utils";
 import { SUPPORTED_LOCALES } from "@/i18n/translations";
 import { useI18n } from "@/i18n/index";
-import { STORAGE_KEYS } from "@/utils/memory";
+import { memory, STORAGE_KEYS, forceSaveGame, updateStoredVersion } from "@/utils/memory";
+import { safeParseLocal } from "@/utils/safeStorage";
+import { useWorldContext } from "@/components/WorldContext";
 
-import { updateStoredVersion } from "@/utils/migrations";
 import { BRAND } from "@/config/systemConfig";
+import { DEFAULT_SYSTEM_CONFIG } from "@/components/AppContext";
 
 interface OnboardingProps {
     onContinue: () => void;
@@ -24,7 +26,7 @@ type Step = "language" | "account" | "theme" | "finishing";
 
 export function Onboarding({ onContinue, onBack }: OnboardingProps) {
     const [step, setStep] = useState<Step>("language");
-    const { addUser, addUserToGroup, users, saveFileSystem } = useFileSystem();
+    const { addUser, addUserToGroup, users, saveFileSystem, writeFile } = useFileSystem();
     const {
         setAccentColor,
         setThemeMode,
@@ -35,6 +37,7 @@ export function Onboarding({ onContinue, onBack }: OnboardingProps) {
         switchUser,
         setOnboardingComplete
     } = useAppContext();
+    const { spawnNpcs } = useWorldContext();
     const { t } = useI18n();
 
 
@@ -140,21 +143,40 @@ export function Onboarding({ onContinue, onBack }: OnboardingProps) {
                 addUserToGroup(username, "admin");
                 addUserToGroup(username, "users");
 
+                // 2.5 Set Hostname (New for Phase 4)
+                writeFile("/etc/hostname", `${username}-machine`, "root");
+
                 // 3. Switch Context
                 switchUser(username);
 
                 // 4. Apply Preferences
                 setAccentColor(previewAccent);
 
-                // 5. Mark Complete & Save
+                // 5. Spawn NPC world (must happen before save so NPC state is included)
+                spawnNpcs();
+
+                // 6. Mark Complete & Save
+                // CRITICAL: We explicitly set items in memoryCache BEFORE forceSaveGame
+                // to ensure the snapshot captures the final state immediately.
+                // The AppContext effects will eventually sync these back to React state.
                 try {
-                    localStorage.setItem(STORAGE_KEYS.LANGUAGE, locale);
-                    localStorage.setItem(STORAGE_KEYS.INSTALL_DATE, new Date().toISOString());
-                } catch (e) { console.warn(e) }
+                    memory.setItem(STORAGE_KEYS.LANGUAGE, locale);
+                    memory.setItem(STORAGE_KEYS.INSTALL_DATE, new Date().toISOString());
+                    
+                    // Force-sync System Config with the new onboarding status
+                    const currentConfig = safeParseLocal<any>(STORAGE_KEYS.SYSTEM_CONFIG) || DEFAULT_SYSTEM_CONFIG;
+                    memory.setItem(STORAGE_KEYS.SYSTEM_CONFIG, JSON.stringify({
+                        ...currentConfig,
+                        onboardingComplete: true
+                    }));
+                } catch (e) { console.warn('Failed to pre-sync memory during onboarding:', e) }
 
                 setOnboardingComplete(true);
                 updateStoredVersion(); // Commit session
-                saveFileSystem(); // Force write to disk
+                saveFileSystem(); // Force write to cache
+                
+                // Now force save the physical game data
+                forceSaveGame(); 
 
                 // 6. Continue to Game
                 setTimeout(() => {
@@ -167,7 +189,7 @@ export function Onboarding({ onContinue, onBack }: OnboardingProps) {
                 setError(t('onboarding.validation.creationFailed'));
             }
         }, 500);
-    }, [username, fullName, password, hint, previewAccent, locale, addUser, addUserToGroup, switchUser, setAccentColor, setOnboardingComplete, saveFileSystem, onContinue, t]);
+    }, [username, fullName, password, hint, previewAccent, locale, addUser, addUserToGroup, switchUser, setAccentColor, setOnboardingComplete, saveFileSystem, spawnNpcs, onContinue, t, writeFile]);
 
     // Keyboard navigation
     useEffect(() => {

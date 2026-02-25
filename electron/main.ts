@@ -394,6 +394,86 @@ ipcMain.handle('app-ready', () => {
     return true;
 });
 
+// --- Save System IPC ---
+import zlib from 'zlib';
+import { promisify } from 'util';
+
+const gzip = promisify(zlib.gzip);
+const gunzip = promisify(zlib.gunzip);
+
+// Save Path: <UserData>/Aurora/saves/save.aurora
+const SAVE_DIR = path.join(app.getPath('userData'), 'Aurora', 'saves');
+const SAVE_FILE = path.join(SAVE_DIR, 'save.aurora');
+
+// Ensure save directory exists
+if (!fs.existsSync(SAVE_DIR)) {
+    fs.mkdirSync(SAVE_DIR, { recursive: true });
+}
+
+ipcMain.handle('savedata-save', async (event, dataString: string) => {
+    try {
+        console.log('[Electron] Saving data (compressing)...');
+        // 1. Compress
+        // Zlib expects Buffer or string. 
+        const buffer = Buffer.from(dataString, 'utf-8');
+        const compressed = await gzip(buffer);
+
+        // 2. Atomic Write
+        // Ensure dir exists (redundant check for safety)
+        if (!fs.existsSync(SAVE_DIR)) fs.mkdirSync(SAVE_DIR, { recursive: true });
+
+        const tmpFile = `${SAVE_FILE}.tmp`;
+        fs.writeFileSync(tmpFile, compressed);
+        fs.renameSync(tmpFile, SAVE_FILE);
+        
+        console.log(`[Electron] Saved ${compressed.length} bytes to ${SAVE_FILE}`);
+        return true;
+    } catch (e) {
+        console.error('[Electron] Save failed:', e);
+        throw e;
+    }
+});
+
+ipcMain.handle('savedata-load', async () => {
+    try {
+        if (!fs.existsSync(SAVE_FILE)) return null;
+
+        const fileBuffer = fs.readFileSync(SAVE_FILE);
+        
+        // Try decompress
+        try {
+            const decompressed = await gunzip(fileBuffer);
+            return decompressed.toString('utf-8');
+        } catch (gzipError) {
+            // Fallback: Check if it's plain JSON (legacy save support)
+            try {
+                const plainText = fileBuffer.toString('utf-8');
+                JSON.parse(plainText); // Validate JSON
+                console.log('[Electron] Loaded legacy uncompressed save');
+                return plainText;
+            } catch {
+                 console.error('[Electron] Decompression failed:', gzipError);
+                 throw gzipError;
+            }
+        }
+    } catch (e) {
+        console.error('[Electron] Load failed:', e);
+        return null;
+    }
+});
+
+ipcMain.handle('savedata-exists', async () => {
+    return fs.existsSync(SAVE_FILE);
+});
+
+ipcMain.handle('savedata-delete', async () => {
+    if (fs.existsSync(SAVE_FILE)) {
+        fs.unlinkSync(SAVE_FILE);
+    }
+    return true;
+});
+
+
 // OS specific behaviors
 app.whenReady().then(() => {
     createSplashWindow();

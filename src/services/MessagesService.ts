@@ -1,5 +1,5 @@
 import { encodePassword, decodePassword } from "@/utils/authUtils";
-import { STORAGE_KEYS } from "@/utils/memory";
+import { memory, STORAGE_KEYS } from "@/utils/memory";
 
 const DB_KEY = STORAGE_KEYS.MESSAGES_DB; // Custom key for Messages app
 
@@ -36,7 +36,7 @@ class MessagesServiceImpl {
   private getDB(): MessagesDatabase {
     if (typeof window === "undefined") return { accounts: {}, messages: [] };
 
-    const stored = localStorage.getItem(DB_KEY);
+    const stored = memory.getItem(DB_KEY);
     if (!stored) {
       // Seed with some initial data if empty? Or start clean.
       // Let's start clean but maybe we should migrate mock data if we wanted.
@@ -54,7 +54,7 @@ class MessagesServiceImpl {
 
   private saveDB(db: MessagesDatabase) {
     if (typeof window === "undefined") return;
-    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    memory.setItem(DB_KEY, JSON.stringify(db));
   }
 
   private generateId(): string {

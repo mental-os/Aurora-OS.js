@@ -42,7 +42,21 @@ export const tr: TranslationDict = {
           "confirm": "Kapat"
         }
       },
-      "credits": {}
+      "credits": {},
+      "external": {
+        "label": "Topluluk",
+        "discord": "Discord Sunucusu",
+        "github": "GitHub Deposu",
+        "download": "İndir"
+      },
+      "devStatus": {
+        "buildStatus": "Yapı Durumu: Deneysel",
+        "title": "Geliştirici Sürümü",
+        "description": "Bu deneysel bir sürümdür, hala çalışma aşamasındadır. Hatalar, tamamlanmamış sistemler ve görsel tutarsızlıklar beklenmektedir.",
+        "joinDiscord": "Discord'a Katıl",
+        "contribute": "Katkıda Bulun",
+        "systemReady": "Sistem Hazır"
+      }
     },
     "bios": {
       "title": "BIOS Ayarları",
@@ -214,6 +228,8 @@ export const tr: TranslationDict = {
       "switchUser": "Kullanıcı Değiştir",
       "user": "Kullanıcı",
       "logOutAs": "Oturumu Kapat: {{username}}",
+      "restart": "Yeniden Başlat...",
+      "restartDescription": "Sistemi yeniden başlat (Oturumu Temizle)",
       "viewSystemInfo": "Sistem Bilgilerini Görüntüle",
       "viewSystemSettings": "Sistem Ayarlarını Görüntüle",
       "returnToLoginWhile": "Oturum açma ekranına dön,",
@@ -498,6 +514,11 @@ export const tr: TranslationDict = {
       "history": {
         "description": "Terminal komut geçmişini göster",
         "usage": "history [-c] [n]"
+      }
+    },
+    "errors": {
+      "connect": {
+        "offline": "connect: network is unreachable"
       }
     }
   },

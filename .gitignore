@@ -138,3 +138,6 @@ win-unpacked
 *.sln
 *.sw?
 .DS_Store
+
+# Allow Anigravity agent files
+!.agents/*

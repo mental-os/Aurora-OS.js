@@ -40,72 +40,74 @@ import { tar } from './commands/tar';
 import { traceroute } from './commands/traceroute';
 import { zip } from './commands/zip';
 import { unlockDeveloperMode } from '../integrity';
+import { connect } from "./commands/connect";
 
 // Hidden system command for development
 const _sys_dev_override_cmd: TerminalCommand = {
-    name: 'dev-unlock',
-    description: 'System Identity Override',
-    usage: 'dev-unlock [token]',
-    hidden: true,
-    execute: async ({ args }) => {
-        if (args.length === 0) return { output: ['Usage: dev-unlock [token]'] };
-        const success = unlockDeveloperMode(args[0]);
-        if (success) {
-            setTimeout(() => window.location.reload(), 1000);
-            return { output: ['Identity Override Active. Rebooting system...'] };
-        }
-        return { output: ['Access Denied: Invalid token.'], error: true };
-    },
+  name: "dev-unlock",
+  description: "System Identity Override",
+  usage: "dev-unlock [token]",
+  hidden: true,
+  execute: async ({ args }) => {
+    if (args.length === 0) return { output: ["Usage: dev-unlock [token]"] };
+    const success = unlockDeveloperMode(args[0]);
+    if (success) {
+      setTimeout(() => window.location.reload(), 1000);
+      return { output: ["Identity Override Active. Rebooting system..."] };
+    }
+    return { output: ["Access Denied: Invalid token."], error: true };
+  },
 };
 
 export const commands: Record<string, TerminalCommand> = {
-    pwd,
-    whoami,
-    hostname,
-    echo,
-    clear,
-    cd,
-    mkdir,
-    touch,
-    rm,
-    cat,
-    ls,
-    help,
-    who,
-    date,
-    uptime,
-    logout,
-    reset,
-    mv,
-    grep,
-    cp,
-    find,
-    chmod,
-    chown,
-    su,
-    sudo,
-    exit,
-    history,
-    btop,
-    top,
-    curl,
-    netstat,
-    ping,
-    scp,
-    sh,
-    ssh,
-    tar,
-    traceroute,
-    unzip,
-    wget,
-    zip,
-    'dev-unlock': _sys_dev_override_cmd
+  pwd,
+  whoami,
+  hostname,
+  echo,
+  clear,
+  cd,
+  mkdir,
+  touch,
+  rm,
+  cat,
+  ls,
+  help,
+  who,
+  date,
+  uptime,
+  logout,
+  reset,
+  mv,
+  grep,
+  cp,
+  find,
+  chmod,
+  chown,
+  su,
+  sudo,
+  exit,
+  history,
+  btop,
+  top,
+  curl,
+  netstat,
+  ping,
+  scp,
+  sh,
+  ssh,
+  tar,
+  traceroute,
+  unzip,
+  wget,
+  zip,
+  connect,
+  "dev-unlock": _sys_dev_override_cmd,
 };
 
 export function getCommand(name: string): TerminalCommand | undefined {
-    return commands[name];
+  return commands[name];
 }
 
 export function getAllCommands(): TerminalCommand[] {
-    return Object.values(commands).sort((a, b) => a.name.localeCompare(b.name));
+  return Object.values(commands).sort((a, b) => a.name.localeCompare(b.name));
 }

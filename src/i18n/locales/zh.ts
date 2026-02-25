@@ -42,7 +42,21 @@ export const zh: TranslationDict = {
           "confirm": "关机"
         }
       },
-      "credits": {}
+      "credits": {},
+      "external": {
+        "label": "社区",
+        "discord": "Discord 服务器",
+        "github": "GitHub 仓库",
+        "download": "下载"
+      },
+      "devStatus": {
+        "buildStatus": "编译状态：实验性",
+        "title": "开发者版本",
+        "description": "这是一个实验性版本，仍在开发中。可能会出现错误、不完整的系统和视觉上的不一致。",
+        "joinDiscord": "加入 Discord",
+        "contribute": "贡献",
+        "systemReady": "系统就绪"
+      }
     },
     "bios": {
       "title": "BIOS 设置",
@@ -214,6 +228,8 @@ export const zh: TranslationDict = {
       "switchUser": "切换用户",
       "user": "用户",
       "logOutAs": "登出：{{username}}",
+      "restart": "重启...",
+      "restartDescription": "重启系统 (清除会话)",
       "viewSystemInfo": "查看系统信息",
       "viewSystemSettings": "查看系统设置",
       "returnToLoginWhile": "返回登录界面时",
@@ -498,6 +514,11 @@ export const zh: TranslationDict = {
       "history": {
         "description": "显示终端命令历史",
         "usage": "history [-c] [n]"
+      }
+    },
+    "errors": {
+      "connect": {
+        "offline": "connect: network is unreachable"
       }
     }
   },

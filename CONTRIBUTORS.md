@@ -60,7 +60,8 @@ _(Bug reports, edge cases, usability insights)_
 
 ## 🌱 Early Builders & Supporters
 
-People who helped shape Aurora-OS.js in its early experimental phase — through feedback, discussion, or belief.
+**Daniel Fagadau // [@Mooyeee](https://github.com/Mooyeee)**  
+Social: [LI/daniel-fagadau](https://www.linkedin.com/in/daniel-fagadau/)
 
 ## ✨ Special Thanks
 

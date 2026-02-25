@@ -5,19 +5,19 @@ import { MenuBar } from '@/components/MenuBar';
 import { Dock } from '@/components/Dock';
 import { Window } from '@/components/Window';
 import { PlaceholderApp } from '@/components/apps/PlaceholderApp';
+import { RemoteFileSystemProvider } from '@/components/RemoteFileSystemProvider';
 import { useAppContext } from '@/components/AppContext';
 import { useFileSystem, type FileSystemContextType } from '@/components/FileSystemContext';
 import { Toaster } from '@/components/ui/sonner';
 import { notify } from '@/services/notifications';
 import { getGridConfig, gridToPixel, pixelToGrid, findNextFreeCell, gridPosToKey, rearrangeGrid, type GridPosition } from '@/utils/gridSystem';
-import { STORAGE_KEYS } from '@/utils/memory';
+import { memory, STORAGE_KEYS } from '@/utils/memory';
 import { safeParseLocal } from '@/utils/safeStorage';
 import { useWindowManager } from '@/hooks/useWindowManager';
 import { useI18n } from '@/i18n/index';
 import { AppNotificationsProvider } from '@/components/AppNotificationsContext';
-import { WindowLoading } from '@/components/ui/WindowLoading';
 import { APP_REGISTRY } from '@/config/appRegistry';
-
+import { WindowLoading } from '@/components/ui/WindowLoading';
 // Load icon positions (supports both pixel and grid formats with migration)
 function loadIconPositions(): Record<string, GridPosition> {
     try {
@@ -69,7 +69,7 @@ export default function OS() {
 
     // Save grid positions when they change
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.DESKTOP_ICONS, JSON.stringify(iconGridPositions));
+        memory.setItem(STORAGE_KEYS.DESKTOP_ICONS, JSON.stringify(iconGridPositions));
     }, [iconGridPositions]);
 
     // Derive desktop icons from filesystem + grid positions
@@ -146,10 +146,11 @@ export default function OS() {
         }
     }, [desktopIcons, iconGridPositions]);
 
-    const openWindowRef = useRef<(type: string, data?: { path?: string; timestamp?: number }, owner?: string) => void>(() => { });
+    const openWindowRef = useRef<(type: string, data?: { path?: string; timestamp?: number }, owner?: string, remoteComputerId?: string) => void>(() => { });
+    const closeWindowRef = useRef<(id: string) => void>(() => { });
 
     // Helper to generate content
-    const getAppContent = useCallback((type: string, data?: any, owner?: string): { content: React.ReactNode, title: string } => {
+    const getAppContent = useCallback((type: string, data?: any, owner?: string, remoteComputerId?: string): { content: React.ReactNode, title: string, windowId?: string } => {
         // Special Case: Trash (uses Finder)
         if (type === 'trash') {
             const Finder = APP_REGISTRY.finder.component;
@@ -157,7 +158,9 @@ export default function OS() {
                 title: 'Trash',
                 content: (
                     <Suspense fallback={<WindowLoading />}>
-                        <Finder id="template" owner={owner} initialPath="~/.Trash" onOpenApp={(type: string, data?: any, owner?: string) => openWindowRef.current(type, data, owner)} />
+                        <RemoteFileSystemProvider ip={remoteComputerId ?? null}>
+                            <Finder id="template" owner={owner} initialPath="~/.Trash" onOpenApp={(type: string, data?: any, owner?: string, remoteId?: string) => openWindowRef.current(type, data, owner, remoteId)} />
+                        </RemoteFileSystemProvider>
                     </Suspense>
                 )
             };
@@ -176,7 +179,7 @@ export default function OS() {
         const props: any = { owner };
 
         // ID="template" for window-instantiated apps that need internal state isolation or unique IDs
-        if (['finder', 'music', 'notepad', 'terminal'].includes(type)) {
+        if (['finder', 'music', 'notepad'].includes(type)) {
             props.id = 'template';
         }
 
@@ -190,24 +193,42 @@ export default function OS() {
 
         // Open App Handlers
         if (['finder', 'photos', 'music', 'appstore'].includes(type)) {
-            props.onOpenApp = (type: string, data?: any, owner?: string) => openWindowRef.current(type, data, owner);
+            props.onOpenApp = (type: string, data?: any, owner?: string, remoteId?: string) =>
+                openWindowRef.current(type, data, owner, remoteId ?? remoteComputerId);
         }
 
-        // Terminal Special Handler
+        // Terminal Special Handler: pre-compute the window ID so we can wire onClose
+        // before the window exists. closeWindowRef stays stable via useEffect below.
         if (type === 'terminal') {
-            props.onLaunchApp = (id: string, args: any[], owner: string) => 
-                openWindowRef.current(id, { path: args?.[0], timestamp: Date.now() }, owner);
+            const preId = data?.overrideId ?? `terminal-${Date.now()}`;
+            props.id = 'template';
+            props.onLaunchApp = (id: string, args: any[], owner: string, remoteId?: string) =>
+                openWindowRef.current(id, { path: args?.[0], timestamp: Date.now() }, owner, remoteId);
+            props.onClose = () => closeWindowRef.current(preId);
+            return {
+                title,
+                windowId: preId,
+                content: (
+                    <Suspense fallback={<WindowLoading />}>
+                        <RemoteFileSystemProvider ip={remoteComputerId ?? null}>
+                            <Component {...props} />
+                        </RemoteFileSystemProvider>
+                    </Suspense>
+                )
+            };
         }
 
         return {
             title,
             content: (
                 <Suspense fallback={<WindowLoading />}>
-                    <Component {...props} />
+                    <RemoteFileSystemProvider ip={remoteComputerId ?? null}>
+                        <Component {...props} />
+                    </RemoteFileSystemProvider>
                 </Suspense>
             )
         };
-    }, []); // openWindowRef is stable
+    }, []); // openWindowRef and closeWindowRef are stable refs
 
     // Use Window Manager Hook
     const {
@@ -223,6 +244,10 @@ export default function OS() {
     useEffect(() => {
         openWindowRef.current = openWindow;
     }, [openWindow]);
+
+    useEffect(() => {
+        closeWindowRef.current = closeWindow;
+    }, [closeWindow]);
 
     /* 
      * Window interaction handlers are now managed by useWindowManager
@@ -365,61 +390,61 @@ export default function OS() {
 
     return (
         <AppNotificationsProvider onOpenApp={openWindow}>
-        <div className="dark h-screen w-screen overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 relative">
-            <div className="window-drag-boundary absolute top-7 left-0 right-0 bottom-0 pointer-events-none z-0" />
-            <Desktop
-                onDoubleClick={() => { }}
-                icons={desktopIcons}
-                onUpdateIconsPositions={updateIconsPositions}
-                onIconDoubleClick={handleIconDoubleClick}
-                onOpenApp={openWindow}
-            />
+            <div className="dark h-screen w-screen overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 relative">
+                <div className="window-drag-boundary absolute top-7 left-0 right-0 bottom-0 pointer-events-none z-0" />
+                <Desktop
+                    onDoubleClick={() => { }}
+                    icons={desktopIcons}
+                    onUpdateIconsPositions={updateIconsPositions}
+                    onIconDoubleClick={handleIconDoubleClick}
+                    onOpenApp={openWindow}
+                />
 
-            <MenuBar
-                focusedApp={focusedAppType}
-                onOpenApp={openWindow}
-            />
+                <MenuBar
+                    focusedApp={focusedAppType}
+                    onOpenApp={openWindow}
+                />
 
-            <Dock
-                onOpenApp={openWindow}
-                onRestoreWindow={focusWindow}
-                onFocusWindow={focusWindow}
-                windows={windows}
-            />
+                <Dock
+                    onOpenApp={openWindow}
+                    onRestoreWindow={focusWindow}
+                    onFocusWindow={focusWindow}
+                    windows={windows}
+                />
 
-            <AnimatePresence>
-                {windows.map(window => {
-                    // Memoization Fix: We pass the Window object directly.
-                    // The 'content' property inside 'window' is stable from useWindowManager.
-                    // We DO NOT cloneElement here anymore, avoiding new object creation on every render.
-                    // This allows React.memo(Window) to actually prevent re-renders of unfocused windows.
-                    return (
-                    <motion.div
-                        key={window.id}
-                        initial={reduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
-                        animate={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
-                        exit={reduceMotion ? undefined : { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute inset-0 pointer-events-none"
-                        style={{ zIndex: window.zIndex }}
-                    >
-                        <Window
-                            window={window} // Pass the stable state object directly
-                            onClose={() => closeWindow(window.id)}
-                            onMinimize={() => minimizeWindow(window.id)}
-                            onMaximize={() => maximizeWindow(window.id)}
-                            onFocus={() => focusWindow(window.id)}
-                            onUpdateState={(updates: any) => updateWindowState(window.id, updates)}
-                            isFocused={window.id === focusedWindowId}
-                            bounds=".window-drag-boundary"
-                        />
-                    </motion.div>
-                );
-                })}
-            </AnimatePresence>
+                <AnimatePresence>
+                    {windows.map(window => {
+                        // Memoization Fix: We pass the Window object directly.
+                        // The 'content' property inside 'window' is stable from useWindowManager.
+                        // We DO NOT cloneElement here anymore, avoiding new object creation on every render.
+                        // This allows React.memo(Window) to actually prevent re-renders of unfocused windows.
+                        return (
+                            <motion.div
+                                key={window.id}
+                                initial={reduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
+                                animate={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
+                                exit={reduceMotion ? undefined : { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute inset-0 pointer-events-none"
+                                style={{ zIndex: window.zIndex }}
+                            >
+                                <Window
+                                    window={window} // Pass the stable state object directly
+                                    onClose={() => closeWindow(window.id)}
+                                    onMinimize={() => minimizeWindow(window.id)}
+                                    onMaximize={() => maximizeWindow(window.id)}
+                                    onFocus={() => focusWindow(window.id)}
+                                    onUpdateState={(updates: any) => updateWindowState(window.id, updates)}
+                                    isFocused={window.id === focusedWindowId}
+                                    bounds=".window-drag-boundary"
+                                />
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
 
-            <Toaster />
-        </div>
+                <Toaster />
+            </div>
         </AppNotificationsProvider>
     );
 }

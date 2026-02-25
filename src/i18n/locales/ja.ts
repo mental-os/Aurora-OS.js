@@ -42,7 +42,21 @@ export const ja: TranslationDict = {
           "confirm": "シャットダウン"
         }
       },
-      "credits": {}
+      "credits": {},
+      "external": {
+        "label": "コミュニティ",
+        "discord": "Discordサーバー",
+        "github": "GitHubリポジトリ",
+        "download": "ダウンロード"
+      },
+      "devStatus": {
+        "buildStatus": "ビルドステータス：試験的",
+        "title": "開発者用ビルド",
+        "description": "これは試験的なバージョンであり、現在開発中です。バグ、未完成のシステム、視覚的な不整合が予想されます。",
+        "joinDiscord": "Discordに参加",
+        "contribute": "貢献する",
+        "systemReady": "システム準備完了"
+      }
     },
     "bios": {
       "title": "BIOS設定",
@@ -214,6 +228,8 @@ export const ja: TranslationDict = {
       "switchUser": "ユーザーを切り替え",
       "user": "ユーザー",
       "logOutAs": "ログアウト: {{username}}",
+      "restart": "再起動...",
+      "restartDescription": "システムを再起動 (セッションを消去)",
       "viewSystemInfo": "システム情報を表示",
       "viewSystemSettings": "システム設定を表示",
       "returnToLoginWhile": "ログイン画面に戻ります（",
@@ -498,6 +514,11 @@ export const ja: TranslationDict = {
       "history": {
         "description": "ターミナルのコマンド履歴を表示",
         "usage": "history [-c] [n]"
+      }
+    },
+    "errors": {
+      "connect": {
+        "offline": "connect: network is unreachable"
       }
     }
   },

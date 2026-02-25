@@ -15,4 +15,12 @@ contextBridge.exposeInMainWorld('electron', {
     },
     // Splash Screen: Signal that the React app is ready
     signalReady: () => ipcRenderer.invoke('app-ready'),
+
+    // Save System
+    savedata: {
+        save: (data: string) => ipcRenderer.invoke('savedata-save', data),
+        load: () => ipcRenderer.invoke('savedata-load'),
+        exists: () => ipcRenderer.invoke('savedata-exists'),
+        delete: () => ipcRenderer.invoke('savedata-delete'),
+    }
 });

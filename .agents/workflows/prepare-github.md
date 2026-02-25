@@ -2,7 +2,7 @@
 description: Comprehensive preparation before pushing to GitHub
 ---
 
-Follow these steps to ensure the codebase is clean, synchronized, and ready for a remote push.
+Follow these steps to ensure the codebase is clean, synchronized, and ready for a remote push, as a senior software engineer.
 
 ### 1. Synchronization Check
 
@@ -20,14 +20,10 @@ Ensure high-level project information is accurate.
 
 ### 3. Quality Assurance (QA)
 
-Validate that the code meets project standards and performs as expected.
+Validate that the code meets project standards and performs as expected. You MUST read the terminal output to ensure that the commands actually executed successfully without errors.
 // turbo
 
-- Run `npm run lint` to check for style issues.
-  // turbo
-- Run `npm run build` to ensure the project compiles correctly.
-  // turbo
-- Run `npm run test` to execute the test suite and ensure no regressions.
+- Run `npm run lint && npm run build && npm run test` to check style, compile the project, and execute tests sequentially.
 
 ### 4. Internationalization (i18n)
 

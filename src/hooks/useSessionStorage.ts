@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { STORAGE_KEYS } from '../utils/memory';
+import { STORAGE_KEYS, memory } from '../utils/memory';
 import { useAppContext } from '../components/AppContext';
+import { useDebounce } from './useDebounce';
 
 /**
  * A hook for persisting ephemeral session state that should be cleared on Logout.
@@ -20,53 +21,76 @@ export function useSessionStorage<T>(key: string, initialState: T, owner?: strin
 
     const storageKey = `${STORAGE_KEYS.SESSION_META}${activeUser || 'system'}-${key}`;
 
-    // Load initial state
-    const [state, setStateInternal] = useState<T>(() => {
+    // We use a "Locked-Pair" state to ensure state and key are always atomically updated.
+    const [statePair, setStatePairInternal] = useState(() => {
         try {
-            const stored = localStorage.getItem(storageKey);
-            if (stored) {
-                return JSON.parse(stored) as T;
-            }
-        } catch (e) {
-            console.warn(`Failed to load session state ${key}:`, e);
+            const stored = memory.getItem(storageKey);
+            return {
+                state: stored ? (JSON.parse(stored) as T) : initialState,
+                key: storageKey
+            };
+        } catch {
+            return { state: initialState, key: storageKey };
         }
-        return initialState;
     });
 
+    // Sync during render if the external storageKey changed
+    if (storageKey !== statePair.key) {
+        try {
+            const stored = memory.getItem(storageKey);
+            const newState = stored ? (JSON.parse(stored) as T) : initialState;
+            setStatePairInternal({
+                state: newState,
+                key: storageKey
+            });
+        } catch {
+            setStatePairInternal({ state: initialState, key: storageKey });
+        }
+    }
+
+    // Debounce the entire pair to ensure label integrity
+    const debounced = useDebounce(statePair, 500);
+
     // Save state
-    // Save state (Smart Persistence: only save if diff from default)
     useEffect(() => {
         if (!activeUser) return;
-        try {
-            // Check if state matches initial default
-            // This prevents cluttering storage with default values on mount
-            const isDefault = JSON.stringify(state) === JSON.stringify(initialState);
-
-            if (isDefault) {
-                localStorage.removeItem(storageKey);
-            } else {
-                localStorage.setItem(storageKey, JSON.stringify(state));
-            }
-        } catch (e) {
-            console.warn(`Failed to save session state ${key}:`, e);
+        
+        // SAFETY CHECK: Ensure label matches current context
+        if (debounced.key !== storageKey) {
+            return;
         }
-    }, [state, storageKey, activeUser, key, initialState]);
+
+        try {
+            const isDefault = JSON.stringify(debounced.state) === JSON.stringify(initialState);
+            if (isDefault) {
+                memory.removeItem(storageKey);
+            } else {
+                memory.setItem(storageKey, JSON.stringify(debounced.state));
+            }
+        } catch {
+            console.warn(`Failed to save session state ${key}`);
+        }
+    }, [debounced, storageKey, activeUser, key, initialState]);
+
+    // Derived values
+    const state = statePair.state;
 
     // Wrapper for setState
     const setState = useCallback((value: T | ((prev: T) => T)) => {
-        setStateInternal(prev => {
-            return typeof value === 'function' ? (value as (prev: T) => T)(prev) : value;
+        setStatePairInternal(prev => {
+            const newState = typeof value === 'function' ? (value as (prev: T) => T)(prev.state) : value;
+            return { ...prev, state: newState };
         });
     }, []);
 
     // Reset
     const resetState = useCallback(() => {
         try {
-            localStorage.removeItem(storageKey);
+            memory.removeItem(storageKey);
         } catch (e) {
             console.warn(`Failed to reset session state ${key}:`, e);
         }
-        setStateInternal(initialState);
+        setStatePairInternal({ state: initialState, key: storageKey });
     }, [storageKey, initialState, key]);
 
     return [state, setState, resetState];

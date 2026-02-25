@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Bug, Github, MessageSquare, AlertTriangle } from 'lucide-react';
 import { feedback } from '@/services/soundFeedback';
 import { cn } from '@/components/ui/utils';
+import { useI18n } from '@/i18n/index';
 import pkg from '@/../package.json';
 
 interface DevStatusWindowProps {
@@ -9,6 +10,8 @@ interface DevStatusWindowProps {
 }
 
 export function DevStatusWindow({ className }: DevStatusWindowProps) {
+    const { t } = useI18n();
+
     return (
         <motion.div
             drag
@@ -28,7 +31,7 @@ export function DevStatusWindow({ className }: DevStatusWindowProps) {
             <div className="flex items-center justify-between p-3 bg-white text-black cursor-grab active:cursor-grabbing select-none">
                 <div className="flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">BUILD_STATUS: EXPERIMENTAL</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{t('game.mainMenu.devStatus.buildStatus')}</span>
                 </div>
             </div>
 
@@ -41,9 +44,9 @@ export function DevStatusWindow({ className }: DevStatusWindowProps) {
                 </div>
 
                 <div className="space-y-2 text-center">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-white decoration-white/30">Developer Build</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-white decoration-white/30">{t('game.mainMenu.devStatus.title')}</h3>
                     <p className="text-[10px] text-white/60 leading-relaxed">
-                        This is an experimental version, still work in progress. Bugs, incomplete systems, and visual inconsistencies are expected.
+                        {t('game.mainMenu.devStatus.description')}
                     </p>
                 </div>
 
@@ -57,7 +60,7 @@ export function DevStatusWindow({ className }: DevStatusWindowProps) {
                         className="flex items-center justify-center gap-2 py-2 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-transparent hover:border-white hover:text-white transition-all border-2 border-transparent"
                     >
                         <MessageSquare className="w-3 h-3" />
-                        Join Discord
+                        {t('game.mainMenu.devStatus.joinDiscord')}
                     </a>
                     <a
                         href={pkg.homepage}
@@ -67,7 +70,7 @@ export function DevStatusWindow({ className }: DevStatusWindowProps) {
                         className="flex items-center justify-center gap-2 py-2 border-2 border-white/20 text-white text-[10px] font-bold uppercase tracking-widest hover:border-white hover:bg-white/5 transition-all"
                     >
                         <Github className="w-3 h-3" />
-                        Contribute
+                        {t('game.mainMenu.devStatus.contribute')}
                     </a>
                 </div>
             </div>
@@ -75,7 +78,7 @@ export function DevStatusWindow({ className }: DevStatusWindowProps) {
             {/* Footer */}
             <div className="p-3 px-4 border-t border-white/20 bg-zinc-950 text-[8px] text-white/40 uppercase tracking-[0.2em] flex justify-between">
                 <span>v{pkg.version}</span>
-                <span>SYSTEM_READY</span>
+                <span>{t('game.mainMenu.devStatus.systemReady')}</span>
             </div>
         </motion.div>
     );

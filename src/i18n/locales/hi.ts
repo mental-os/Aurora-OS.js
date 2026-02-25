@@ -18,7 +18,7 @@ export const hi: TranslationDict = {
     },
     "mainMenu": {
       "continue": {
-        "label": "जारी रखना",
+        "label": "जारी रखें",
         "desc": {
           "canContinue": "अपना पिछला लूप फिर से शुरू करें",
           "noData": "कोई लूप डेटा नहीं मिला"
@@ -36,13 +36,27 @@ export const hi: TranslationDict = {
         "label": "शट डाउन",
         "desc": "सत्र समाप्त करें",
         "confirm": {
-          "title": "सिस्टम बंद होना",
+          "title": "सिस्टम बंद करें",
           "message": "क्या आप सच में सिस्टम को बंद करना चाहते हैं? बिना सेव किया हुआ काम खत्म हो सकता है।",
-          "cancel": "रद्द करना",
+          "cancel": "रद्द करें",
           "confirm": "शट डाउन"
         }
       },
-      "credits": {}
+      "credits": {},
+      "external": {
+        "label": "समुदाय",
+        "discord": "डिस्कॉर्ड सर्वर",
+        "github": "गिटहब रेपो",
+        "download": "डाउनलोड"
+      },
+      "devStatus": {
+        "buildStatus": "बिल्ड की स्थिति: प्रयोगात्मक",
+        "title": "डेवलपर बिल्ड",
+        "description": "यह एक प्रयोगात्मक संस्करण है, अभी भी काम चल रहा है। बग, अधूरे सिस्टम और दृश्य विसंगतियों की उम्मीद है।",
+        "joinDiscord": "डिस्कॉर्ड में शामिल हों",
+        "contribute": "योगदान दें",
+        "systemReady": "सिस्टम तैयार है"
+      }
     },
     "bios": {
       "title": "BIOS सेटिंग्स",
@@ -54,22 +68,22 @@ export const hi: TranslationDict = {
       "resolution": "रिज़ॉल्यूशन",
       "windowSettings": "विंडो सेटिंग्स",
       "windowFrame": "विंडो फ़्रेम",
-      "windowFrameHint": "शीर्षक पट्टी और सीमाएँ (पुनः आरंभ आवश्यक)",
+      "windowFrameHint": "शीर्षक पट्टी और सीमाएँ (रीस्टार्ट आवश्यक)",
       "configurationUtility": "कॉन्फ़िगरेशन उपयोगिता",
       "tabs": {
-        "display": "प्रदर्शन",
+        "display": "डिस्प्ले",
         "audio": "ऑडियो",
         "system": "सिस्टम"
       },
       "graphicsQuality": "ग्राफ़िक्स गुणवत्ता",
       "presets": {
         "highFidelity": {
-          "label": "उच्च निष्ठा",
-          "desc": "ब्लर, छाया, कंपन सक्षम। दृश्य++"
+          "label": "हाई फिडेलिटी",
+          "desc": "Blur, Shadows और Vibrancy के साथ। विजुअल्स++"
         },
         "performance": {
-          "label": "प्रदर्शन",
-          "desc": "अधिकतम एफपीएस। न्यूनतम प्रभाव। गति++"
+          "label": "परफॉरमेंस",
+          "desc": "अधिकतम FPS। न्यूनतम प्रभाव। गति++"
         }
       },
       "reduceMotion": "गति कम करें",
@@ -79,11 +93,11 @@ export const hi: TranslationDict = {
       "dangerZone": "खतरा क्षेत्र",
       "configFooter": "कॉन्फ़िगरेशन",
       "softReset": "सॉफ्ट रीसेट",
-      "softResetHint": "एप्लिकेशन पुनः लोड करें",
-      "softResetConfirm": "सॉफ्ट रीसेट: इससे एप्लिकेशन रीलोड हो जाएगा लेकिन आपका डेटा सुरक्षित रहेगा। जारी रखें?",
-      "factoryReset": "नए यंत्र जैसी सेटिंग",
+      "softResetHint": "एप्लिकेशन पुनः लोड करता है (F5)",
+      "softResetConfirm": "बिना सेव किए गए बदलाव खो जाएंगे। जारी रखें?",
+      "factoryReset": "फ़ैक्टरी रीसेट",
       "factoryResetHint": "सभी डेटा मिटाएँ",
-      "factoryResetConfirm": "फ़ैक्टरी रीसेट: इससे सारा डेटा, यूज़र्स और फ़ाइलें पूरी तरह से डिलीट हो जाएंगी। इसे वापस ठीक नहीं किया जा सकता। क्या आप पक्का हैं?"
+      "factoryResetConfirm": "चेतावनी: इससे सारा डेटा, यूज़र्स और फ़ाइलें पूरी तरह से डिलीट हो जाएंगी। इसे वापस ठीक नहीं किया जा सकता। क्या आप पक्का हैं?"
     },
     "footer": {
       "originalDistribution": "मूल वितरण",
@@ -92,30 +106,30 @@ export const hi: TranslationDict = {
   },
   "appDescriptions": {
     "finder": "फ़ाइल मैनेजर",
-    "browser": "वेब तक पहुंचें",
+    "browser": "वेब ब्राउज़ करें",
     "mail": "ईमेल पढ़ें और लिखें",
     "appStore": "ऐप्स डाउनलोड करें और मैनेज करें",
     "terminal": "कमांड लाइन इंटरफ़ेस",
     "systemSettings": "अपने सिस्टम को कॉन्फ़िगर करें",
-    "notepad": "टेक्स्ट फ़ाइलों को संपादित करें",
-    "messages": "बर्तन में बची हुई कॉफी",
+    "notepad": "टेक्स्ट फ़ाइलों को एडिट करें",
+    "messages": "दोस्तों के साथ चैट करें",
     "calendar": "अपना शेड्यूल मैनेज करें",
     "photos": "फ़ोटो देखें और मैनेज करें",
-    "music": "अपना पसंदीदा संगीत चलाएं",
+    "music": "अपना पसंदीदा संगीत सुनें",
     "devCenter": "डेवलपर उपकरण"
   },
   "a11y": {
     "common": {
       "close": "बंद करें",
       "open": "खोलें",
-      "notAvailable": "लागू नहीं"
+      "notAvailable": "N/A"
     },
     "sidebar": {
       "toggleSidebar": "साइडबार टॉगल करें"
     },
     "pagination": {
-      "pagination": "पृष्ठ पर अंक लगाना",
-      "goToPreviousPage": "पिछले पृष्ठ पर जाएं",
+      "pagination": "पेज पर अंक लगाना",
+      "goToPreviousPage": "पिछले पेज पर जाएं",
       "goToNextPage": "अगले पेज पर जाएं",
       "previous": "पहले का",
       "next": "अगला",
@@ -136,25 +150,25 @@ export const hi: TranslationDict = {
   },
   "login": {
     "softReset": "सॉफ्ट रीसेट",
-    "hardReset": "मुश्किल रीसेट",
+    "hardReset": "हार्ड रीसेट",
     "hardResetConfirm": "हार्ड रीसेट: इससे सारा डेटा डिलीट हो जाएगा। जारी रखें?",
-    "selectUser": "उपयोगकर्ता चुनें",
+    "selectUser": "यूजर चुनें",
     "enterPasswordToUnlock": "अनलॉक करने के लिए पासवर्ड डालें",
-    "restoringPreviousSession": "पिछला सत्र पुनर्स्थापित किया जा रहा है",
+    "restoringPreviousSession": "पुराना सेशन रिस्टोर हो रहा है...",
     "passwordPlaceholder": "पासवर्ड",
     "incorrectPassword": "गलत पासवर्ड",
-    "hint": "संकेत",
-    "enterSystem": "गलत पासवर्ड। संकेत:",
-    "switchAccount": "खाता स्थानांतरित करें",
+    "hint": "Hint/मदद",
+    "enterSystem": "सिस्टम में जाएं",
+    "switchAccount": "अकाउंट स्विच करें",
     "back": "पीछे",
     "suspendToSwitch": "स्विच करने के लिए सेशन को सस्पेंड करें?",
-    "cancel": "रद्द करना",
-    "switchUser": "उपयोगकर्ता बदलें",
+    "cancel": "रद्द करें",
+    "switchUser": "यूज़र बदलें",
     "logOut": "लॉग आउट",
     "logOutConfirm": "क्या {{username}} को लॉग आउट करें? इससे सभी खुली हुई विंडोज़ बंद हो जाएंगी और न सहेजे गए (unsaved) बदलाव हट जाएंगे।",
-    "active": "सक्रिय",
-    "resume": "फिर शुरू करना",
-    "sessionActive": "सत्र सक्रिय"
+    "active": "एक्टिव",
+    "resume": "रिज्यूम",
+    "sessionActive": "सेशन एक्टिव"
   },
   "app": {
     "loadingKernel": "कर्नेल लोड हो रहा है..."
@@ -162,16 +176,16 @@ export const hi: TranslationDict = {
   "menubar": {
     "menus": {
       "file": "फ़ाइल",
-      "shell": "शंख",
+      "shell": "शेल",
       "edit": "संपादन करना",
-      "format": "प्रारूप",
+      "format": "फ़ॉर्मेट",
       "song": "गाना",
-      "view": "देखना",
-      "go": "जाना",
-      "controls": "नियंत्रण",
-      "window": "खिड़की",
+      "view": "व्यु",
+      "go": "जाएं",
+      "controls": "कंट्रोल्स",
+      "window": "विंडो",
       "help": "मदद",
-      "store": "इकट्ठा करना",
+      "store": "स्टोर",
       "history": "इतिहास",
       "bookmarks": "बुकमार्क",
       "mailbox": "मेलबॉक्स",
@@ -186,17 +200,17 @@ export const hi: TranslationDict = {
       "closeWindow": "विंडो बंद",
       "undo": "पूर्ववत",
       "redo": "फिर से करना",
-      "cut": "काटना",
-      "copy": "प्रतिलिपि",
+      "cut": "कट",
+      "copy": "कॉपी",
       "paste": "पेस्ट करें",
       "selectAll": "सबका चयन करें",
-      "reload": "सीमा से अधिक लादना",
-      "toggleFullscreen": "संपूर्ण स्क्रीन टॉगल करें",
-      "minimize": "छोटा करना",
-      "bringAllToFront": "सभी को सामने लाओ",
+      "reload": "रीलोड करें",
+      "toggleFullscreen": "फुलस्क्रीन टॉगल करें",
+      "minimize": "छोटा करें",
+      "bringAllToFront": "सभी को सामने लाएं",
       "back": "पीछे",
       "forward": "आगे",
-      "enclosingFolder": "संलग्न फ़ोल्डर",
+      "enclosingFolder": "एनक्लोसिंग फ़ोल्डर",
       "getInfo": "जानकारी प्राप्त करें",
       "moveToTrash": "ट्रैश में ले जाएं"
     },
@@ -211,17 +225,19 @@ export const hi: TranslationDict = {
       "systemSettings": "सिस्टम सेटिंग्स...",
       "appStore": "ऐप स्टोर...",
       "lockScreen": "लॉक स्क्रीन",
-      "switchUser": "उपयोगकर्ता बदलें",
-      "user": "उपयोगकर्ता",
+      "switchUser": "यूजर बदलें",
+      "user": "यूजर",
       "logOutAs": "लॉग आउट: {{username}}",
+      "restart": "पुनः आरंभ करें...",
+      "restartDescription": "सिस्टम पुनः आरंभ करें (सेशन साफ़ करें)",
       "viewSystemInfo": "सिस्टम की जानकारी देखें",
       "viewSystemSettings": "सिस्टम सेटिंग्स देखें",
-      "returnToLoginWhile": "लॉगिन स्क्रीन पर वापस जाएं जबकि",
-      "returnToUserSelectionWhile": "यूज़र सिलेक्शन स्क्रीन पर वापस जाएं",
-      "keepingSession": "सत्र जारी रखना",
-      "clearingSession": "समाशोधन सत्र",
+      "returnToLoginWhile": "लॉगिन स्क्रीन पर वापस जाएं और",
+      "returnToUserSelectionWhile": "यूज़र सिलेक्शन पर वापस जाएं और",
+      "keepingSession": "सेशन active रखें",
+      "clearingSession": "सेशन clear कर दें",
       "panic": "घबड़ाहट",
-      "hardReset": "मुश्किल रीसेट",
+      "hardReset": "हार्ड रीसेट",
       "warning": "चेतावनी",
       "panicWarningBody": "अगर {{productName}} के साथ कुछ गड़बड़ हो जाए, तो यह उसके लिए एक पैनिक बटन (panic button) के तौर पर भी अच्छा है।",
       "serverTime": "सर्वर समय (UTC)",
@@ -230,7 +246,7 @@ export const hi: TranslationDict = {
     "app": {
       "aboutApp": "के बारे में {{appName}}",
       "settings": "सेटिंग्स...",
-      "quitApp": "छोड़ना {{appName}}"
+      "quitApp": "{{appName}} बंद करें"
     }
   },
   "notifications": {
@@ -245,7 +261,7 @@ export const hi: TranslationDict = {
       "permissionDenied": "अनुमति अस्वीकृत",
       "saved": "सहेजा गया",
       "deleted": "हटा दिया गया",
-      "moved": "स्थानांतरित",
+      "moved": "ले जाया गया",
       "trash": " कचरा",
       "failed": "विफल",
       "ui": "इंटरफ़ेस",
@@ -261,17 +277,17 @@ export const hi: TranslationDict = {
     "messageFrom": "{{sender}} से संदेश"
   },
   "memory": {
-    "title": "याद",
+    "title": "मेमोरी",
     "used": "इस्तेमाल किया गया",
-    "pressure": "दबाव",
+    "pressure": "प्रेशर",
     "appMemory": "ऐप मेमोरी",
     "wiredMemory": "वायर्ड मेमोरी",
     "processName": "प्रक्रिया नाम",
-    "memory": "याद",
+    "memory": "मेमोरी",
     "swapUsed": "स्वैप का इस्तेमाल किया गया",
-    "systemWired": "अरोरा प्रणाली",
-    "activeSession": "वायर्ड मेमोरी (सक्रिय सत्र)",
-    "userSession": "सत्र: {{user}}",
+    "systemWired": "अरोरा सिस्टम",
+    "activeSession": "वायर्ड मेमोरी (एक्टिव सेशन)",
+    "userSession": "सेशन: {{user}}",
     "backgroundSession": "सुप्त स्मृति (पृष्ठभूमि)",
     "backgroundProcesses": "{{count}} बैकग्राउंड प्रोसेस (Background Processes)",
     "instances": "{{count}} इंस्टेंस (Instances)",
@@ -292,11 +308,11 @@ export const hi: TranslationDict = {
     },
     "categories": {
       "all": "सभी",
-      "productivity": "उत्पादकता",
+      "productivity": "प्रोडक्टिविटी",
       "media": "मिडिया",
-      "utilities": "उपयोगिताओं",
+      "utilities": "यूटिलिटीज",
       "development": "विकास",
-      "system": "प्रणाली"
+      "system": "सिस्टम"
     },
     "searchPlaceholder": "ऐप्स खोजें...",
     "empty": {
@@ -498,6 +514,11 @@ export const hi: TranslationDict = {
       "history": {
         "description": "टर्मिनल कमांड हिस्ट्री दिखाएँ",
         "usage": "history [-c] [n]"
+      }
+    },
+    "errors": {
+      "connect": {
+        "offline": "connect: network is unreachable"
       }
     }
   },

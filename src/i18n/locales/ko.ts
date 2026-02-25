@@ -42,7 +42,21 @@ export const ko: TranslationDict = {
           "confirm": "종료"
         }
       },
-      "credits": {}
+      "credits": {},
+      "external": {
+        "label": "커뮤니티",
+        "discord": "Discord 서버",
+        "github": "GitHub 저장소",
+        "download": "다운로드"
+      },
+      "devStatus": {
+        "buildStatus": "빌드 상태: 실험적",
+        "title": "개발자 빌드",
+        "description": "이것은 실험적인 버전이며, 아직 개발 중입니다. 버그, 불완전한 시스템 및 시각적 불일치가 예상됩니다.",
+        "joinDiscord": "Discord 참여",
+        "contribute": "기여하기",
+        "systemReady": "시스템 준비됨"
+      }
     },
     "bios": {
       "title": "BIOS 설정",
@@ -214,6 +228,8 @@ export const ko: TranslationDict = {
       "switchUser": "사용자 전환",
       "user": "사용자",
       "logOutAs": "로그아웃: {{username}}",
+      "restart": "재시작...",
+      "restartDescription": "시스템 재시작 (세션 지우기)",
       "viewSystemInfo": "시스템 정보 보기",
       "viewSystemSettings": "시스템 설정 보기",
       "returnToLoginWhile": "로그인 화면으로 돌아갑니다 (",
@@ -498,6 +514,11 @@ export const ko: TranslationDict = {
       "history": {
         "description": "터미널 명령 기록 표시",
         "usage": "history [-c] [n]"
+      }
+    },
+    "errors": {
+      "connect": {
+        "offline": "connect: network is unreachable"
       }
     }
   },

@@ -20,6 +20,8 @@ const hashString = (str: string) => {
 
 // Hash of the secret password "aurora-r00t-override"
 // We store the hash so the actual password isn't easily greppable in the source.
+import { memory } from './memory';
+
 export const DEV_KEY_HASH = 2282602482; // Hash of "aurora-r00t-override"
 const STORAGE_KEY = 'AURORA_DEV_OVERRIDE';
 
@@ -28,7 +30,7 @@ export type SystemHealth = 'OK' | 'CORRUPTED';
 export const validateIntegrity = (): boolean => {
     // 1. Check for Developer Override (The "Bypass")
     try {
-        const storedHash = localStorage.getItem(STORAGE_KEY);
+        const storedHash = memory.getItem(STORAGE_KEY);
         if (storedHash && parseInt(storedHash) === DEV_KEY_HASH) {
             console.warn('SYSTEM INTEGRITY: Developer Override Active. Security checks skipped.');
             return true;
@@ -69,12 +71,12 @@ export const getSystemHealth = (): SystemHealth => {
 
 export const unlockDeveloperMode = (password: string): boolean => {
     if (hashString(password) === DEV_KEY_HASH) {
-        localStorage.setItem(STORAGE_KEY, DEV_KEY_HASH.toString());
+        memory.setItem(STORAGE_KEY, DEV_KEY_HASH.toString());
         return true;
     }
     return false;
 };
 
 export const lockDeveloperMode = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    memory.removeItem(STORAGE_KEY);
 }

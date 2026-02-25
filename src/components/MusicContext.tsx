@@ -5,9 +5,7 @@ import { useFileSystem } from '@/components/FileSystemContext';
 import { useAppContext } from '@/components/AppContext';
 import { useSessionStorage } from '@/hooks/useSessionStorage';
 import { useI18n } from '@/i18n';
-
-
-import { STORAGE_KEYS } from '@/utils/memory';
+import { memory, STORAGE_KEYS } from '@/utils/memory';
 import { parseID3, base64ToUint8Array } from '@/utils/id3Parser';
 
 export interface Song {
@@ -103,7 +101,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
     const [playlist, setPlaylistInternal] = useState<Song[]>(() => {
         try {
             console.log('[MusicContext] Loading playlist from:', keys.QUEUE);
-            const saved = localStorage.getItem(keys.QUEUE);
+            const saved = memory.getItem(keys.QUEUE);
             if (saved) {
                 const parsed = JSON.parse(saved) as Song[];
                 console.log(`[MusicContext] Loaded ${parsed.length} songs`);
@@ -133,14 +131,14 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
 
     const [currentIndex, setCurrentIndex] = useState(() => {
         try {
-            const saved = localStorage.getItem(keys.INDEX);
+            const saved = memory.getItem(keys.INDEX);
             return saved ? parseInt(saved, 10) : -1;
         } catch { return -1; }
     });
 
     const [recent, setRecent] = useState<Song[]>(() => {
         try {
-            const saved = localStorage.getItem(keys.RECENT);
+            const saved = memory.getItem(keys.RECENT);
             if (saved) {
                 const parsed = JSON.parse(saved) as Song[];
                 // Deduplicate and Sanitize
@@ -186,27 +184,27 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
         if (!isMusicOpen) return;
 
         if (playlist.length > 0) {
-            localStorage.setItem(keys.QUEUE, JSON.stringify(playlist));
+            memory.setItem(keys.QUEUE, JSON.stringify(playlist));
         } else {
-            localStorage.removeItem(keys.QUEUE);
+            memory.removeItem(keys.QUEUE);
         }
     }, [playlist, keys.QUEUE, isMusicOpen]);
 
     useEffect(() => {
         if (!isMusicOpen) return;
         if (currentIndex !== -1) {
-            localStorage.setItem(keys.INDEX, currentIndex.toString());
+            memory.setItem(keys.INDEX, currentIndex.toString());
         } else {
-            localStorage.removeItem(keys.INDEX);
+            memory.removeItem(keys.INDEX);
         }
     }, [currentIndex, keys.INDEX, isMusicOpen]);
 
     useEffect(() => {
         if (!isMusicOpen) return;
         if (recent.length > 0) {
-            localStorage.setItem(keys.RECENT, JSON.stringify(recent));
+            memory.setItem(keys.RECENT, JSON.stringify(recent));
         } else {
-            localStorage.removeItem(keys.RECENT);
+            memory.removeItem(keys.RECENT);
         }
     }, [recent, keys.RECENT, isMusicOpen]);
 
@@ -265,9 +263,9 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
             setIsPlaying(false);
             const seek = soundRef.current.seek();
             if (typeof seek === 'number' && seek > 0) {
-                localStorage.setItem(keys.SEEK, seek.toString());
+                memory.setItem(keys.SEEK, seek.toString());
             } else {
-                localStorage.removeItem(keys.SEEK);
+                memory.removeItem(keys.SEEK);
             }
         }
     }, [keys.SEEK]);
@@ -469,24 +467,24 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
         const saveState = () => {
             // Snapshot Playlist & Index (Safety for Resume System)
             if (playlist.length > 0) {
-                localStorage.setItem(keys.QUEUE, JSON.stringify(playlist));
+                memory.setItem(keys.QUEUE, JSON.stringify(playlist));
             }
             if (currentIndex !== -1) {
-                localStorage.setItem(keys.INDEX, currentIndex.toString());
+                memory.setItem(keys.INDEX, currentIndex.toString());
             }
 
             // Save current seek if playing
             if (soundRef.current && soundRef.current.playing()) {
                 const seek = soundRef.current.seek();
                 if (typeof seek === 'number') {
-                    localStorage.setItem(keys.SEEK, seek.toString());
+                    memory.setItem(keys.SEEK, seek.toString());
                 }
             }
             // Also save if paused but we have a position
             else if (soundRef.current) {
                 const seek = soundRef.current.seek();
                 if (typeof seek === 'number' && seek > 0) {
-                    localStorage.setItem(keys.SEEK, seek.toString());
+                    memory.setItem(keys.SEEK, seek.toString());
                 }
             }
         };
@@ -664,7 +662,7 @@ export function MusicProvider({ children, owner }: { children: React.ReactNode, 
     // Restore Session Trigger (On Load)
     useEffect(() => {
         if (currentIndex !== -1 && playlist[currentIndex] && !soundRef.current) {
-            const savedSeek = localStorage.getItem(keys.SEEK);
+            const savedSeek = memory.getItem(keys.SEEK);
             const seekTo = savedSeek ? parseFloat(savedSeek) : 0;
             // Seek to > 0 requires playSoundImplementation to handle it
             playSoundImplementation(playlist[currentIndex], false, seekTo);

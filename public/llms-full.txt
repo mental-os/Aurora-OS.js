@@ -22,18 +22,23 @@ trigger: always_on
 **Config**: `src/config/systemConfig.ts` defines core limits (e.g., Default RAM), **Graphics** (GPU, Blur, Shadows), and **Brand Identity** (Name, Colors, Standardized AVIF Wallpapers).
 **Networking**: Zero-dependency architecture (native `fetch` only). No `axios`.
 
-
 </tech_stack>
 
 <architecture_mechanics>
 
 1.  **Virtual File System (VFS)**:
     - **Structure**: In-memory recursive JSON tree (`FileNode`).
-    - **Storage**: Serialized to `localStorage` key `STORAGE_KEYS.FILESYSTEM` (`os_filesystem`).
+    - **Storage**: Serialized to `memory` (via `STORAGE_KEYS.FILESYSTEM`). Persisted to IndexedDB (Web) or JSON (Electron).
     - **Sync**: Unidirectional State -> File sync (e.g., `users` state updates `/etc/passwd`).
-    - **Access**: MUST use `useFileSystem()` hook. NEVER mutate JSON directly.
+2.  **Modularized Logic & NPCs**:
+    - **Shared Source**: Pure, React-free operations in `src/utils/fileSystemOps.ts` provide the engine for all FS queries and mutations.
+    - **Adapters**:
+      - **Player**: `useFileSystemQueries`/`Mutations` wrap pure ops in React state/memoization.
+      - **NPC**: `WorldContext` and `npcFileSystem.ts` act as a plain-object adapter for headless computers.
+    - **WorldContext**: Manages NPC provisioning, persistence (`os_npc_<ip>`), and runtime state. The `getNpcApi(ip)` function returns an API matched to the local VFS for contextual bridging.
+    - **Performance**: Operations are pure and non-mutative, returning new tree snapshots for state/ref updates.
 
-2.  **User System**:
+3.  **User System**:
     - **Ids**: `root` (0), `guest` (1001), `activeUser` (physical), `currentUser` (logical).
     - **Auth**: `useAuth()` hook. Logic synced to `/etc/passwd` & `/etc/group`.
     - **Persistent**: `useAppStorage` uses `activeUser` to scope keys (e.g., `os_app_data_<app>-<user>`).
@@ -41,7 +46,7 @@ trigger: always_on
     - **Fast User Switching**: `suspendSession()` preserves RAM (open windows, terminal history) while switching users. Exposed via `FileSystemContext` and used by `MenuBar.tsx` "Switch User" action.
     - **Developer Mode**: Toggled via Settings > About. Controls visibility of "Dev Center" app in App Store and other debug features.
 
-3.  **App Engine**:
+4.  **App Engine**:
     - **Registry**: `src/config/appRegistry.ts` (Definition source of truth).
     - **Runtime**: Apps render in `WindowContext`.
     - **ContextMenu**: Can be global (registry `contextMenu`) or localized (wrapping specific UI areas with `ContextMenuTrigger` in the app component).
@@ -53,34 +58,38 @@ trigger: always_on
     - **Launch Gates**: `useWindowManager` prevents app launch if `currentRamUsage + app.ramUsage > totalMemoryGB` (Default: 2GB).
     - **Config**: Simulation apps (Mail, Messages) use `~/.Config/<app>.json` for encrypted credentials, enabling "hacking" gameplay mechanisms.
 
-4.  **Terminal Architecture**:
+5.  **Terminal Architecture ("Files-First")**:
     - **PATH**: `["/bin", "/usr/bin"]`.
-    - **`/bin`**: Contains **system commands** (e.g., `ls`, `cat`).
+    - **`/bin`**: Contains **system commands** (e.g., `ls`, `cat`, `cd`, `connect`).
       - **Implementation**: Text files containing `#command <name>` (e.g., `ls` -> `#command ls`).
-      - **Execution**: `useTerminalLogic` parses this directive and maps it to `src/utils/terminal/registry.ts`.
+      - **Execution**: Realism is rigorously enforced. `useTerminalLogic` ALWAYS checks PATH. If a binary is deleted, the command stops working globally. Resolves to `src/utils/terminal/registry.ts`.
     - **`/usr/bin`**: Contains **App Launchers** (e.g., `chrome`, `code`).
       - **Implementation**: Text files containing `#!app <appId>` (e.g., `#!app terminal`).
-      - **Execution**: `useTerminalLogic` parses this directive and launches the corresponding AppID from `src/config/appRegistry.ts`.
-    - **Execution**:
-      - `useTerminalLogic` resolves input -> checks built-ins -> checks PATH.
-      - If `#!app ...` -> Launches Window.
-      - If `#command ...` -> Executes internal function.
-      - If other text -> Parses as Shell Script (supports `$VAR`, `VAR=val`).
+      - **Execution**: Launches the corresponding AppID from `src/config/appRegistry.ts`.
+    - **Contextual Execution**: Terminal automatically routes filesystem operations (e.g., `ls`, `cat`) to the remote NPC API if a connection is active (via `useWorldContext`).
+    - **Shell Scripting**: Text that isn't `#command` or `#!app` is parsed as Shell Script (supports `$VAR`, `VAR=val`).
+    - **`exit` Command & `onClose` Wiring**:
+      - `exit` pops the session stack (e.g., `sudo -s` / `su` chains) until the base user, then calls `closeWindow(windowId)`.
+      - `onClose` is wired in `OS.tsx` via a **stable ref pattern**: `closeWindowRef` mirrors `closeWindow`, a `windowId` is **pre-computed** in `getAppContent` for the terminal type (`terminal-${Date.now()}`), and `onClose: () => closeWindowRef.current(preId)` is passed as a prop. `useWindowManager.openWindow` uses the returned `windowId` as the actual window ID to guarantee the IDs match.
+      - This avoids `React.cloneElement` in the render loop, preserving `React.memo(Window)` optimizations.
     - **Persistence**:
       - **Strategy**: "Crash Proof". History survives refresh (`is_refreshing` flag) but clears on explicit Window Close or Logout.
       - **Storage**: `localStorage` with custom serialization (preserving text content from React components to avoid `[Complex Output]`).
       - **Hostname**: Fully dynamic. `hostname` command reads `/etc/hostname` from VFS.
 
-5.  **Notification & UI System**:
+6.  **Notification & UI System**:
     - **Usage**: `notify.system(type, source, message, subtitle)` or `notify.app(appId, title, message)` (via CustomEvent).
     - **Architecture**: Event-based (`aurora-app-notification`). Applets listen via `useAppNotifications`.
     - **Formatting**: `message` prop accepts `React.ReactNode`, allowing for rich grid/list layouts in toasts.
     - **Display**: Stacking "Heads-Up" toasts (top-right, max 3) + Notification Center (sidebar).
     - **Performance**: High-traffic apps (like Notepad) MUST isolate re-renders by splitting the main editor/content logic into memoized sub-components.
     - **Provider**: Handled via `Sonner` (system) and `AppNotificationsContext` (app-level).
-    - **Global Indicators**: Retro "Hard Drive" LED (Green/Red) in bottom-left. **Green (Load)**: Triggered by ANY `localStorage.getItem`. **Red (Save)**: Triggered by `localStorage.setItem`. Drivers located in `src/utils/memory.ts`.
+    - **Global Indicators**: Retro "Hard Drive" LED (Green/Red) in bottom-left.
+      - **Green (Load)**: Triggered by PHYSICAL disk/IndexedDB read in `SaveManager.ts`.
+      - **Red (Save)**: Triggered by PHYSICAL disk/IndexedDB write in `SaveManager.ts`.
+      - **Optimization**: `memory.setItem` uses "Dirty Checking" to skip redundant saves if values are identical.
 
-6.  **Audio & Metadata System**:
+7.  **Audio & Metadata System**:
     - **Howler Core**: All system audio (SFX, Music, Ambiance) is managed via `soundManager` (`src/services/sound.ts`).
     - **Channels**: Dedicated `ambiance` channel (looping, independent volume) + `master`, `system`, `ui`, `feedback`, `music`.
     - **Realism**: Global mute (`Howler.mute(true)`) silences the system without stopping background processes (e.g., music keep "playing" silently).
@@ -88,11 +97,12 @@ trigger: always_on
     - **Binary Metadata**: Custom ID3 parser (`src/utils/id3Parser.ts`) extracts professional tags (TIT2, TPE1, TALB) from MP3 files.
     - **Asset Fetching**: Metadata resolution for local assets uses `fetch` with `Range: bytes=0-512KB` to efficiently read headers without full downloads.
 
-7.  **Game Flow & Pre-OS Experience**:
+8.  **Game Flow & Pre-OS Experience**:
     - **State Machine**: 6-state flow handled by `GameRoot.tsx` (INTRO → MENU → FIRST_BOOT/BOOT → ONBOARDING → GAMEPLAY).
     - **Main Menu**: Video game-style interface with keyboard nav. Includes **Settings** (Tabbed: Display/Audio/System) and **Credits** modals.
+      - **Web-only extensions**: Collapsible "Community" menu and "Download" buttons are conditionally rendered in the footer when `!isElectron`.
       - **Exit Flow**: Retro terminal-style confirmation modal. Triggers immediate filesystem save (`saveFileSystem`) upon confirmation.
-      - **Floating Window**: `DevStatusWindow.tsx` provides persistent system status and contribution CTAs.
+      - **Floating Window**: `DevStatusWindow.tsx` provides persistent system status and contribution CTAs. Fully internationalized via `useI18n`.
     - **Save Detection**: Checks `localStorage.getItem(STORAGE_KEYS.VERSION)` to determine if save exists.
     - **New Game**: Calls `hardReset()` to wipe all `localStorage`, then `resetFileSystem()` for in-memory sync. **Preserves** BIOS settings (GPU/Blur/Motion) via `resetSystemConfig(overrides)`.
     - **Boot Sequence**: Realistic OS boot animation with dynamic log generation.
@@ -107,7 +117,7 @@ trigger: always_on
       - `mode="terminal"` (Default): ASCII art, monospaced font, pure black bg. Used for Boot/Menu.
       - `mode="glass"`: Restored legacy glassmorphism, sans-serif, animated "Orbit" logo. Used for Login/Onboarding.
 
-8.  **Reference Implementations**:
+9.  **Reference Implementations**:
     - **Finder (`FileManager.tsx`)**:
       - **Pattern**: Recursive directory traversal via `useFileSystem`.
       - **UI**: Dynamic breadcrumbs with drag-and-drop support.
@@ -118,7 +128,7 @@ trigger: always_on
       - **State**: Custom crash-proof history persistence (HTML-preserving).
       - **UI**: "Ghost Text" autocomplete overlay.
 
-9.  **Build & Distribution (Electron)**:
+10. **Build & Distribution (Electron)**:
     - **Config**: Enhanced `package.json` build config (`NSIS` for Win, `DMG` for Mac, `AppImage` for Linux).
     - **Branding**: Derived from `productName` ("Aurora OS.js"), `copyright`, and `nsis.menuCategory` ("Dope Pixels").
     - **Hardening**:
@@ -133,7 +143,7 @@ trigger: always_on
       - **Logo**: Inline ASCII art matching `GameScreenLayout.tsx` terminal mode logo.
       - **Build**: `copy:electron-assets` script copies `splash.html` to `dist-electron/` (HTML not handled by `tsc`).
 
-10. **Display & Input Constraints**:
+11. **Display & Input Constraints**:
     - **Resolution**:
       - **Target**: 1920x1080 (Default launch size).
       - **Minimum**: 1366x768 (Strictly enforced via Electron `minWidth/Height` and Web `ScreenGuard`).
@@ -141,7 +151,7 @@ trigger: always_on
     - **PWA**: `public/manifest.json` enforces `standalone` and `landscape` for Chromium OS/Tablets.
     - **ScreenGuard**: React component (`src/components/ui/ScreenGuard.tsx`) blocks execution on unsupported viewports (Phones/Portrait).
 
-11. **Network System**:
+12. **Network System**:
     - **Context**: `NetworkContext` (`src/components/NetworkContext.tsx`) manages global network state (WiFi on/off, Available/Current Networks).
     - **Simulation**:
       - **Historical Speeds**: Speed tiers based on 802.11 eras: `OPEN` (<1Mbps) < `WEP` (1-5Mbps) < `WPA` (5-15Mbps) < `WPA2` (20-150Mbps) < `WPA3` (150-600+Mbps).
@@ -153,7 +163,7 @@ trigger: always_on
       - `NetworkSettings` (App): Detailed connection stats (Signal, Security, Speed), Manual IP config, Data Usage tracking.
       - `AppStore`: Download speed simulation.
 
-12. **Display & Window Management**:
+13. **Display & Window Management**:
     - **Modes**:
       - **Electron**: Fullscreen, Borderless, Windowed (with custom resolution/frame).
       - **Browser**: Fullscreen toggle via `useFullscreen` hook.
@@ -163,17 +173,24 @@ trigger: always_on
     - **Bridge**: `useFullscreen` hook unifies Browser (DOM API) and Electron (IPC) logic.
       - **Detection**: "Bulletproof" multi-check (`window.electron` + UA + process) prevents race conditions.
 
-13. **Storage & Persistence**:
-    - **Core Utility**: `src/utils/safeStorage.ts` -> `safeParseLocal<T>(key)`.
-    - **Security**: **ALWAYS** use `safeParseLocal` instead of `JSON.parse` for reading `localStorage`. Automatically strips `__proto__`, `constructor`, and `prototype` to prevent prototype pollution.
-    - **Performance**: Writes to `localStorage` (e.g., Window moves, Notepad typing) MUST be debounced via `useDebounce` hook (default 500ms) to prevent main-thread freezing and I/O thrashing.
+14. **Storage & Persistence**:
+    - **Core Utility**: `src/utils/memory.ts` -> `memory` API (replaces direct `localStorage`).
+    - **Security**: **ALWAYS** use `safeParseLocal` from `src/utils/safeStorage.ts` for reading raw storage data.
+    - **Performance**: Writes to `memory` (e.g., Window moves, Notepad typing) are debounced via `SaveManager` (100ms) to prevent I/O thrashing.
     - **Keys**: Managed via `STORAGE_KEYS` in `src/utils/memory.ts`. 3-tier architecture:
       - **BIOS (`sys_` prefix)**: System hardware settings (language, display, sound). Survives ALL resets.
       - **HDD (`os_` prefix)**: OS data (filesystem, users, app data, mail). Wiped on Hard Reset (New Game).
-      - **RAM (`session_` prefix)**: Session state (windows, terminal history). Wiped on Soft Reset (Logout).
-    - **Reset Functions**: `softReset()` wipes RAM only. `hardReset()` wipes HDD + RAM, keeps BIOS. `factoryReset()` wipes everything.
-    - **Helper Functions**: `getAppStateKey(appId, user)` and `getWindowKey(user)` generate correctly-prefixed keys.
-    - **Tests**: Test assertions MUST use `STORAGE_KEYS.*` constants, never hardcoded key strings.
+      - **RAM (`session_` prefix)**: Session state (windows, terminal history). Wiped on Soft Reset (Logout/Restart).
+    - **Absolute Persistence**:
+      - **Universal Snapshotting**: `SnapshotEngine.ts` captures ALL keys starting with `os_`, `sys_`, or `session_`, ensuring dynamic app data (Notepad tabs, Finder path) is never lost.
+      - **Emergency Buffer**: Synchronous `emergencySave()` dumps memory to `localStorage` during `beforeunload` to survive abrupt refreshes.
+      - **Safe Reload**: `useAppStorage` and `useSessionStorage` use a "Locked-Pair" pattern to prevent stale data overwrites during rapid context switches.
+    - **Reset Functions**:
+      - `softReset()`: Wipes Session (RAM).
+      - `hardReset()`: Wipes HDD + Session. Keeps BIOS.
+      - `factoryReset()`: Wipes Everything.
+    - **Helper Functions**: `getAppStateKey(appId, user)` and `getWindowKey(user)`.
+    - **Tests**: Test assertions MUST use `memory.getItem` or `STORAGE_KEYS` constants, never direct `localStorage`.
 
 </architecture_mechanics>
 
@@ -188,35 +205,40 @@ trigger: always_on
 - **I18n Sync**: Maintain strict sync across all 13 locales (`en`, `de`, `es`, `fr`, `pt`, `ro`, `zh`, `ru`, `ja`, `pl`, 'ko', 'tr', 'hi'). Run `/update-translations` and `.scripts/sync-i18n.js` after changes.
 - **Accessibility**: All `Dialog` or `AlertDialog` components MUST include a `Title` and `Description`. Use `sr-only` class to hide them if they clash with visual design but are required for A11y.
 - **Standards**: All imports should user the @ alias for the /src folder and ALL FEATURES added should have a matching debug way in Dev Center.
-- **Docs Sync**: On architecture changes, update `.agent/rules/context.md` & `public/llms-full.txt`.
+- **Docs Sync**: On architecture changes, update `.agents/rules/context.md` & `public/llms-full.txt`.
 - **URL Security**: User-provided URLs (images, media) MUST be sanitized via `getSafeImageUrl(url)` to prevent XSS and satisfy CodeQL taint tracking.
 - **Window Management**: `isElectron` detection MUST use the robust multi-check pattern (`window.electron` + userAgent + process.versions) found in `useFullscreen.ts` to prevent race conditions.
 - **Asset Optimization**: Use modern formats (AVIF) for large assets like wallpapers. Ensure 4:2:0 subsampling and aggressive compression (Quality 45-60) for complex images to minimize build size.
 - **Import Standards**: ALWAYS use the `@` alias for `src` directory imports (e.g., `import { foo } from '@/components/bar'`) to ensure path stability.
+- **Time/Dates**: Calendar uses `react-day-picker` v9. The app relies on a custom `toDisplayDate` offset simulation to visually manipulate faked UTC time. Ensure all navigation props in `react-day-picker` correctly wrap and unwrap native dates with `toDisplayDate()` and `fromDisplayDate()`.
 
 </critical_rules>
 
 <codebase_map>
 
-| Path                                   | Component          | Description                                                 |
-| :------------------------------------- | :----------------- | :---------------------------------------------------------- |
-| `src/components/FileSystemContext.tsx` | **VFS Core**       | Context for all FS operations.                              |
-| `src/utils/fileSystemUtils.ts`         | **VFS Utils**      | `FileNode` types, `initialFileSystem`, permission logic.    |
-| `src/components/AppContext.tsx`        | **Session**        | Theme, Wallpapers, Physical User session.                   |
-| `src/components/DisplaySettings.tsx`   | **Display**        | Cross-platform display management UI.                       |
-| `src/config/appRegistry.ts`            | **Registry**       | Installed Apps configuration.                               |
-| `src/services/notifications.tsx`       | **Notifications**  | Central service for rich system toasts.                     |
-| `src/services/sound.ts`                | **Sound Manager**  | Global audio state and Howler integration.                  |
-| `src/utils/id3Parser.ts`               | **ID3 Parser**     | Binary metadata extractor for MP3 files.                    |
-| `src/components/apps/*`                | **Apps**           | Individual App components (Notepad, Terminal, etc).         |
-| `src/hooks/useAppInstaller.ts`         | **Installer**      | Hook for app install/uninstall/restore logic.               |
-| `src/components/apps/AppStore/`        | **App Store**      | App Store components (AppCard, etc).                        |
-| `src/hooks/useWindowManager.ts`        | **Window Manager** | Handles window state and memory usage gates.                |
-| `src/components/NetworkContext.tsx`    | **Network**        | Global network state and simulation logic.                  |
-| `src/hooks/useFullscreen.ts`           | **Display Utils**  | Shared hook for Electron/Browser fullscreen logic.          |
-| `electron/main.ts`                     | **Electron Main**  | Native window management, splash screen, and backend logic. |
-| `electron/splash.html`                 | **Splash Screen**  | Electron-only splash with real progress milestones.         |
-| `src/test/`                            | **Tests**          | Unit tests for utilities and logic.                         |
+| Path                                   | Component         | Description                                              |
+| :------------------------------------- | :---------------- | :------------------------------------------------------- |
+| `src/components/FileSystemContext.tsx` | **VFS Core**      | Context for all FS operations.                           |
+| `src/utils/fileSystemUtils.ts`         | **VFS Utils**     | `FileNode` types, `initialFileSystem`, permission logic. |
+| `src/components/AppContext.tsx`        | **Session**       | Theme, Wallpapers, Physical User session.                |
+| `src/components/DisplaySettings.tsx`   | **Display**       | Cross-platform display management UI.                    |
+| `src/config/appRegistry.ts`            | **Registry**      | Installed Apps configuration.                            |
+| `src/services/notifications.tsx`       | **Notifications** | Central service for rich system toasts.                  |
+| `src/utils/memory.ts`                  | **Memory Core**   | Centralized in-memory cache and persistence logic.       |
+| `src/utils/save/*`                     | **Save System**   | `SaveManager`, `SnapshotEngine`, and Adapters.           |
+| `src/services/resourceMonitor.ts`      | **Resource Mon**  | logic for RAM calculation & Task Manager.                |
+
+| `src/services/sound.ts` | **Sound Manager** | Global audio state and Howler integration. |
+| `src/utils/id3Parser.ts" | **ID3 Parser** | Binary metadata extractor for MP3 files. |
+| `src/components/apps/\*`| **Apps** | Individual App components (Notepad, Terminal, etc). |
+|`src/hooks/useAppInstaller.ts`| **Installer** | Hook for app install/uninstall/restore logic. |
+|`src/components/apps/AppStore/`| **App Store** | App Store components (AppCard, etc). |
+|`src/hooks/useWindowManager.ts`| **Window Manager** | Handles window state and memory usage gates. |
+|`src/components/NetworkContext.tsx`| **Network** | Global network state and simulation logic. |
+|`src/hooks/useFullscreen.ts`| **Display Utils** | Shared hook for Electron/Browser fullscreen logic. |
+|`electron/main.ts`| **Electron Main** | Native window management, splash screen, and backend logic. |
+|`electron/splash.html`| **Splash Screen** | Electron-only splash with real progress milestones. |
+|`src/test/` | **Tests** | Unit tests for utilities and logic. |
 
 </codebase_map>
 

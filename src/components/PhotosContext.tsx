@@ -3,7 +3,7 @@ import { useFileSystem } from '@/components/FileSystemContext';
 import { useAppContext } from '@/components/AppContext';
 import { useSessionStorage } from '@/hooks/useSessionStorage';
 import { useI18n } from '@/i18n/index';
-import { STORAGE_KEYS } from '@/utils/memory';
+import { memory, STORAGE_KEYS } from '@/utils/memory';
 
 export interface Photo {
     id: string;
@@ -48,7 +48,7 @@ export function PhotosProvider({ children, owner }: { children: React.ReactNode,
     const [storedRecentPhotos, setStoredRecentPhotos] = useState<Photo[]>(() => {
         try {
             const key = `${STORAGE_KEYS.APP_DATA_PREFIX}photos-recent-${activeUser}`;
-            const saved = localStorage.getItem(key);
+            const saved = memory.getItem(key);
             if (saved) {
                 const parsed = JSON.parse(saved) as Photo[];
                 // Deduplicate and Sanitize (exclude library photos)
@@ -72,9 +72,9 @@ export function PhotosProvider({ children, owner }: { children: React.ReactNode,
         if (!isPhotosOpen) return;
         const key = `${STORAGE_KEYS.APP_DATA_PREFIX}photos-recent-${activeUser}`;
         if (storedRecentPhotos.length > 0) {
-            localStorage.setItem(key, JSON.stringify(storedRecentPhotos));
+            memory.setItem(key, JSON.stringify(storedRecentPhotos));
         } else {
-            localStorage.removeItem(key);
+            memory.removeItem(key);
         }
     }, [storedRecentPhotos, activeUser, isPhotosOpen]);
 

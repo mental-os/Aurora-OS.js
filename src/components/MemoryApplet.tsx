@@ -5,7 +5,7 @@ import { cn } from '@/components/ui/utils';
 import { useAppContext } from '@/components/AppContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useFileSystem } from '@/components/FileSystemContext';
-import { calculateTotalRamUsage, RamUsageReport } from '@/utils/resourceMonitor';
+import { calculateTotalRamUsage, RamUsageReport } from '@/services/resourceMonitor';
 import { useI18n } from '@/i18n';
 
 interface ProcessItem {

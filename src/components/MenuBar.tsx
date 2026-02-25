@@ -318,6 +318,25 @@ function MenuBarComponent({ focusedApp, onOpenApp }: MenuBarProps) {
               <MenubarSeparator className="bg-white/10" />
               <Tooltip>
                 <TooltipTrigger asChild>
+                  <MenubarItem onClick={() => {
+                    // Restart -> Soft Reset (Clear ALL Sessions) + Reload
+                    // softReset() handles wiping session_ keys
+                    // window.location.reload() re-inits the app
+                    import('@/utils/memory').then(({ softReset }) => {
+                        softReset();
+                        window.location.reload();
+                    });
+                  }}>
+                    {t('menubar.system.restart')}
+                  </MenubarItem>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={10}>
+                  <p>{t('menubar.system.restartDescription')}</p>
+                </TooltipContent>
+              </Tooltip>
+              <MenubarSeparator className="bg-white/10" />
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <MenubarItem
                     onSelect={(e) => {
                       if (!panicConfirm) {

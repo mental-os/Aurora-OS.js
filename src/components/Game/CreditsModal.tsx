@@ -71,13 +71,6 @@ const CREDITS_DATA: ContributorCategory[] = [
         id: 'legacy',
         title: "Early Builders",
         icon: Sprout,
-        type: 'text',
-        content: "People who helped shape Aurora-OS.js in its early experimental phase — through feedback, discussion, or belief."
-    },
-    {
-        id: 'community',
-        title: "Community",
-        icon: Wrench,
         type: 'people',
         contributors: [
             { name: "Oklyne", role: "Code, Translation, Testing", github: "https://github.com/oklyne" },
@@ -103,6 +96,20 @@ const CREDITS_DATA: ContributorCategory[] = [
                 github: "https://github.com/SGBHAI",
                 socials: [{ label: "IG/garewal.swarit", url: "https://www.instagram.com/garewal.swarit" }]
             },
+        ]
+    },
+    {
+        id: 'community',
+        title: "Community // Sponsors",
+        icon: Wrench,
+        type: 'people',
+        contributors: [
+            {
+                name: "Daniel Fagadau",
+                role: "Day-1 GitHub Supporter",
+                github: "https://github.com/Mooyeee",
+                socials: [{ label: "LI/daniel-fagadau", url: "https://www.linkedin.com/in/daniel-fagadau/" }]
+            }
         ]
     },
     {
