@@ -194,6 +194,7 @@
   "appStore.install": "安装",
   "appStore.uninstall": "卸载",
   "appStore.installed": "已安装",
+  "appStore.installing": "安装中",
   "browser.menu.newTab": "新标签页",
   "browser.menu.closeTab": "关闭标签页",
   "browser.menu.stop": "停止",

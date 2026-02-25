@@ -229,6 +229,7 @@
   "appStore.install": "Instalar",
   "appStore.uninstall": "Desinstalar",
   "appStore.installed": "Instalada",
+  "appStore.installing": "Instalando",
   "browser.menu.newTab": "Nueva pestaña",
   "browser.menu.closeTab": "Cerrar pestaña",
   "browser.menu.stop": "Detener",

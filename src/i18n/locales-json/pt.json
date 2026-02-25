@@ -194,6 +194,7 @@
   "appStore.install": "Instalar",
   "appStore.uninstall": "Desinstalar",
   "appStore.installed": "Instalado",
+  "appStore.installing": "Instalando",
   "browser.menu.newTab": "Nova Aba",
   "browser.menu.closeTab": "Fechar Aba",
   "browser.menu.stop": "Parar",

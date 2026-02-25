@@ -229,6 +229,7 @@
   "appStore.install": "Installer",
   "appStore.uninstall": "Désinstaller",
   "appStore.installed": "Installée",
+  "appStore.installing": "Installation en cours",
   "browser.menu.newTab": "Nouvel onglet",
   "browser.menu.closeTab": "Fermer l’onglet",
   "browser.menu.stop": "Arrêter",
