@@ -26,6 +26,8 @@ export interface CommandContext {
     t: (key: string, options?: any) => string;
     getCommandHistory: () => string[];
     clearCommandHistory: () => void;
+    getCommandFavorites: () => Set<number>;
+    setCommandFavorite: (lineNumber: number, isFavorite: boolean) => void;
     closeWindow?: () => void;
     isRootSession: boolean;
 }
@@ -35,6 +37,11 @@ export interface CommandResult {
     error?: boolean;
     shouldClear?: boolean; // Special flag for 'clear' command
     newCwd?: string; // New current working directory (e.g. from 'cd')
+    shouldExit?: boolean;
+    shouldExecuteBlock?: boolean;
+    blockType?: 'if' | 'else' | 'fi' | 'for' | 'done';
+    loopVariable?: string;
+    loopItems?: string[];
 }
 
 export interface TerminalCommand {

@@ -26,6 +26,19 @@ import { su } from './commands/su';
 import { sudo } from './commands/sudo';
 import { exit } from './commands/exit';
 import { history } from './commands/history';
+import { top } from './commands/top';
+import { btop } from './commands/btop';
+import { scp } from './commands/scp';
+import { unzip } from './commands/unzip';
+import { wget } from './commands/wget';
+import { sh } from './commands/sh';
+import { curl } from './commands/curl';
+import { netstat } from './commands/netstat';
+import { ping } from './commands/ping';
+import { ssh } from './commands/ssh';
+import { tar } from './commands/tar';
+import { traceroute } from './commands/traceroute';
+import { zip } from './commands/zip';
 import { unlockDeveloperMode } from '../integrity';
 
 // Hidden system command for development
@@ -73,6 +86,19 @@ export const commands: Record<string, TerminalCommand> = {
     sudo,
     exit,
     history,
+    btop,
+    top,
+    curl,
+    netstat,
+    ping,
+    scp,
+    sh,
+    ssh,
+    tar,
+    traceroute,
+    unzip,
+    wget,
+    zip,
     'dev-unlock': _sys_dev_override_cmd
 };
 

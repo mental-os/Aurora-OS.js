@@ -441,6 +441,7 @@ export const initialFileSystem: any = {
                 { name: 'sudo', type: 'file', permissions: '-rwsr-xr-x', owner: 'root', content: '#!/bin/bash\n#command sudo\n# execute as superuser' },
                 { name: 'reset', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command reset\n# reset system' },
                 { name: 'history', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/bash\n#command history\n# display command history' },
+                { name: 'sh', type: 'file', permissions: '-rwxr-xr-x', owner: 'root', content: '#!/bin/sh\n#command sh\n# shell interpreter' },
             ],
         },
         // Boot loader files
@@ -561,6 +562,43 @@ export const initialFileSystem: any = {
                             owner: 'root',
                             content: `#!app ${app.id}`
                         })),
+                        {
+                            name: 'sample.sh',
+                            type: 'file',
+                            permissions: '-rwxr-xr-x',
+                            owner: 'root',
+                            content: `#!/bin/sh
+# Sample shell script demonstrating features
+
+# Variables
+NAME="Aurora User"
+VERSION="1.0"
+
+# Echo with variable expansion
+echo "Welcome to Aurora OS v$VERSION"
+echo "Hello, $NAME!"
+
+# Simple for loop
+echo "Counting from 1 to 3:"
+for i in 1 2 3
+do
+    echo "  Count: $i"
+done
+
+# If/else example
+echo "Testing conditionals:"
+if [ "5" -gt "3" ]; then
+    echo "  5 is greater than 3 - TRUE"
+else
+    echo "  This should not appear"
+fi
+
+# Command substitution
+echo "Current date: $(date)"
+
+# Exit
+exit 0`
+                        },
                     ],
                 },
                 {

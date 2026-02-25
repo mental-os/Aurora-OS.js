@@ -10,7 +10,6 @@ import {
 import { TerminalCommand } from "@/utils/terminal/types";
 import { getColorShades } from "@/utils/colors";
 import { useI18n } from "@/i18n/index";
-import { STORAGE_KEYS } from "@/utils/memory";
 
 export interface CommandHistory {
   id: string;
@@ -203,8 +202,44 @@ export function useTerminalLogic(
       : currentUser || "guest";
 
   // Determine the user scope for persistence
-  const historyKey = `${STORAGE_KEYS.TERM_HISTORY_PREFIX}${activeTerminalUser}`;
-  const inputKey = `${STORAGE_KEYS.TERM_INPUT_PREFIX}${activeTerminalUser}`;
+  const favoritesKey = `aurora_term_favorites_${activeTerminalUser}`;
+  const historyKey = `aurora_term_history_${activeTerminalUser}`;
+  const inputKey = `aurora_term_input_${activeTerminalUser}`;
+
+  // Helper to load favorites
+  const loadFavorites = (key: string): Set<number> => {
+    try {
+      const saved = localStorage.getItem(key);
+      return saved ? new Set(JSON.parse(saved)) : new Set<number>();
+    } catch {
+      return new Set<number>();
+    }
+  };
+
+  const [commandFavorites, setCommandFavorites] = useState<Set<number>>(() =>
+    loadFavorites(favoritesKey)
+  );
+
+  // Persistence for favorites
+  useEffect(() => {
+    localStorage.setItem(favoritesKey, JSON.stringify([...commandFavorites]));
+  }, [commandFavorites, favoritesKey]);
+
+  const getCommandFavorites = useCallback(() => {
+    return commandFavorites;
+  }, [commandFavorites]);
+
+  const setCommandFavorite = useCallback((lineNumber: number, isFavorite: boolean) => {
+    setCommandFavorites((prev) => {
+      const newFavorites = new Set(prev);
+      if (isFavorite) {
+        newFavorites.add(lineNumber);
+      } else {
+        newFavorites.delete(lineNumber);
+      }
+      return newFavorites;
+    });
+  }, []);
 
   // Helper to load history
   const loadHistory = (key: string): CommandHistory[] => {
@@ -340,6 +375,12 @@ export function useTerminalLogic(
                 });
                 seen.add(appId);
               }
+            } else if (f.content.startsWith("#!/bin/sh") || f.content.startsWith("#!/usr/bin/sh")) {
+              const shCmd = allCmds.find((c) => c.name === 'sh');
+              if (shCmd && !seen.has('sh')) {
+                available.push(shCmd);
+                seen.add('sh');
+              }
             }
           }
         });
@@ -419,6 +460,9 @@ export function useTerminalLogic(
             if (f.name) cmds.add(f.name);
             if (f.content?.startsWith("#!app ")) {
               cmds.add(f.content.replace("#!app ", "").trim());
+            }
+            if (f.content?.startsWith("#!/bin/sh") || f.content?.startsWith("#!/usr/bin/sh")) {
+              cmds.add('sh');
             }
           }
         });
@@ -708,6 +752,8 @@ export function useTerminalLogic(
             if (content.startsWith('#!app ')) {
               isAppLaunch = true;
               launchAppId = content.replace('#!app ', '').trim();
+            } else if (content.startsWith('#!/bin/sh') || content.startsWith('#!/usr/bin/sh')) {
+              cmdToRun = getCommand('sh');
             } else {
               const match = content.match(/#command\s+([a-zA-Z0-9_-]+)/);
               if (match) cmdToRun = getCommand(match[1]);
@@ -750,6 +796,8 @@ export function useTerminalLogic(
           t,
           getCommandHistory: getCommandHistoryFn,
           clearCommandHistory: clearCommandHistoryFn,
+          getCommandFavorites: getCommandFavorites,
+          setCommandFavorite: setCommandFavorite,
           // Injected from Main:
           closeWindow: onClose,
           isRootSession: isRootSession,
@@ -926,5 +974,7 @@ export function useTerminalLogic(
     clearHistory: () => setHistory([]),
     isSudoAuthorized,
     setIsSudoAuthorized,
+    getCommandFavorites,
+    setCommandFavorite,
   };
 }
