@@ -32,14 +32,16 @@ export const ls: TerminalCommand = {
             const contents = fileSystem.listDirectory(lsPath);
             if (contents) {
                 if (contents.length === 0) {
-                    // empty
+                    if (pathsToList.length === 1 && pathsToList[0] === '') {
+                        allOutputs.push(' ');
+                    }
                 } else if (longFormat) {
                     const lines = contents.map(node => {
                         const perms = node.permissions || (node.type === 'directory' ? 'drwxr-xr-x' : '-rw-r--r--');
                         const owner = node.owner || 'root';
                         const group = node.group || (node.owner === 'root' ? 'root' : 'users'); // Fallback logic
                         const size = node.size?.toString().padStart(6) || '     0';
-                        
+
                         const nameNode = node.type === 'directory'
                             ? createElement('span', { className: 'text-blue-400 font-bold' }, node.name)
                             : node.name;
@@ -54,16 +56,16 @@ export const ls: TerminalCommand = {
                     // Simplified Text View (Linux style)
                     // We render a flex container with items that wrap
                     const items = contents.map(node => {
-                         return createElement(
-                             'span', 
-                             {  
-                                 key: node.id,
-                                 className: node.type === 'directory' ? 'text-blue-400 font-bold mr-4' : 'mr-4' 
-                             }, 
-                             node.name
-                         );
+                        return createElement(
+                            'span',
+                            {
+                                key: node.id,
+                                className: node.type === 'directory' ? 'text-blue-400 font-bold mr-4' : 'mr-4'
+                            },
+                            node.name
+                        );
                     });
-                    
+
                     allOutputs.push(
                         createElement('div', { key: lsPath, className: 'flex flex-wrap' }, items)
                     );

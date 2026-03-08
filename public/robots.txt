@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mental-os.github.io/Aurora-OS.js/sitemap.xml

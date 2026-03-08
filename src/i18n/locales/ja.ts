@@ -274,7 +274,7 @@ export const ja: TranslationDict = {
     },
     "empty": "通知はありません",
     "clearApp": "このアプリからの通知をすべて消去",
-    "messageFrom": "Message from {{sender}}"
+    "messageFrom": "{{sender}}からのメッセージ"
   },
   "memory": {
     "title": "メモリ",
@@ -332,7 +332,8 @@ export const ja: TranslationDict = {
     "restoreSuccess": "{{app}} を正常に復元しました",
     "restoreError": "{{app}} の復元に失敗しました",
     "restorePermissionDenied": "アプリの復元には管理者権限が必要です",
-    "installingWarning": "アプリケーションをインストールしています。しばらくお待ちください。"
+    "installingWarning": "アプリケーションをインストールしています。しばらくお待ちください。",
+    "installing": "インストール中"
   },
   "browser": {
     "menu": {
@@ -340,8 +341,8 @@ export const ja: TranslationDict = {
       "closeTab": "タブを閉じる"
     },
     "welcome": {
-      "title": "Browser",
-      "description": "Search for information or enter a URL to start browsing.",
+      "title": "ブラウザ",
+      "description": "情報を検索するか、URLを入力して閲覧を開始してください。",
       "searchPlaceholder": "ウェブサイトを検索またはアドレスを入力...",
       "favorites": "お気に入り",
       "recentActivity": "最近のアクティビティ"
@@ -351,8 +352,8 @@ export const ja: TranslationDict = {
       "pageNotFound": "ページが見つかりません",
       "pageNotFoundDesc": "ウェブサイト {{url}} は見つかりませんでした。",
       "goHome": "ホームへ",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "インターネット接続なし",
+      "offlineDesc": "インターネットに接続されていません。ウェブを閲覧するにはネットワークに接続してください。"
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const ja: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: ネットワークに到達できません"
       }
     }
   },
@@ -671,7 +672,7 @@ export const ja: TranslationDict = {
       "allPhotos": "すべての写真",
       "favorites": "お気に入り",
       "recent": "最近の項目",
-      "userLibrary": "{{user}}'s Library"
+      "userLibrary": "{{user}}のライブラリ"
     },
     "menu": {
       "slideshow": "スライドショー",
@@ -700,8 +701,8 @@ export const ja: TranslationDict = {
     },
     "folders": {
       "pictures": "ピクチャ",
-      "recent": "Recent",
-      "misc": "Misc"
+      "recent": "最近の項目",
+      "misc": "その他"
     }
   },
   "mail": {
@@ -1083,7 +1084,7 @@ export const ja: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "未接続",
       "wifiDisabled": "Wi-Fi はオフです",
       "wifiNetworks": "利用可能なネットワーク",
       "scanning": "スキャン中...",

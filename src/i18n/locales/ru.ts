@@ -274,7 +274,7 @@ export const ru: TranslationDict = {
     },
     "empty": "Нет уведомлений",
     "clearApp": "Очистить все от этого приложения",
-    "messageFrom": "Message from {{sender}}"
+    "messageFrom": "Сообщение от {{sender}}"
   },
   "memory": {
     "title": "Память",
@@ -332,7 +332,8 @@ export const ru: TranslationDict = {
     "restoreSuccess": "{{app}} успешно восстановлено",
     "restoreError": "Не удалось восстановить {{app}}",
     "restorePermissionDenied": "Требуются права администратора для восстановления приложений",
-    "installingWarning": "Пожалуйста, подождите, пока приложение устанавливается."
+    "installingWarning": "Пожалуйста, подождите, пока приложение устанавливается.",
+    "installing": "Установка"
   },
   "browser": {
     "menu": {
@@ -340,8 +341,8 @@ export const ru: TranslationDict = {
       "closeTab": "Закрыть вкладку"
     },
     "welcome": {
-      "title": "Browser",
-      "description": "Search for information or enter a URL to start browsing.",
+      "title": "Браузер",
+      "description": "Ищите информацию или введите URL для начала просмотра.",
       "searchPlaceholder": "Искать веб-сайты или ввести адрес...",
       "favorites": "Избранное",
       "recentActivity": "Недавняя активность"
@@ -351,8 +352,8 @@ export const ru: TranslationDict = {
       "pageNotFound": "Страница не найдена",
       "pageNotFoundDesc": "Веб-сайт {{url}} не найден.",
       "goHome": "На главную",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "Нет подключения к Интернету",
+      "offlineDesc": "Вы не подключены к интернету. Пожалуйста, подключитесь к сети для просмотра веб-страниц."
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const ru: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: сеть недоступна"
       }
     }
   },
@@ -671,7 +672,7 @@ export const ru: TranslationDict = {
       "allPhotos": "Все фото",
       "favorites": "Избранное",
       "recent": "Недавние",
-      "userLibrary": "{{user}}'s Library"
+      "userLibrary": "Библиотека пользователя {{user}}"
     },
     "menu": {
       "slideshow": "Слайд-шоу",
@@ -700,15 +701,15 @@ export const ru: TranslationDict = {
     },
     "folders": {
       "pictures": "Изображения",
-      "recent": "Recent",
-      "misc": "Misc"
+      "recent": "Недавние",
+      "misc": "Разное"
     }
   },
   "mail": {
     "login": {
       "title": "Почта",
       "subtitle": "Войдите в свой аккаунт",
-      "emailPlaceholder": "Email",
+      "emailPlaceholder": "Электронная почта",
       "passwordPlaceholder": "Пароль",
       "signingIn": "Вход...",
       "signIn": "Войти",
@@ -1083,7 +1084,7 @@ export const ru: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "Не подключено",
       "wifiDisabled": "Wi-Fi выключен",
       "wifiNetworks": "Доступные сети",
       "scanning": "Сканирование...",

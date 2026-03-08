@@ -236,7 +236,7 @@ export const fr: TranslationDict = {
       "returnToUserSelectionWhile": "Retourner à la sélection d’utilisateur en",
       "keepingSession": "conservant la session",
       "clearingSession": "effaçant la session",
-      "panic": "PANIC",
+      "panic": "PANIQUE",
       "hardReset": "Réinitialisation complète",
       "warning": "Avertissement",
       "panicWarningBody": "Ceci réinitialisera {{productName}} aux paramètres d’usine. Pratique comme bouton panique en cas de problème.",
@@ -327,12 +327,13 @@ export const fr: TranslationDict = {
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "restore": "Restaurer",
-    "checkFailed": "Check Failed",
-    "checkFailedTitle": "Installation Check Failed",
-    "restoreSuccess": "{{app}} restored successfully",
-    "restoreError": "Failed to restore {{app}}",
-    "restorePermissionDenied": "Admin privileges required to restore apps",
-    "installingWarning": "Veuillez patienter pendant l'installation de l'application."
+    "checkFailed": "Échec de la vérification",
+    "checkFailedTitle": "Échec de la vérification de l'installation",
+    "restoreSuccess": "{{app}} restaurée avec succès",
+    "restoreError": "Échec de la restauration de {{app}}",
+    "restorePermissionDenied": "Privilèges d'administrateur requis pour restaurer les applications",
+    "installingWarning": "Veuillez patienter pendant l'installation de l'application.",
+    "installing": "Installation en cours"
   },
   "browser": {
     "menu": {
@@ -351,8 +352,8 @@ export const fr: TranslationDict = {
       "pageNotFound": "Page non trouvée",
       "pageNotFoundDesc": "Le site web {{url}} n'a pas pu être trouvé.",
       "goHome": "Aller à l'accueil",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "Pas de connexion Internet",
+      "offlineDesc": "Vous n'êtes pas connecté à Internet. Veuillez vous connecter à un réseau pour naviguer sur le Web."
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const fr: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect : le réseau est inaccessible"
       }
     }
   },
@@ -558,7 +559,7 @@ export const fr: TranslationDict = {
       "bytes": "{{count}} octets",
       "type": "Type",
       "owner": "Propriétaire",
-      "permissions": "Permissions",
+      "permissions": "Autorisations",
       "modified": "Modifié",
       "size": "Taille"
     },
@@ -944,7 +945,7 @@ export const fr: TranslationDict = {
       "systemTitle": "Système",
       "storage": "Stockage",
       "fileSystem": "Système de fichiers",
-      "appsTitle": "Apps",
+      "appsTitle": "Applications",
       "performance": "Performance"
     },
     "dashboard": {
@@ -1083,7 +1084,7 @@ export const fr: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "Non connecté",
       "wifiDisabled": "Wi-Fi désactivé",
       "wifiNetworks": "Réseaux disponibles",
       "scanning": "Recherche en cours...",
@@ -1239,7 +1240,7 @@ export const fr: TranslationDict = {
     "metrics": {
       "health": "Santé",
       "cycles": "Cycles",
-      "temp": "Temp",
+      "temp": "Temp.",
       "voltage": "Tension"
     },
     "disclaimer": "Les métriques de santé et d'état de la batterie sont des estimations basées sur les capteurs système disponibles. Les valeurs réelles peuvent varier.",

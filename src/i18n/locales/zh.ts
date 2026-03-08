@@ -274,7 +274,7 @@ export const zh: TranslationDict = {
     },
     "empty": "暂无通知",
     "clearApp": "清除此应用所有通知",
-    "messageFrom": "Message from {{sender}}"
+    "messageFrom": "来自 {{sender}} 的消息"
   },
   "memory": {
     "title": "内存",
@@ -327,12 +327,13 @@ export const zh: TranslationDict = {
     "cancel": "取消",
     "confirm": "确认",
     "restore": "恢复",
-    "checkFailed": "Check Failed",
-    "checkFailedTitle": "Installation Check Failed",
-    "restoreSuccess": "{{app}} restored successfully",
-    "restoreError": "Failed to restore {{app}}",
-    "restorePermissionDenied": "Admin privileges required to restore apps",
-    "installingWarning": "正在安装应用程序，请稍候。"
+    "checkFailed": "检查失败",
+    "checkFailedTitle": "安装检查失败",
+    "restoreSuccess": "{{app}} 已成功恢复",
+    "restoreError": "无法恢复 {{app}}",
+    "restorePermissionDenied": "恢复应用程序需要管理员权限",
+    "installingWarning": "正在安装应用程序，请稍候。",
+    "installing": "正在安装"
   },
   "browser": {
     "menu": {
@@ -340,8 +341,8 @@ export const zh: TranslationDict = {
       "closeTab": "关闭标签页"
     },
     "welcome": {
-      "title": "Browser",
-      "description": "Search for information or enter a URL to start browsing.",
+      "title": "浏览器",
+      "description": "搜索信息或输入网址开始浏览。",
       "searchPlaceholder": "搜索网站或输入地址...",
       "favorites": "收藏",
       "recentActivity": "最近活动"
@@ -351,8 +352,8 @@ export const zh: TranslationDict = {
       "pageNotFound": "页面未找到",
       "pageNotFoundDesc": "无法找到网站 {{url}}。",
       "goHome": "前往首页",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "无网络连接",
+      "offlineDesc": "您尚未连接到互联网。请连接到网络以浏览网页。"
     }
   },
   "music": {
@@ -423,11 +424,11 @@ export const zh: TranslationDict = {
       },
       "ls": {
         "description": "列出目录内容",
-        "usage": "ls [path]"
+        "usage": "ls [路径]"
       },
       "cd": {
         "description": "切换目录",
-        "usage": "cd <path>"
+        "usage": "cd <路径>"
       },
       "pwd": {
         "description": "显示当前目录"
@@ -443,47 +444,47 @@ export const zh: TranslationDict = {
       },
       "cat": {
         "description": "显示文件内容",
-        "usage": "cat <file>"
+        "usage": "cat <文件>"
       },
       "mkdir": {
         "description": "创建目录",
-        "usage": "mkdir <name>"
+        "usage": "mkdir <名称>"
       },
       "touch": {
         "description": "创建文件或更新时间戳",
-        "usage": "touch <name>"
+        "usage": "touch <名称>"
       },
       "rm": {
         "description": "删除文件或目录",
-        "usage": "rm <name>"
+        "usage": "rm <名称>"
       },
       "cp": {
         "description": "复制文件",
-        "usage": "cp <source> <dest>"
+        "usage": "cp <源> <目标>"
       },
       "mv": {
         "description": "移动（重命名）文件",
-        "usage": "mv <source> <dest>"
+        "usage": "mv <源> <目标>"
       },
       "chmod": {
         "description": "更改文件权限",
-        "usage": "chmod <mode> <file>"
+        "usage": "chmod <模式> <文件>"
       },
       "chown": {
         "description": "更改文件所有者和组",
-        "usage": "chown <owner>[:<group>] <file>"
+        "usage": "chown <所有者>[:<组>] <文件>"
       },
       "grep": {
         "description": "打印匹配模式的行",
-        "usage": "grep <pattern> <file>"
+        "usage": "grep <模式> <文件>"
       },
       "find": {
         "description": "在目录层次结构中搜索文件",
-        "usage": "find [path] [-name pattern]"
+        "usage": "find [路径] [-name 模式]"
       },
       "echo": {
         "description": "显示一行文本",
-        "usage": "echo [text]"
+        "usage": "echo [文本]"
       },
       "date": {
         "description": "显示系统日期和时间"
@@ -505,11 +506,11 @@ export const zh: TranslationDict = {
       },
       "su": {
         "description": "更改用户 ID 或成为超级用户",
-        "usage": "su [username] [password]"
+        "usage": "su [用户名] [密码]"
       },
       "sudo": {
         "description": "以其他用户身份执行命令",
-        "usage": "sudo [options] [command]"
+        "usage": "sudo [选项] [命令]"
       },
       "history": {
         "description": "显示终端命令历史",
@@ -518,7 +519,7 @@ export const zh: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: 网络不可达"
       }
     }
   },
@@ -671,7 +672,7 @@ export const zh: TranslationDict = {
       "allPhotos": "所有照片",
       "favorites": "收藏",
       "recent": "最近",
-      "userLibrary": "{{user}}'s Library"
+      "userLibrary": "{{user}} 的库"
     },
     "menu": {
       "slideshow": "幻灯片",
@@ -700,8 +701,8 @@ export const zh: TranslationDict = {
     },
     "folders": {
       "pictures": "图片",
-      "recent": "Recent",
-      "misc": "Misc"
+      "recent": "最近",
+      "misc": "杂项"
     }
   },
   "mail": {
@@ -1083,7 +1084,7 @@ export const zh: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "未连接",
       "wifiDisabled": "Wi-Fi 已关闭",
       "wifiNetworks": "可用网络",
       "scanning": "正在扫描...",

@@ -274,7 +274,7 @@ export const ro: TranslationDict = {
     },
     "empty": "Nu există notificări",
     "clearApp": "Șterge tot de la această aplicație",
-    "messageFrom": "Message from {{sender}}"
+    "messageFrom": "Mesaj de la {{sender}}"
   },
   "memory": {
     "title": "Memorie",
@@ -327,12 +327,13 @@ export const ro: TranslationDict = {
     "cancel": "Anulează",
     "confirm": "Confirmă",
     "restore": "Restaurează",
-    "checkFailed": "Check Failed",
-    "checkFailedTitle": "Installation Check Failed",
-    "restoreSuccess": "{{app}} restored successfully",
-    "restoreError": "Failed to restore {{app}}",
-    "restorePermissionDenied": "Admin privileges required to restore apps",
-    "installingWarning": "Vă rugăm să așteptați în timp ce aplicația se instalează."
+    "checkFailed": "Verificarea a eșuat",
+    "checkFailedTitle": "Verificarea instalării a eșuat",
+    "restoreSuccess": "{{app}} a fost restaurat cu succes",
+    "restoreError": "Eroare la restaurarea {{app}}",
+    "restorePermissionDenied": "Privilegii de administrator necesare pentru a restaura aplicații",
+    "installingWarning": "Vă rugăm să așteptați în timp ce aplicația se instalează.",
+    "installing": "Se instalează"
   },
   "browser": {
     "menu": {
@@ -341,7 +342,7 @@ export const ro: TranslationDict = {
     },
     "welcome": {
       "title": "Browser",
-      "description": "Search for information or enter a URL to start browsing.",
+      "description": "Caută informații sau introdu un URL pentru a începe navigarea.",
       "searchPlaceholder": "Caută site-uri web sau introdu o adresă...",
       "favorites": "Favorite",
       "recentActivity": "Activitate recentă"
@@ -351,8 +352,8 @@ export const ro: TranslationDict = {
       "pageNotFound": "Pagina nu a fost găsită",
       "pageNotFoundDesc": "Site-ul web {{url}} nu a putut fi găsit.",
       "goHome": "Mergi la pagina principală",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "Fără conexiune la internet",
+      "offlineDesc": "Nu ești conectat la internet. Te rugăm să te conectezi la o rețea pentru a naviga pe web."
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const ro: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: rețeaua nu poate fi accesată"
       }
     }
   },
@@ -671,7 +672,7 @@ export const ro: TranslationDict = {
       "allPhotos": "Toate Fotografiile",
       "favorites": "Favorite",
       "recent": "Recente",
-      "userLibrary": "{{user}}'s Library"
+      "userLibrary": "Biblioteca lui {{user}}"
     },
     "menu": {
       "slideshow": "Diaporamă",
@@ -700,8 +701,8 @@ export const ro: TranslationDict = {
     },
     "folders": {
       "pictures": "Imagini",
-      "recent": "Recent",
-      "misc": "Misc"
+      "recent": "Recente",
+      "misc": "Diverse"
     }
   },
   "mail": {
@@ -787,8 +788,8 @@ export const ro: TranslationDict = {
     "actions": {
       "openFile": "Deschide Fișier",
       "saveFile": "Salvează Fișier",
-      "bold": "Bold",
-      "italic": "Italic",
+      "bold": "Aldin",
+      "italic": "Cursiv",
       "list": "Listă",
       "heading": "Titlu"
     },
@@ -799,7 +800,7 @@ export const ro: TranslationDict = {
     },
     "status": {
       "chars": "{{count}} caractere",
-      "lines": "Ln {{count}}"
+      "lines": "Lin {{count}}"
     },
     "contextSwitcher": {
       "title": "Apasă pentru a schimba contextul",
@@ -828,8 +829,8 @@ export const ro: TranslationDict = {
       "open": "Deschide...",
       "save": "Salvează",
       "closeTab": "Închide Tab",
-      "bold": "Bold",
-      "italic": "Italic",
+      "bold": "Aldin",
+      "italic": "Cursiv",
       "list": "Listă",
       "heading1": "Titlu 1",
       "heading2": "Titlu 2",
@@ -1083,7 +1084,7 @@ export const ro: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "Neconectat",
       "wifiDisabled": "Wi-Fi dezactivat",
       "wifiNetworks": "Rețele disponibile",
       "scanning": "Căutare în curs...",
@@ -1239,7 +1240,7 @@ export const ro: TranslationDict = {
     "metrics": {
       "health": "Sănătate",
       "cycles": "Cicluri",
-      "temp": "Temp",
+      "temp": "Temp.",
       "voltage": "Voltaj"
     },
     "disclaimer": "Măsurătorile privind sănătatea și starea bateriei sunt estimări bazate pe senzorii disponibili ai sistemului. Valorile reale pot varia.",

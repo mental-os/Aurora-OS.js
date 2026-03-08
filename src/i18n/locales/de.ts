@@ -45,8 +45,8 @@ export const de: TranslationDict = {
       "credits": {},
       "external": {
         "label": "Community",
-        "discord": "Discord Server",
-        "github": "GitHub Repo",
+        "discord": "Discord-Server",
+        "github": "GitHub-Repo",
         "download": "Download"
       },
       "devStatus": {
@@ -285,7 +285,7 @@ export const de: TranslationDict = {
     "processName": "Prozessname",
     "memory": "Speicher",
     "swapUsed": "Swap verwendet",
-    "systemWired": "Aurora System",
+    "systemWired": "Aurora-System",
     "activeSession": "Reservierter Speicher (Aktive Sitzung)",
     "userSession": "Sitzung: {{user}}",
     "backgroundSession": "Inaktiver Speicher (Hintergrund)",
@@ -327,12 +327,13 @@ export const de: TranslationDict = {
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
     "restore": "Wiederherstellen",
-    "checkFailed": "Check Failed",
-    "checkFailedTitle": "Installation Check Failed",
-    "restoreSuccess": "{{app}} restored successfully",
-    "restoreError": "Failed to restore {{app}}",
-    "restorePermissionDenied": "Admin privileges required to restore apps",
-    "installingWarning": "Bitte warten, während die Anwendung installiert wird."
+    "checkFailed": "Überprüfung fehlgeschlagen",
+    "checkFailedTitle": "Installationsprüfung fehlgeschlagen",
+    "restoreSuccess": "{{app}} erfolgreich wiederhergestellt",
+    "restoreError": "Fehler beim Wiederherstellen von {{app}}",
+    "restorePermissionDenied": "Admin-Rechte zum Wiederherstellen von Apps erforderlich",
+    "installingWarning": "Bitte warten, während die Anwendung installiert wird.",
+    "installing": "Installiert..."
   },
   "browser": {
     "menu": {
@@ -351,8 +352,8 @@ export const de: TranslationDict = {
       "pageNotFound": "Seite nicht gefunden",
       "pageNotFoundDesc": "Die Webseite {{url}} konnte nicht gefunden werden.",
       "goHome": "Zur Startseite",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "Keine Internetverbindung",
+      "offlineDesc": "Sie sind nicht mit dem Internet verbunden. Bitte verbinden Sie sich mit einem Netzwerk, um im Web zu surfen."
     }
   },
   "music": {
@@ -447,15 +448,15 @@ export const de: TranslationDict = {
       },
       "mkdir": {
         "description": "Verzeichnis erstellen",
-        "usage": "mkdir <name>"
+        "usage": "mkdir <Name>"
       },
       "touch": {
         "description": "Datei erstellen oder Zeitstempel aktualisieren",
-        "usage": "touch <name>"
+        "usage": "touch <Name>"
       },
       "rm": {
         "description": "Datei oder Verzeichnis entfernen",
-        "usage": "rm <name>"
+        "usage": "rm <Name>"
       },
       "cp": {
         "description": "Dateien kopieren",
@@ -483,7 +484,7 @@ export const de: TranslationDict = {
       },
       "echo": {
         "description": "Eine Zeile Text ausgeben",
-        "usage": "echo [text]"
+        "usage": "echo [Text]"
       },
       "date": {
         "description": "Systemdatum und -uhrzeit ausgeben"
@@ -518,7 +519,7 @@ export const de: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "Verbindung: Netzwerk ist nicht erreichbar"
       }
     }
   },
@@ -923,7 +924,7 @@ export const de: TranslationDict = {
       "red": "Rot",
       "yellow": "Gelb",
       "purple": "Lila",
-      "pink": "Pink",
+      "pink": "Rosa",
       "orange": "Orange",
       "gray": "Grau"
     },
@@ -1063,7 +1064,7 @@ export const de: TranslationDict = {
       "themeModeShadesDesc": "Tönungen der Akzentfarbe",
       "themeModeContrastTitle": "Kontrast",
       "themeModeContrastDesc": "Komplementärfarben",
-      "themeTitle": "Theme",
+      "themeTitle": "Design",
       "themeDark": "Dunkel",
       "themeLightSoon": "Hell (Demnächst)",
       "wallpaperActive": "Aktiv",
@@ -1083,7 +1084,7 @@ export const de: TranslationDict = {
     },
     "network": {
       "wifiTitle": "WLAN",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "Nicht verbunden",
       "wifiDisabled": "WLAN ist ausgeschaltet",
       "wifiNetworks": "Verfügbare Netzwerke",
       "scanning": "Suche läuft...",

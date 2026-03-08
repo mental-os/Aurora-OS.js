@@ -332,7 +332,8 @@ export const hi: TranslationDict = {
     "restoreSuccess": "{{app}} सफलतापूर्वक पुनर्स्थापित किया गया",
     "restoreError": "{{app}} पुनर्स्थापित करने में विफल",
     "restorePermissionDenied": "ऐप्स पुनर्स्थापित करने के लिए व्यवस्थापक विशेषाधिकार आवश्यक हैं",
-    "installingWarning": "कृपया प्रतीक्षा करें जब तक एप्लिकेशन इंस्टॉल हो रहा है।"
+    "installingWarning": "कृपया प्रतीक्षा करें जब तक एप्लिकेशन इंस्टॉल हो रहा है।",
+    "installing": "इंस्टॉल हो रहा है"
   },
   "browser": {
     "menu": {
@@ -351,8 +352,8 @@ export const hi: TranslationDict = {
       "pageNotFound": "पृष्ठ नहीं मिला",
       "pageNotFoundDesc": "वेबसाइट {{url}} नहीं मिली।",
       "goHome": "होम पर जाएं",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "कोई इंटरनेट कनेक्शन नहीं",
+      "offlineDesc": "आप इंटरनेट से कनेक्टेड नहीं हैं। वेब ब्राउज़ करने के लिए कृपया किसी नेटवर्क से जुड़ें।"
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const hi: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: नेटवर्क तक नहीं पहुँचा जा सकता"
       }
     }
   },
@@ -584,12 +585,12 @@ export const hi: TranslationDict = {
       "permissionDenied": "अनुमति अस्वीकार: {{name}}",
       "musicNotInstalled": "म्यूजिक ऐप इंस्टॉल नहीं है। इसे ऐप स्टोर से इंस्टॉल करें।",
       "notepadNotInstalled": "नोटपैड इंस्टॉल नहीं है। इसे ऐप स्टोर से इंस्टॉल करें।",
-      "photosNotInstalled": "Photos app is not installed. Install it from the App Store.",
-      "movedItem": "Moved 1 item",
+      "photosNotInstalled": "फ़ोटो ऐप इंस्टॉल नहीं है। इसे ऐप स्टोर से इंस्टॉल करें।",
+      "movedItem": "1 आइटम ले जाया गया",
       "movedItems": "{{count}} आइटम स्थानांतरित किए गए",
-      "movedItemTo": "Moved 1 item to {{target}}",
+      "movedItemTo": "1 आइटम {{target}} में ले जाया गया",
       "movedItemsTo": "{{count}} आइटम {{target}} में स्थानांतरित किए गए",
-      "movedItemToTrash": "Moved 1 item to Trash",
+      "movedItemToTrash": "1 आइटम ट्रैश में ले जाया गया",
       "movedItemsToTrash": "{{count}} आइटम ट्रैश (Trash) में स्थानांतरित किए गए",
       "moveFailedInvalidData": "मूव विफल: अमान्य डेटा",
       "failedToProcessDrop": "ड्रॉप को प्रोसेस करने में विफल रहा",
@@ -604,7 +605,7 @@ export const hi: TranslationDict = {
     "emptyFolder": "यह फ़ोल्डर खाली है"
   },
   "messages": {
-    "title": "Messages",
+    "title": "संदेश",
     "sidebar": {
       "conversationsTitle": "बात चिट",
       "allMessages": "सभी संदेश",
@@ -856,7 +857,7 @@ export const hi: TranslationDict = {
     },
     "actions": {
       "createEvent": "इवेंट बनाएं",
-      "createCategory": "Create Category",
+      "createCategory": "श्रेणी बनाएं",
       "clear": "स्पष्ट",
       "delete": "मिटाना",
       "cancel": "रद्द करना",
@@ -864,7 +865,7 @@ export const hi: TranslationDict = {
     },
     "loadingEvents": "इवेंट लोड हो रहे हैं...",
     "toasts": {
-      "cannotDeleteSystemCategory": "System categories cannot be deleted",
+      "cannotDeleteSystemCategory": "सिस्टम श्रेणियों को हटाया नहीं जा सकता",
       "eventDeleted": "इवेंट हटा दिया गया",
       "eventSaved": "इवेंट सहेजा गया",
       "requiredFields": "कृपया आवश्यक फील्ड्स भरें"
@@ -892,7 +893,7 @@ export const hi: TranslationDict = {
         "selectDuration": "अवधि चुनें",
         "searchDuration": "खोज की अवधि...",
         "noDurationFound": "कोई अवधि नहीं मिली।",
-        "selectType": "Select type",
+        "selectType": "प्रकार चुनें",
         "searchType": "तलाश की विधि...",
         "noTypeFound": "कोई प्रकार नहीं मिला।",
         "addLocation": "स्थान जोड़ना",
@@ -944,7 +945,7 @@ export const hi: TranslationDict = {
       "systemTitle": "प्रणाली",
       "storage": "भंडारण",
       "fileSystem": "फाइल सिस्टम",
-      "appsTitle": "Apps",
+      "appsTitle": "ऐप्स",
       "performance": "प्रदर्शन"
     },
     "dashboard": {
@@ -952,21 +953,21 @@ export const hi: TranslationDict = {
       "description": "{{productName}} डेवलपर सेंटर में आपका स्वागत है।"
     },
     "ui": {
-      "title": "User Interface & Feedback",
-      "notificationsTitle": "Notifications",
+      "title": "यूज़र इंटरफ़ेस और फीडबैक",
+      "notificationsTitle": "सूचनाएं",
       "successToast": "सफलता टोस्ट",
       "warningToast": "चेतावनी टोस्ट",
       "errorToast": "त्रुटि टोस्ट",
       "soundFeedback": "ध्वनि प्रतिक्रिया",
       "buttons": {
-        "success": "Success",
-        "warning": "Warning",
-        "error": "Error",
-        "app": "App Notification",
-        "open": "Open",
-        "close": "Close",
-        "click": "Click",
-        "hover": "Hover"
+        "success": "सफलता",
+        "warning": "चेतावनी",
+        "error": "त्रुटि",
+        "app": "ऐप सूचना",
+        "open": "खोलें",
+        "close": "बंद करें",
+        "click": "क्लिक करें",
+        "hover": "होवर"
       }
     },
     "storage": {
@@ -998,29 +999,29 @@ export const hi: TranslationDict = {
     },
     "messages": {
       "createValues": {
-        "title": "Create / Reset Account",
-        "username": "Username",
-        "password": "Password",
-        "button": "Create Account",
-        "success": "Account {{username}} created"
+        "title": "खाता बनाएं / रीसेट करें",
+        "username": "यूज़रनेम",
+        "password": "पासवर्ड",
+        "button": "खाता बनाएं",
+        "success": "खाता {{username}} बन गया है"
       },
       "registry": {
-        "title": "Accounts Registry",
-        "empty": "No accounts found",
-        "useInSender": "Use in Sender",
-        "delete": "Delete Account",
-        "deleteConfirm": "Delete account {{username}}? This cannot be undone.",
-        "deleteSuccess": "Account {{username}} deleted"
+        "title": "खाता रजिस्ट्री",
+        "empty": "कोई खाता नहीं मिला",
+        "useInSender": "भेजने वाले के रूप में उपयोग करें",
+        "delete": "खाता हटाएं",
+        "deleteConfirm": "क्या आप खाता {{username}} हटाना चाहते हैं? इसे वापस नहीं लिया जा सकता।",
+        "deleteSuccess": "खाता {{username}} हटा दिया गया"
       },
       "sendMessage": {
-        "title": "Send Inter-User Message",
-        "from": "Sender (From)",
-        "to": "Recipient (To)",
-        "selectAccount": "Select Account...",
-        "content": "Content",
-        "placeholder": "Type a message...",
-        "button": "Send Message",
-        "success": "Message sent"
+        "title": "यूज़र-टू-यूज़र संदेश भेजें",
+        "from": "प्रेषक (From)",
+        "to": "प्राप्तकर्ता (To)",
+        "selectAccount": "खाता चुनें...",
+        "content": "सामग्री",
+        "placeholder": "एक संदेश टाइप करें...",
+        "button": "संदेश भेजें",
+        "success": "संदेश भेज दिया गया"
       }
     }
   },
@@ -1078,29 +1079,29 @@ export const hi: TranslationDict = {
       "disableShadowsDescription": "रेंडरिंग परफॉर्मेंस को बेहतर बनाने के लिए विंडो शैडो हटा दें।",
       "disableGradientsTitle": "ग्रेडिएंट्स को अक्षम करें",
       "disableGradientsDescription": "आइकन के लिए ग्रेडिएंट के बजाय सॉलिड रंगों का इस्तेमाल करें।",
-      "gpuTitle": "Use graphics acceleration",
-      "gpuDescription": "Use hardware acceleration when available (restart required)"
+      "gpuTitle": "ग्राफिक्स एक्सेलेरेशन का उपयोग करें",
+      "gpuDescription": "उपलब्ध होने पर हार्डवेयर एक्सेलेरेशन का उपयोग करें (पुनरारंभ आवश्यक)"
     },
     "network": {
-      "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
-      "wifiDisabled": "Wi-Fi is off",
-      "wifiNetworks": "Available Networks",
-      "scanning": "Scanning...",
-      "passwordPlaceholder": "Password",
-      "disconnect": "Disconnect",
-      "configurationMode": "Configuration mode",
-      "automatic": "Automatic (DHCP)",
-      "manual": "Manual",
-      "autoConfigTitle": "Automatic configuration",
-      "manualConfigTitle": "Manual configuration",
-      "ipAddress": "IP Address",
-      "subnetMask": "Subnet Mask",
-      "gateway": "Gateway",
-      "dns": "DNS Server",
-      "validateConfig": "Validate configuration",
-      "configSaved": "Network configuration saved successfully",
-      "dhcpAttributionProgress": "Retrieving an IP address via DHCP"
+      "wifiTitle": "वाई-फाई",
+      "wifinotConnected": "कनेक्टेड नहीं है",
+      "wifiDisabled": "वाई-फाई बंद है",
+      "wifiNetworks": "उपलब्ध नेटवर्क",
+      "scanning": "स्कैन हो रहा है...",
+      "passwordPlaceholder": "पासवर्ड",
+      "disconnect": "डिस्कनेक्ट करें",
+      "configurationMode": "कॉन्फ़िगरेशन मोड",
+      "automatic": "स्वचालित (DHCP)",
+      "manual": "मैन्युअल",
+      "autoConfigTitle": "स्वचालित कॉन्फ़िगरेशन",
+      "manualConfigTitle": "मैन्युअल कॉन्फ़िगरेशन",
+      "ipAddress": "आईपी पता",
+      "subnetMask": "सबनेट मास्क",
+      "gateway": "गेटवे",
+      "dns": "DNS सर्वर",
+      "validateConfig": "कॉन्फ़िगरेशन सत्यापित करें",
+      "configSaved": "नेटवर्क कॉन्फ़िगरेशन सफलतापूर्वक सहेजा गया",
+      "dhcpAttributionProgress": "DHCP के माध्यम से आईपी पता प्राप्त किया जा रहा है"
     },
     "placeholders": {
       "notificationsTitle": "सूचनाएं",

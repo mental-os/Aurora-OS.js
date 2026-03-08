@@ -274,7 +274,7 @@ export const tr: TranslationDict = {
     },
     "empty": "Bildirim Yok",
     "clearApp": "Bu uygulamadan gelenlerin hepsini temizle",
-    "messageFrom": "Message from {{sender}}"
+    "messageFrom": "{{sender}} kullanıcısından mesaj"
   },
   "memory": {
     "title": "Bellek",
@@ -332,7 +332,8 @@ export const tr: TranslationDict = {
     "restoreSuccess": "{{app}} başarıyla geri yüklendi",
     "restoreError": "{{app}} geri yüklenemedi",
     "restorePermissionDenied": "Uygulamaları geri yüklemek için yönetici izinleri gereklidir",
-    "installingWarning": "Uygulama yüklenirken lütfen bekleyin."
+    "installingWarning": "Uygulama yüklenirken lütfen bekleyin.",
+    "installing": "Yükleniyor"
   },
   "browser": {
     "menu": {
@@ -340,8 +341,8 @@ export const tr: TranslationDict = {
       "closeTab": "Sekmeyi Kapat"
     },
     "welcome": {
-      "title": "Browser",
-      "description": "Search for information or enter a URL to start browsing.",
+      "title": "Tarayıcı",
+      "description": "Gezinmeye başlamak için bilgi arayın veya bir URL girin.",
       "searchPlaceholder": "Web sitelerini ara veya adres gir...",
       "favorites": "Sık Kullanılanlar",
       "recentActivity": "Son Etkinlik"
@@ -351,8 +352,8 @@ export const tr: TranslationDict = {
       "pageNotFound": "Sayfa Bulunamadı",
       "pageNotFoundDesc": "{{url}} web sitesi bulunamadı.",
       "goHome": "Eve Dön",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "İnternet Bağlantısı Yok",
+      "offlineDesc": "İnternete bağlı değilsiniz. Web'de gezinmek için lütfen bir ağa bağlanın."
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const tr: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: ağa erişilemiyor"
       }
     }
   },
@@ -671,7 +672,7 @@ export const tr: TranslationDict = {
       "allPhotos": "Tüm Fotoğraflar",
       "favorites": "Sık Kullanılanlar",
       "recent": "En Son",
-      "userLibrary": "{{user}}'s Library"
+      "userLibrary": "{{user}} kullanıcısının Kitaplığı"
     },
     "menu": {
       "slideshow": "Slayt Gösterisi",
@@ -700,8 +701,8 @@ export const tr: TranslationDict = {
     },
     "folders": {
       "pictures": "Resimler",
-      "recent": "Recent",
-      "misc": "Misc"
+      "recent": "Son Kullanılanlar",
+      "misc": "Çeşitli"
     }
   },
   "mail": {
@@ -1083,7 +1084,7 @@ export const tr: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "Bağlı Değil",
       "wifiDisabled": "Wi-Fi kapalı",
       "wifiNetworks": "Kullanılabilir Ağlar",
       "scanning": "Taranıyor...",

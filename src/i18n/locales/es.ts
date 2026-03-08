@@ -327,12 +327,13 @@ export const es: TranslationDict = {
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "restore": "Restaurar",
-    "checkFailed": "Check Failed",
-    "checkFailedTitle": "Installation Check Failed",
-    "restoreSuccess": "{{app}} restored successfully",
-    "restoreError": "Failed to restore {{app}}",
-    "restorePermissionDenied": "Admin privileges required to restore apps",
-    "installingWarning": "Por favor espere mientras se instala la aplicación."
+    "checkFailed": "Fallo en la comprobación",
+    "checkFailedTitle": "Fallo en la comprobación de instalación",
+    "restoreSuccess": "{{app}} restaurada con éxito",
+    "restoreError": "Error al restaurar {{app}}",
+    "restorePermissionDenied": "Se requieren permisos de administrador para restaurar aplicaciones",
+    "installingWarning": "Por favor espere mientras se instala la aplicación.",
+    "installing": "Instalando"
   },
   "browser": {
     "menu": {
@@ -351,8 +352,8 @@ export const es: TranslationDict = {
       "pageNotFound": "Página no encontrada",
       "pageNotFoundDesc": "No se ha podido encontrar el sitio web {{url}}.",
       "goHome": "Ir al inicio",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "Sin conexión a Internet",
+      "offlineDesc": "No estás conectado a Internet. Por favor, conéctate a una red para navegar por la web."
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const es: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: la red no es accesible"
       }
     }
   },
@@ -701,7 +702,7 @@ export const es: TranslationDict = {
     "folders": {
       "pictures": "Imágenes",
       "recent": "Recientes",
-      "misc": "Misc"
+      "misc": "Varios"
     }
   },
   "mail": {
@@ -1083,7 +1084,7 @@ export const es: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "No conectado",
       "wifiDisabled": "Wi-Fi desactivado",
       "wifiNetworks": "Redes disponibles",
       "scanning": "Buscando...",

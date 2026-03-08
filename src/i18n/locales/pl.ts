@@ -274,7 +274,7 @@ export const pl: TranslationDict = {
     },
     "empty": "Brak powiadomień",
     "clearApp": "Wyczyść wszystkie dla tej aplikacji",
-    "messageFrom": "Message from {{sender}}"
+    "messageFrom": "Wiadomość od {{sender}}"
   },
   "memory": {
     "title": "Pamięć",
@@ -309,7 +309,7 @@ export const pl: TranslationDict = {
     "categories": {
       "all": "Wszystkie",
       "productivity": "Produktywność",
-      "media": "Media",
+      "media": "Multimedia",
       "utilities": "Narzędzia",
       "development": "Programowanie",
       "system": "System"
@@ -332,7 +332,8 @@ export const pl: TranslationDict = {
     "restoreSuccess": "Pomyślnie przywrócono {{app}}",
     "restoreError": "Nie udało się przywrócić {{app}}",
     "restorePermissionDenied": "Wymagane uprawnienia administratora do przywracania aplikacji",
-    "installingWarning": "Proszę czekać, trwa instalacja aplikacji."
+    "installingWarning": "Proszę czekać, trwa instalacja aplikacji.",
+    "installing": "Instalowanie"
   },
   "browser": {
     "menu": {
@@ -340,8 +341,8 @@ export const pl: TranslationDict = {
       "closeTab": "Zamknij kartę"
     },
     "welcome": {
-      "title": "Browser",
-      "description": "Search for information or enter a URL to start browsing.",
+      "title": "Przeglądarka",
+      "description": "Szukaj informacji lub wprowadź adres URL, aby rozpocząć przeglądanie.",
       "searchPlaceholder": "Szukaj stron lub wpisz adres...",
       "favorites": "Ulubione",
       "recentActivity": "Ostatnia aktywność"
@@ -351,8 +352,8 @@ export const pl: TranslationDict = {
       "pageNotFound": "Strona nie znaleziona",
       "pageNotFoundDesc": "Strona internetowa {{url}} nie została znaleziona.",
       "goHome": "Wróć do strony głównej",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "Brak połączenia z Internetem",
+      "offlineDesc": "Nie masz połączenia z Internetem. Połącz się z siecią, aby przeglądać Internet."
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const pl: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: sieć jest nieosiągalna"
       }
     }
   },
@@ -653,7 +654,7 @@ export const pl: TranslationDict = {
       "noChatSelected": "Nie wybrano czatu",
       "chooseConversation": "Wybierz rozmowę lub rozpocznij nową.",
       "startNewMessage": "Rozpocznij nową wiadomość",
-      "online": "Online",
+      "online": "Dostępny",
       "typeMessage": "Wiadomość do {{partner}}...",
       "unstar": "Usuń gwiazdkę",
       "star": "Oznacz gwiazdką",
@@ -671,7 +672,7 @@ export const pl: TranslationDict = {
       "allPhotos": "Wszystkie zdjęcia",
       "favorites": "Ulubione",
       "recent": "Ostatnie",
-      "userLibrary": "{{user}}'s Library"
+      "userLibrary": "Biblioteka użytkownika {{user}}"
     },
     "menu": {
       "slideshow": "Pokaz slajdów",
@@ -700,8 +701,8 @@ export const pl: TranslationDict = {
     },
     "folders": {
       "pictures": "Obrazy",
-      "recent": "Recent",
-      "misc": "Misc"
+      "recent": "Ostatnie",
+      "misc": "Różne"
     }
   },
   "mail": {
@@ -966,12 +967,12 @@ export const pl: TranslationDict = {
         "open": "Otwórz",
         "close": "Zamknij",
         "click": "Klik",
-        "hover": "Hover"
+        "hover": "Najedź"
       }
     },
     "storage": {
       "title": "Inspektor Pamięci",
-      "import": "Import",
+      "import": "Importuj",
       "export": "Eksport",
       "clear": "Wyczyść",
       "toastTitle": "Pamięć",
@@ -1083,7 +1084,7 @@ export const pl: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "Niepołączono",
       "wifiDisabled": "Wi-Fi jest wyłączone",
       "wifiNetworks": "Dostępne sieci",
       "scanning": "Skanowanie...",
@@ -1239,7 +1240,7 @@ export const pl: TranslationDict = {
     "metrics": {
       "health": "Zdrowie",
       "cycles": "Cykle",
-      "temp": "Temp",
+      "temp": "Temp.",
       "voltage": "Napięcie"
     },
     "disclaimer": "Dane dotyczące zdrowia i stanu baterii są szacunkowe na podstawie dostępnych czujników systemowych. Rzeczywiste wartości mogą się różnić.",

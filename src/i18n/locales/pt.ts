@@ -274,7 +274,7 @@ export const pt: TranslationDict = {
     },
     "empty": "Sem notificações",
     "clearApp": "Limpar tudo deste app",
-    "messageFrom": "Message from {{sender}}"
+    "messageFrom": "Mensagem de {{sender}}"
   },
   "memory": {
     "title": "Memória",
@@ -327,12 +327,13 @@ export const pt: TranslationDict = {
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "restore": "Restaurar",
-    "checkFailed": "Check Failed",
-    "checkFailedTitle": "Installation Check Failed",
-    "restoreSuccess": "{{app}} restored successfully",
-    "restoreError": "Failed to restore {{app}}",
-    "restorePermissionDenied": "Admin privileges required to restore apps",
-    "installingWarning": "Aguarde enquanto a aplicação é instalada."
+    "checkFailed": "A verificação falhou",
+    "checkFailedTitle": "Falha na verificação de instalação",
+    "restoreSuccess": "{{app}} restaurado com sucesso",
+    "restoreError": "Falha ao restaurar {{app}}",
+    "restorePermissionDenied": "Privilégios de administrador necessários para restaurar apps",
+    "installingWarning": "Aguarde enquanto a aplicação é instalada.",
+    "installing": "Instalando"
   },
   "browser": {
     "menu": {
@@ -340,8 +341,8 @@ export const pt: TranslationDict = {
       "closeTab": "Fechar Aba"
     },
     "welcome": {
-      "title": "Browser",
-      "description": "Search for information or enter a URL to start browsing.",
+      "title": "Navegador",
+      "description": "Pesquise informações ou digite um URL para começar a navegar.",
       "searchPlaceholder": "Buscar sites ou digitar endereço...",
       "favorites": "Favoritos",
       "recentActivity": "Atividade Recente"
@@ -351,8 +352,8 @@ export const pt: TranslationDict = {
       "pageNotFound": "Página Não Encontrada",
       "pageNotFoundDesc": "O site {{url}} não pôde ser encontrado.",
       "goHome": "Ir para o Início",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "Sem conexão à Internet",
+      "offlineDesc": "Você não está conectado à internet. Conecte-se a uma rede para navegar na web."
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const pt: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: a rede está inacessível"
       }
     }
   },
@@ -671,7 +672,7 @@ export const pt: TranslationDict = {
       "allPhotos": "Todas as fotos",
       "favorites": "Favoritas",
       "recent": "Recentes",
-      "userLibrary": "{{user}}'s Library"
+      "userLibrary": "Biblioteca de {{user}}"
     },
     "menu": {
       "slideshow": "Apresentação",
@@ -700,8 +701,8 @@ export const pt: TranslationDict = {
     },
     "folders": {
       "pictures": "Imagens",
-      "recent": "Recent",
-      "misc": "Misc"
+      "recent": "Recentes",
+      "misc": "Diversos"
     }
   },
   "mail": {
@@ -1083,7 +1084,7 @@ export const pt: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "Não conectado",
       "wifiDisabled": "Wi-Fi desligado",
       "wifiNetworks": "Redes disponíveis",
       "scanning": "Procurando...",
@@ -1239,7 +1240,7 @@ export const pt: TranslationDict = {
     "metrics": {
       "health": "Saúde",
       "cycles": "Ciclos",
-      "temp": "Temp",
+      "temp": "Temp.",
       "voltage": "Voltagem"
     },
     "disclaimer": "As métricas de saúde e condição da bateria são estimativas baseadas nos sensores do sistema disponíveis. Os valores reais podem variar.",

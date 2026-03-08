@@ -274,7 +274,7 @@ export const ko: TranslationDict = {
     },
     "empty": "알림 없음",
     "clearApp": "이 앱의 모든 알림 지우기",
-    "messageFrom": "Message from {{sender}}"
+    "messageFrom": "{{sender}}님의 메시지"
   },
   "memory": {
     "title": "메모리",
@@ -332,7 +332,8 @@ export const ko: TranslationDict = {
     "restoreSuccess": "{{app}} 복원 성공",
     "restoreError": "{{app}} 복원 실패",
     "restorePermissionDenied": "앱을 복원하려면 관리자 권한이 필요합니다",
-    "installingWarning": "애플리케이션을 설치하는 동안 기다려 주십시오."
+    "installingWarning": "애플리케이션을 설치하는 동안 기다려 주십시오.",
+    "installing": "설치 중"
   },
   "browser": {
     "menu": {
@@ -340,8 +341,8 @@ export const ko: TranslationDict = {
       "closeTab": "탭 닫기"
     },
     "welcome": {
-      "title": "Browser",
-      "description": "Search for information or enter a URL to start browsing.",
+      "title": "브라우저",
+      "description": "정보를 검색하거나 URL을 입력하여 브라우징을 시작하세요.",
       "searchPlaceholder": "웹사이트 검색 또는 주소 입력...",
       "favorites": "즐겨찾기",
       "recentActivity": "최근 활동"
@@ -351,8 +352,8 @@ export const ko: TranslationDict = {
       "pageNotFound": "페이지를 찾을 수 없음",
       "pageNotFoundDesc": "웹사이트 {{url}}을(를) 찾을 수 없습니다.",
       "goHome": "홈으로",
-      "offlineTitle": "No Internet Connection",
-      "offlineDesc": "You are not connected to the internet. Please connect to a network to browse the web."
+      "offlineTitle": "인터넷 연결 없음",
+      "offlineDesc": "인터넷에 연결되어 있지 않습니다. 웹 서핑을 하려면 네트워크에 연결해 주세요."
     }
   },
   "music": {
@@ -518,7 +519,7 @@ export const ko: TranslationDict = {
     },
     "errors": {
       "connect": {
-        "offline": "connect: network is unreachable"
+        "offline": "connect: 네트워크에 연결할 수 없습니다"
       }
     }
   },
@@ -671,7 +672,7 @@ export const ko: TranslationDict = {
       "allPhotos": "모든 사진",
       "favorites": "즐겨찾기",
       "recent": "최근 항목",
-      "userLibrary": "{{user}}'s Library"
+      "userLibrary": "{{user}}의 라이브러리"
     },
     "menu": {
       "slideshow": "슬라이드쇼",
@@ -700,8 +701,8 @@ export const ko: TranslationDict = {
     },
     "folders": {
       "pictures": "사진",
-      "recent": "Recent",
-      "misc": "Misc"
+      "recent": "최근 항목",
+      "misc": "기타"
     }
   },
   "mail": {
@@ -1083,7 +1084,7 @@ export const ko: TranslationDict = {
     },
     "network": {
       "wifiTitle": "Wi-Fi",
-      "wifinotConnected": "Not Connected",
+      "wifinotConnected": "연결되지 않음",
       "wifiDisabled": "Wi-Fi 꺼짐",
       "wifiNetworks": "사용 가능한 네트워크",
       "scanning": "검색 중...",

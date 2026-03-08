@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, ReactNode, useMemo } from "react";
+import React, { useState, useRef, useEffect, useCallback, ReactNode, useMemo } from "react";
 import { validateIntegrity } from "@/utils/integrity";
 import { useFileSystem } from "@/components/FileSystemContext";
 import { useAppContext } from "@/components/AppContext";
@@ -193,8 +193,6 @@ export function useTerminalLogic(
     return [];
   });
 
-  const isRootSession = sessionStack.length <= 1;
-
   // Interactive Prompting
   const [promptState, setPromptState] = useState<{ message: string; type: 'text' | 'password'; callingHistoryId?: string } | null>(null);
   const promptResolverRef = useRef<((value: string) => void) | null>(null);
@@ -208,8 +206,8 @@ export function useTerminalLogic(
 
   const activeTerminalUser = useMemo(() => {
     if (connectedTo) {
-      return remoteSessionStack.length > 0 
-        ? remoteSessionStack[remoteSessionStack.length - 1] 
+      return remoteSessionStack.length > 0
+        ? remoteSessionStack[remoteSessionStack.length - 1]
         : 'guest'; // Fallback for remote
     }
     return sessionStack.length > 0
@@ -244,12 +242,12 @@ export function useTerminalLogic(
     });
 
     const localFs = createScopedFileSystem(activeTerminalUser);
-    
+
     if (connectedTo) {
       const npcApi = worldContext.getNpcApi(connectedTo);
       if (npcApi) return npcApi.as(activeTerminalUser);
     }
-    
+
     return localFs;
   }, [connectedTo, activeTerminalUser, worldContext, users, groups, homePath, resetFileSystem, login, logout, contextResolvePath, listDirectory, getNodeAtPath, createFile, createDirectory, moveToTrash, readFile, moveNode, writeFile, chmod, chown, verifyPassword]);
 
@@ -278,11 +276,33 @@ export function useTerminalLogic(
   const historyKey = `${STORAGE_KEYS.TERM_HISTORY_PREFIX}${activeTerminalUser}`;
   const inputKey = `${STORAGE_KEYS.TERM_INPUT_PREFIX}${activeTerminalUser}`;
 
+  // Recursive Deserialization
+  const deserializeOutput = (o: any): any => {
+    if (o === null || o === undefined) return o;
+    if (typeof o === 'string' || typeof o === 'number') return o;
+    if (Array.isArray(o)) return o.map(deserializeOutput);
+
+    if (o && typeof o === 'object' && o.__vnode) {
+      const { type, props } = o;
+      const cleanProps = { ...props };
+      if (cleanProps.children) {
+        cleanProps.children = deserializeOutput(cleanProps.children);
+      }
+      return React.createElement(type, cleanProps);
+    }
+    return o; // Fallback
+  };
+
   // Helper to load history
   const loadHistory = (key: string): CommandHistory[] => {
     try {
       const saved = memory.getItem(key);
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return parsed.map((h: any) => ({
+        ...h,
+        output: h.output.map(deserializeOutput)
+      }));
     } catch {
       return [];
     }
@@ -321,22 +341,32 @@ export function useTerminalLogic(
   // Persistence Effects
   useEffect(() => {
     try {
-      const serializeOutput = (o: any): string => {
-        if (o === null || o === undefined) return '';
-        if (typeof o === 'string') return o;
-        if (typeof o === 'number') return String(o);
-        if (Array.isArray(o)) return o.map(serializeOutput).join('\n');
+      const serializeOutput = (o: any): any => {
+        if (o === null || o === undefined) return o;
+        if (typeof o === 'string' || typeof o === 'number') return o;
+        if (Array.isArray(o)) return o.map(serializeOutput);
 
-        // React Element / Object handling
-        if (typeof o === 'object') {
-          const children = o.props?.children;
-          if (children) {
-            if (Array.isArray(children)) {
-              return children.map(serializeOutput).join('');
-            }
-            return serializeOutput(children);
+        // Check if it's a React element
+        if (o.$$typeof === Symbol.for('react.element') || (o && typeof o === 'object' && o.type && o.props)) {
+          const { type, props } = o;
+
+          // Handle fragment or complex types by simplifying to a div if needed, 
+          // or just store the string if it's a function component (though ideally we just use primitives in terminal output)
+          if (typeof type === 'function' || typeof type === 'symbol') {
+            // We can't easily serialize custom components, fallback to strings
+            return serializeOutput(props?.children || '[Complex Component]');
           }
-          if (o.textContent) return o.textContent;
+
+          const serializedProps = { ...props };
+          if (props.children) {
+            serializedProps.children = serializeOutput(props.children);
+          }
+
+          return {
+            __vnode: true,
+            type,
+            props: serializedProps
+          };
         }
 
         return "[Complex Output]";
@@ -427,17 +457,7 @@ export function useTerminalLogic(
     });
   }, []);
 
-  // Local path resolution
-  const resolvePath = useCallback(
-    (path: string): string => {
-      let resolved = path;
-      if (!path.startsWith("/") && !path.startsWith("~")) {
-        resolved = currentPath + (currentPath === "/" ? "" : "/") + path;
-      }
-      return contextResolvePath(resolved, activeTerminalUser);
-    },
-    [currentPath, contextResolvePath, activeTerminalUser]
-  );
+
 
   // Accent Color Logic
   const getTerminalAccentColor = useCallback(() => {
@@ -449,27 +469,6 @@ export function useTerminalLogic(
   const termAccent = getTerminalAccentColor();
   const shades = getColorShades(termAccent);
 
-  // Glob expansion
-  const expandGlob = useCallback(
-    (pattern: string): string[] => {
-      if (!pattern.includes("*")) return [pattern];
-      const resolvedPath = resolvePath(currentPath);
-      if (pattern.includes("/")) return [pattern];
-      const files = listDirectory(resolvedPath, activeTerminalUser);
-      if (!files) return [pattern];
-
-      const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const regex = new RegExp(
-        "^" + escapedPattern.replace(/\\\*/g, ".*") + "$"
-      );
-      const matches = files
-        .filter((f) => regex.test(f.name))
-        .map((f) => f.name);
-
-      return matches.length > 0 ? matches : [pattern];
-    },
-    [currentPath, resolvePath, listDirectory, activeTerminalUser]
-  );
 
   // Optimize Command Lookup: Pre-calculate available commands
   const availableCommands = useMemo(() => {
@@ -686,7 +685,85 @@ export function useTerminalLogic(
 
     const pipelines = parseShellInput(expandedInput);
 
-    // Execution State
+    // Pipeline Loop Execution State
+    let loopCurrentPath = currentPath;
+    let loopConnectedTo = connectedTo;
+    let loopSessionStack = [...sessionStack];
+    let loopRemoteSessionStack = [...remoteSessionStack];
+
+    const getLoopActiveUser = () => {
+      if (loopConnectedTo) {
+        return loopRemoteSessionStack.length > 0
+          ? loopRemoteSessionStack[loopRemoteSessionStack.length - 1]
+          : 'guest';
+      }
+      return loopSessionStack.length > 0
+        ? loopSessionStack[loopSessionStack.length - 1]
+        : currentUser || "guest";
+    };
+
+    const getLoopActiveFs = () => {
+      const activeUser = getLoopActiveUser();
+      const createScopedFileSystem = (asUser: string) => ({
+        currentUser: asUser,
+        users,
+        groups,
+        homePath,
+        resetFileSystem,
+        login,
+        logout,
+        resolvePath: (p: string) => contextResolvePath(p, asUser),
+        listDirectory: (p: string) => listDirectory(p, asUser),
+        getNodeAtPath: (p: string) => getNodeAtPath(p, asUser),
+        createFile: (p: string, n: string, c?: string) => createFile(p, n, c, asUser),
+        createDirectory: (p: string, n: string) => createDirectory(p, n, asUser),
+        moveToTrash: (p: string) => moveToTrash(p, asUser),
+        readFile: (p: string) => readFile(p, asUser),
+        moveNode: (from: string, to: string) => moveNode(from, to, asUser),
+        writeFile: (p: string, c: string) => writeFile(p, c, asUser),
+        chmod: (p: string, m: string) => chmod(p, m, asUser),
+        chown: (p: string, o: string, g?: string) => chown(p, o, g, asUser),
+        verifyPassword,
+        as: (user: string) => createScopedFileSystem(user),
+      });
+
+      const localFs = createScopedFileSystem(activeUser);
+
+      if (loopConnectedTo) {
+        const npcApi = worldContext.getNpcApi(loopConnectedTo);
+        if (npcApi) return npcApi.as(activeUser);
+      }
+
+      return localFs;
+    };
+
+    // Provide a fully robust resolvePath for the loop that evaluates
+    // the dynamic current path BEFORE asking the active FS to resolve it.
+    const resolvePathLoop = (p: string): string => {
+      let resolved = p;
+      if (!resolved.startsWith("/") && !resolved.startsWith("~")) {
+        resolved = loopCurrentPath + (loopCurrentPath === "/" ? "" : "/") + resolved;
+      }
+      return getLoopActiveFs().resolvePath(resolved, getLoopActiveUser());
+    };
+
+    const expandGlobLoop = (pattern: string): string[] => {
+      if (!pattern.includes("*")) return [pattern];
+      const resolvedPath = resolvePathLoop(loopCurrentPath);
+      if (pattern.includes("/")) return [pattern];
+      const fs = getLoopActiveFs();
+      const files = fs.listDirectory(resolvedPath, getLoopActiveUser());
+      if (!files) return [pattern];
+
+      const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp("^" + escapedPattern.replace(/\\\*/g, ".*") + "$");
+      const matches = files
+        .filter((f) => regex.test(f.name))
+        .map((f) => f.name);
+
+      return matches.length > 0 ? matches : [pattern];
+    };
+
     let lastExitCode = 0;
     const overallOutput: (string | ReactNode)[] = [];
     let shouldClearScreen = false;
@@ -695,13 +772,27 @@ export function useTerminalLogic(
       setHistory((prev) => {
         const newHistory = [...prev];
         const idx = newHistory.findIndex((h) => h.id === historyId);
+        const newLines = Array.isArray(content) ? content : [content];
+
         if (idx !== -1) {
-          const newLines = Array.isArray(content) ? content : [content];
           newHistory[idx] = {
             ...newHistory[idx],
             output: [...newHistory[idx].output, ...newLines],
             error: lastExitCode !== 0
           };
+        } else {
+          // Cross-session pipeline boundary: the active user changed mid-pipeline,
+          // so the new user's history array doesn't have the original command row!
+          newHistory.push({
+            id: historyId,
+            command: trimmed,
+            output: newLines,
+            error: lastExitCode !== 0,
+            path: loopCurrentPath,
+            accentColor: termAccent,
+            user: getLoopActiveUser(),
+            hostname: loopConnectedTo ? worldContext.resolveNpcTarget(loopConnectedTo)?.currentHostname : activeHostname,
+          });
         }
         return newHistory;
       });
@@ -711,11 +802,14 @@ export function useTerminalLogic(
     const runStep = async (step: CommandStep, stdinData?: string[]): Promise<{ output: (string | ReactNode)[], error: boolean, exitCode: number, newCwd?: string }> => {
       const { command, redirectOp, redirectPath } = step;
 
+      const loopActiveFs = getLoopActiveFs();
+      const loopActiveUser = getLoopActiveUser();
+
       const args: string[] = [];
       step.args.forEach((arg) => {
         if (arg.includes("*")) {
-          // RESOLVED: expandGlob using activeFs
-          args.push(...expandGlob(arg));
+          // RESOLVED: expandGlob using loop activeFs
+          args.push(...expandGlobLoop(arg));
         } else {
           args.push(arg);
         }
@@ -728,10 +822,10 @@ export function useTerminalLogic(
       let binPath: string | null = null;
 
       if (command.includes('/')) {
-        const resolved = activeFs.resolvePath(command);
-        const node = activeFs.getNodeAtPath(resolved);
+        const resolved = loopActiveFs.resolvePath(command);
+        const node = loopActiveFs.getNodeAtPath(resolved);
         if (node && node.type === 'file') {
-          const actingUserObj = activeFs.users.find(u => u.username === activeTerminalUser);
+          const actingUserObj = loopActiveFs.users.find(u => u.username === loopActiveUser);
           if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
             binPath = resolved;
           } else {
@@ -741,9 +835,9 @@ export function useTerminalLogic(
       } else {
         for (const dir of PATH) {
           const check = (dir === '/' ? '' : dir) + '/' + command;
-          const node = activeFs.getNodeAtPath(check);
+          const node = loopActiveFs.getNodeAtPath(check);
           if (node && node.type === 'file') {
-            const actingUserObj = activeFs.users.find(u => u.username === activeTerminalUser);
+            const actingUserObj = loopActiveFs.users.find(u => u.username === loopActiveUser);
             if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
               binPath = check;
               break;
@@ -753,7 +847,7 @@ export function useTerminalLogic(
       }
 
       if (binPath) {
-        const content = activeFs.readFile(binPath);
+        const content = loopActiveFs.readFile(binPath);
         if (content) {
           if (content.startsWith('#!app ')) {
             isAppLaunch = true;
@@ -767,25 +861,29 @@ export function useTerminalLogic(
 
       if (isAppLaunch) {
         if (onLaunchApp) {
-          onLaunchApp(launchAppId, args, activeTerminalUser, connectedTo ?? undefined);
-          return { output: [`Launched ${launchAppId} as ${activeTerminalUser}`], error: false, exitCode: 0 };
+          onLaunchApp(launchAppId, args, loopActiveUser, loopConnectedTo ?? undefined);
+          return { output: [`Launched ${launchAppId} as ${loopActiveUser}`], error: false, exitCode: 0 };
         }
         return { output: [`Cannot launch ${launchAppId}`], error: true, exitCode: 1 };
       }
 
       if (cmdToRun) {
         const spawnSession = (username: string) => {
-          if (connectedTo) {
-            setRemoteSessionStack(prev => [...prev, username]);
+          if (loopConnectedTo) {
+            loopRemoteSessionStack.push(username);
+            setRemoteSessionStack([...loopRemoteSessionStack]);
           } else {
+            loopSessionStack.push(username);
             pushSession(username);
           }
         };
 
         const closeSessionContext = () => {
-          if (connectedTo) {
-            setRemoteSessionStack(prev => prev.length > 1 ? prev.slice(0, -1) : prev);
+          if (loopConnectedTo) {
+            if (loopRemoteSessionStack.length > 1) loopRemoteSessionStack.pop();
+            setRemoteSessionStack([...loopRemoteSessionStack]);
           } else {
+            if (loopSessionStack.length > 1) loopSessionStack.pop();
             closeSession();
           }
         };
@@ -793,28 +891,31 @@ export function useTerminalLogic(
         const result = await cmdToRun.execute({
           args,
           stdin: stdinData,
-          fileSystem: activeFs as any,
-          currentPath,
-          setCurrentPath,
-          resolvePath: (p) => activeFs.resolvePath(p),
+          fileSystem: loopActiveFs as any,
+          currentPath: loopCurrentPath,
+          setCurrentPath: (p) => {
+            loopCurrentPath = p;
+            setCurrentPath(p);
+          },
+          resolvePath: (p) => resolvePathLoop(p),
           allCommands: getAvailableCommands(),
-          terminalUser: activeTerminalUser,
+          terminalUser: loopActiveUser,
           spawnSession: spawnSession,
           closeSession: closeSessionContext,
           onLaunchApp,
-          getNodeAtPath: (p, u) => activeFs.getNodeAtPath(p, u),
-          readFile: (p, u) => activeFs.readFile(p, u),
+          getNodeAtPath: (p, u) => loopActiveFs.getNodeAtPath(p, u),
+          readFile: (p, u) => loopActiveFs.readFile(p, u),
           prompt: (m, t) => prompt(m, t, historyId),
           print: appendOutput,
           isSudoAuthorized,
           setIsSudoAuthorized,
-          verifyPassword: (u, p) => activeFs.verifyPassword(u, p),
+          verifyPassword: (u, p) => loopActiveFs.verifyPassword(u, p),
           t,
           getCommandHistory: getCommandHistoryFn,
           clearCommandHistory: clearCommandHistoryFn,
           closeWindow: onClose,
-          isRootSession: isRootSession,
-          connectedTo,
+          isRootSession: loopConnectedTo ? loopRemoteSessionStack.length <= 1 : loopSessionStack.length <= 1,
+          connectedTo: loopConnectedTo,
           connect: (ip: string) => {
             if (!networkContext.wifiEnabled || !networkContext.currentNetwork) {
               appendOutput([`connect: network is unreachable`]);
@@ -825,20 +926,26 @@ export function useTerminalLogic(
               appendOutput([`connect: ${ip}: Host not found or not reachable`]);
               return;
             }
+            loopConnectedTo = target.currentIP;
             setConnectedTo(target.currentIP);
             const npcUser = target.users.find(u => u.uid === 1000)?.username ?? 'guest';
+            loopRemoteSessionStack = [npcUser];
             setRemoteSessionStack([npcUser]);
             appendOutput([`Connected to ${target.currentHostname} (${target.currentIP}) as ${npcUser}`]);
+            loopCurrentPath = `/home/${npcUser}`;
             setCurrentPath(`/home/${npcUser}`);
           },
           disconnect: () => {
-            if (connectedTo) {
-              const target = worldContext.resolveNpcTarget(connectedTo);
-              appendOutput([`Connection to ${target?.currentHostname ?? connectedTo} closed.`]);
+            if (loopConnectedTo) {
+              const target = worldContext.resolveNpcTarget(loopConnectedTo);
+              appendOutput([`Connection to ${target?.currentHostname ?? loopConnectedTo} closed.`]);
             }
+            loopConnectedTo = null;
             setConnectedTo(null);
+            loopRemoteSessionStack = [];
             setRemoteSessionStack([]);
             // Reset CWD back to local home
+            loopCurrentPath = homePath;
             setCurrentPath(homePath);
           },
         });
@@ -847,14 +954,14 @@ export function useTerminalLogic(
 
         // Handle Redirection (if any)
         if (redirectOp && redirectPath) {
-          const fullOutputPath = activeFs.resolvePath(redirectPath);
+          const fullOutputPath = loopActiveFs.resolvePath(redirectPath);
           const outputString = result.output.map(o => typeof o === 'string' ? o : '[React Component]').join('\n');
-          
+
           if (redirectOp === '>') {
-            activeFs.writeFile(fullOutputPath, outputString);
+            loopActiveFs.writeFile(fullOutputPath, outputString);
           } else if (redirectOp === '>>') {
-            const existing = activeFs.readFile(fullOutputPath) || '';
-            activeFs.writeFile(fullOutputPath, existing + (existing ? '\n' : '') + outputString);
+            const existing = loopActiveFs.readFile(fullOutputPath) || '';
+            loopActiveFs.writeFile(fullOutputPath, existing + (existing ? '\n' : '') + outputString);
           }
           return { output: [], error: result.error ?? false, exitCode: result.error ? 1 : 0, newCwd: result.newCwd };
         }
@@ -870,35 +977,42 @@ export function useTerminalLogic(
       return { output: [`${command}: command not found`], error: true, exitCode: 127 };
     };
 
-    // Iterate Pipelines
-    for (const pipeline of pipelines) {
-      let pipeInput: string[] | undefined = undefined;
+    try {
+      // Iterate Pipelines
+      for (const pipeline of pipelines) {
+        let pipeInput: string[] | undefined = undefined;
 
-      for (let i = 0; i < pipeline.steps.length; i++) {
-        const step = pipeline.steps[i];
-        const result = await runStep(step, pipeInput);
+        for (let i = 0; i < pipeline.steps.length; i++) {
+          const step = pipeline.steps[i];
+          const result = await runStep(step, pipeInput);
 
-        if (i < pipeline.steps.length - 1) {
-          pipeInput = result.output
-            .map(o => typeof o === 'string' ? o : '')
-            .filter(s => s !== '');
-        } else {
-          overallOutput.push(...result.output);
-          if (result.output.length > 0) {
-            appendOutput(result.output);
+          if (i < pipeline.steps.length - 1) {
+            pipeInput = result.output
+              .map(o => typeof o === 'string' ? o : '')
+              .filter(s => s !== '');
+          } else {
+            overallOutput.push(...result.output);
+            if (result.output.length > 0) {
+              appendOutput(result.output);
+            }
+          }
+
+          lastExitCode = result.exitCode;
+
+          if (result.newCwd) {
+            loopCurrentPath = result.newCwd;
+            setCurrentPath(result.newCwd);
+            interactiveEnv['PWD'] = result.newCwd;
           }
         }
 
-        lastExitCode = result.exitCode;
-
-        if (result.newCwd) {
-          setCurrentPath(result.newCwd);
-          interactiveEnv['PWD'] = result.newCwd;
+        if (pipeline.operator === '&&' && lastExitCode !== 0) {
+          break;
         }
+        if (pipeline.operator === '||' && lastExitCode === 0) break;
       }
-
-      if (pipeline.operator === '&&' && lastExitCode !== 0) break;
-      if (pipeline.operator === '||' && lastExitCode === 0) break;
+    } catch (err: any) {
+      console.error("[TerminalExecutionEngine] FATAL CRASH:", err);
     }
 
     if (shouldClearScreen) {
