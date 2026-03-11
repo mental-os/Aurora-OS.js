@@ -7,9 +7,6 @@ export interface CommandContext {
   fileSystem: FileSystemContextType;
   currentPath: string;
   setCurrentPath: (path: string) => void;
-  // Helper to resolve paths relative to Terminal's current directory (cwd)
-  // The main context.resolvePath resolves relative to IT'S tracked path, which might differ if we have multiple terminals.
-  // So we pass the local resolver.
   resolvePath: (path: string) => string;
   allCommands: TerminalCommand[];
   terminalUser: string;
@@ -31,21 +28,20 @@ export interface CommandContext {
   t: (key: string, options?: any) => string;
   getCommandHistory: () => string[];
   clearCommandHistory: () => void;
+  getCommandFavorites: () => Set<number>;
+  setCommandFavorite: (lineNumber: number, isFavorite: boolean) => void;
   closeWindow?: () => void;
   isRootSession: boolean;
-  /** The IP of the NPC currently connected to, or null if local session. */
   connectedTo: string | null;
-  /** Switch terminal context to an NPC computer. */
   connect: (ip: string) => void;
-  /** Drop NPC connection and return to local context. */
   disconnect: () => void;
 }
 
 export interface CommandResult {
   output: (string | ReactNode)[];
   error?: boolean;
-  shouldClear?: boolean; // Special flag for 'clear' command
-  newCwd?: string; // New current working directory (e.g. from 'cd')
+  shouldClear?: boolean;
+  newCwd?: string;
 }
 
 export interface TerminalCommand {

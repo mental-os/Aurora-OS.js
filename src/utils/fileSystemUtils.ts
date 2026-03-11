@@ -564,6 +564,14 @@ export const initialFileSystem: any = {
           size: 55,
         },
         {
+          name: "cat",
+          type: "file",
+          permissions: "-rwxr-xr-x",
+          owner: "root",
+          content: "#!/bin/bash\n#command cat\n# concatenate files",
+          size: 55,
+        },
+        {
           name: "cd",
           type: "file",
           permissions: "-rwxr-xr-x",
@@ -1076,27 +1084,108 @@ export const initialFileSystem: any = {
       owner: "root",
       children: [
         {
-          name: "log",
+          name: "usr",
           type: "directory",
           permissions: "drwxr-xr-x",
           owner: "root",
           children: [
             {
-              name: "system.log",
-              type: "file",
-              permissions: "-rw-r-----",
+              name: "bin",
+              type: "directory",
+              permissions: "drwxr-xr-x",
               owner: "root",
-              content:
-                '[    0.000000] Linux version 6.6.6-aurora (gcc version 12.2.0) #1 SMP PREEMPT_DYNAMIC\n[    0.002314] Command line: BOOT_IMAGE=/boot/kernel root=/dev/nvme0n1p2 ro quiet splash\n[    0.003451] x86/fpu: Supporting XSAVE feature 0x001: \'x87 floating point registers\'\n[    0.152341] pci 0000:00:02.0: vgaarb: setting as boot-time VGA device\n[    0.892314] systemd[1]: Detected architecture x86-64.\n[    1.234112] aurora-os: integrity verification passed.\n[    2.100231] [FAILED] Failed to start Service Module: "Reality_Anchor".\n[    2.100452] See "systemctl status reality-anchor.service" for details.\n[    2.400000] Finished Initialization.',
+              children: [
+                ...getCoreApps().map((app) => ({
+                  name: app.id,
+                  type: "file" as const,
+                  permissions: "-rwxr-xr-x",
+                  owner: "root",
+                  content: `#!app ${app.id}`,
+                })),
+                {
+                  name: "sample.sh",
+                  type: "file",
+                  permissions: "-rwxr-xr-x",
+                  owner: "root",
+                  content: `#!/bin/sh
+# Sample shell script demonstrating features
+
+# Variables
+NAME="Aurora User"
+VERSION="1.0"
+
+# Echo with variable expansion
+echo "Welcome to Aurora OS v$VERSION"
+echo "Hello, $NAME!"
+
+# Simple for loop
+echo "Counting from 1 to 3:"
+for i in 1 2 3
+do
+    echo "  Count: $i"
+done
+
+# If/else example
+echo "Testing conditionals:"
+if [ "5" -gt "3" ]; then
+    echo "  5 is greater than 3 - TRUE"
+else
+    echo "  This should not appear"
+fi
+
+# Command substitution
+echo "Current date: $(date)"
+
+# Exit
+exit 0`,
+                },
+              ],
             },
             {
-              name: "auth.log",
-              type: "file",
-              permissions: "-rw-r-----",
+              name: "lib",
+              type: "directory",
+              permissions: "drwxr-xr-x",
               owner: "root",
-              content: "",
+              children: [],
             },
-          ],
+            {
+              name: "share",
+              type: "directory",
+              permissions: "drwxr-xr-x",
+              owner: "root",
+              children: [
+                {
+                  name: "applications",
+                  type: "directory",
+                  permissions: "drwxr-xr-x",
+                  owner: "root",
+                  children: [
+                    {
+                      name: "Finder.desktop",
+                      type: "file",
+                      permissions: "-rw-r--r--",
+                      owner: "root",
+                      content: "[Desktop Entry]\nName=Finder\nExec=finder\nType=Application",
+                    },
+                    {
+                      name: "Terminal.desktop",
+                      type: "file",
+                      permissions: "-rw-r--r--",
+                      owner: "root",
+                      content: "[Desktop Entry]\nName=Terminal\nExec=terminal\nType=Application",
+                    },
+                    {
+                      name: "Settings.desktop",
+                      type: "file",
+                      permissions: "-rw-r--r--",
+                      owner: "root",
+                      content: "[Desktop Entry]\nName=Settings\nExec=settings\nType=Application",
+                    },
+                  ],
+                },
+              ],
+            },
+            ],
         },
         {
           name: "tmp",

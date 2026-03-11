@@ -229,6 +229,7 @@
   "appStore.install": "Instalează",
   "appStore.uninstall": "Dezinstalează",
   "appStore.installed": "Instalat",
+  "appStore.installing": "Se instalează",
   "browser.menu.newTab": "Tab Nou",
   "browser.menu.closeTab": "Închide Tab",
   "browser.menu.stop": "Stop",
