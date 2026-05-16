@@ -322,6 +322,7 @@ export const en: TranslationDict = {
     },
     size: 'Size',
     sizeUnknown: 'Unknown',
+    installing: 'Installing',
     install: 'Install',
     uninstall: 'Uninstall',
     open: 'Open',

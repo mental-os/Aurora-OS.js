@@ -305,6 +305,7 @@ export const tr: TranslationDict = {
     },
     "size": "Boyut",
     "sizeUnknown": "Bilinmiyor",
+    "installing": "Yükleniyor...",
     "install": "Al",
     "uninstall": "Kaldır",
     "open": "Aç",

@@ -305,6 +305,7 @@ export const es: TranslationDict = {
     },
     "size": "Tamaño",
     "sizeUnknown": "Desconocido",
+    "installing": "Instalando...",
     "install": "Instalar",
     "uninstall": "Desinstalar",
     "open": "Abrir",
