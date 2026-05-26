@@ -1,4 +1,5 @@
 import { FileNode, User, Group } from "@/utils/fileSystemUtils";
+import { verifyUserPassword } from "@/utils/authUtils";
 import {
   resolvePathFn,
   getNodeAtPathFn,
@@ -440,7 +441,11 @@ export function createNpcFileSystem(
     clipboard: { items: [], operation: "copy" },
 
     // Auth & Session Stubs
-    verifyPassword: () => true,
+    // Authenticate against the NPC's own /etc/passwd + user state, exactly like
+    // the local filesystem. A blank stored password (e.g. NPC root) only matches
+    // an empty input — it never accepts an arbitrary password.
+    verifyPassword: (username: string, passwordToTry: string) =>
+      verifyUserPassword(username, passwordToTry, state.fileSystem, state.users),
     login: () => false,
     logout: () => {},
     suspendSession: () => {},

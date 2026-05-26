@@ -62,6 +62,13 @@ export const sudo: TerminalCommand = {
         `[sudo] password for ${currentUserName}: `,
         "password",
       );
+
+      // Prompt cancelled (Ctrl+C): abort without consuming an attempt or
+      // leaving the session in a half-authorized state.
+      if (password === null) {
+        return { output: [], error: true };
+      }
+
       const isValid = context.verifyPassword(currentUserName, password);
 
       if (!isValid) {

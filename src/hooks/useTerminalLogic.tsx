@@ -197,7 +197,7 @@ export function useTerminalLogic(
 
   // Interactive Prompting
   const [promptState, setPromptState] = useState<{ message: string; type: 'text' | 'password'; callingHistoryId?: string } | null>(null);
-  const promptResolverRef = useRef<((value: string) => void) | null>(null);
+  const promptResolverRef = useRef<((value: string | null) => void) | null>(null);
   const [isSudoAuthorized, setIsSudoAuthorized] = useState(false);
 
   // NPC session state — set when player runs `connect <ip>`
@@ -605,7 +605,7 @@ export function useTerminalLogic(
       message: string,
       type: "text" | "password" = "text",
       callingHistoryId?: string
-    ): Promise<string> => {
+    ): Promise<string | null> => {
       setPromptState({ message, type, callingHistoryId });
       return new Promise((resolve) => {
         promptResolverRef.current = resolve;
@@ -613,6 +613,33 @@ export function useTerminalLogic(
     },
     []
   );
+
+  // Cancel an in-flight interactive prompt (e.g. a sudo/su password request).
+  // Resolves the pending promise with `null` so the awaiting command can abort
+  // cleanly, and tears down the prompt UI state so the terminal isn't stuck.
+  const cancelPrompt = useCallback(() => {
+    const resolver = promptResolverRef.current;
+    if (!resolver) return false;
+    const callingHistoryId = promptState?.callingHistoryId;
+    const message = promptState?.message ?? "";
+    promptResolverRef.current = null;
+    setPromptState(null);
+    if (callingHistoryId) {
+      setHistory((prev) => {
+        const newHistory = [...prev];
+        const idx = newHistory.findIndex((h) => h.id === callingHistoryId);
+        if (idx !== -1) {
+          newHistory[idx] = {
+            ...newHistory[idx],
+            output: [...newHistory[idx].output, `${message}^C`],
+          };
+        }
+        return newHistory;
+      });
+    }
+    resolver(null);
+    return true;
+  }, [promptState]);
 
   const getCommandHistoryFn = useCallback(() => {
     return commandHistory;
@@ -826,6 +853,9 @@ export function useTerminalLogic(
               return;
             }
             setConnectedTo(target.currentIP);
+            // New machine, new user → drop any cached sudo authorization so the
+            // remote session re-prompts for the NPC's own password.
+            setIsSudoAuthorized(false);
             const npcUser = target.users.find(u => u.uid === 1000)?.username ?? 'guest';
             setRemoteSessionStack([npcUser]);
             appendOutput([`Connected to ${target.currentHostname} (${target.currentIP}) as ${npcUser}`]);
@@ -838,6 +868,8 @@ export function useTerminalLogic(
             }
             setConnectedTo(null);
             setRemoteSessionStack([]);
+            // Returning to the local machine must not inherit the NPC's sudo grant.
+            setIsSudoAuthorized(false);
             // Reset CWD back to local home
             setCurrentPath(homePath);
           },
@@ -917,6 +949,9 @@ export function useTerminalLogic(
         case "c":
           e.preventDefault();
           setInput("");
+          // If an interactive prompt (e.g. sudo/su password) is awaiting input,
+          // cancel it instead of leaving the terminal stuck waiting forever.
+          if (cancelPrompt()) return;
           setHistory((prev) => [
             ...prev,
             {

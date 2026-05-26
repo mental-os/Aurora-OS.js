@@ -23,7 +23,15 @@ export interface CommandContext {
   ) => void;
   getNodeAtPath: (path: string, asUser?: string) => any;
   readFile: (path: string, asUser?: string) => string | null;
-  prompt: (message: string, type?: "text" | "password") => Promise<string>;
+  /**
+   * Prompt the user for interactive input (e.g. a password).
+   * Resolves with the entered text, or `null` if the user cancelled the
+   * prompt (Ctrl+C). Callers must treat `null` as an aborted action.
+   */
+  prompt: (
+    message: string,
+    type?: "text" | "password",
+  ) => Promise<string | null>;
   isSudoAuthorized: boolean;
   setIsSudoAuthorized: (v: boolean) => void;
   verifyPassword: (username: string, passwordToTry: string) => boolean;

@@ -202,4 +202,57 @@ describe('useTerminalLogic', () => {
             );
         });
     });
+
+    // Regression for issue #181: cancelling a password prompt (Ctrl+C) used to
+    // leave the terminal stuck waiting, so the next command was silently eaten
+    // as the password. Ctrl+C must tear down the prompt and recover the session.
+    it('cancels an interactive password prompt with Ctrl+C and recovers', async () => {
+        const { result } = renderHook(() => {
+            const fs = useFileSystem();
+            const terminal = useTerminalLogic(undefined, 'user');
+            return { fs, terminal };
+        }, { wrapper });
+
+        await waitFor(() => expect(result.current.fs.users.length).toBeGreaterThan(0));
+        await act(async () => { result.current.fs.login('root', 'admin'); });
+        await act(async () => { result.current.fs.addUser('user', 'User', '1234'); });
+        await act(async () => { result.current.fs.login('user', '1234'); });
+
+        // `su` (no args) targets root and, as a non-root user, triggers a password prompt.
+        await act(async () => { result.current.terminal.setInput('su'); });
+        await act(async () => {
+            result.current.terminal.handleKeyDown({ key: 'Enter', preventDefault: () => { } } as any);
+        });
+
+        // The terminal is now awaiting a password.
+        await waitFor(() => {
+            expect(result.current.terminal.promptState).not.toBeNull();
+            expect(result.current.terminal.promptState?.type).toBe('password');
+        });
+
+        // Press Ctrl+C to cancel the prompt.
+        await act(async () => {
+            result.current.terminal.handleKeyDown({ ctrlKey: true, key: 'c', preventDefault: () => { } } as any);
+        });
+
+        // Prompt state is cleared — terminal is no longer stuck.
+        await waitFor(() => {
+            expect(result.current.terminal.promptState).toBeNull();
+        });
+
+        // The next command must execute normally rather than being consumed as a password.
+        await act(async () => { result.current.terminal.setInput('echo recovered'); });
+        await act(async () => {
+            result.current.terminal.handleKeyDown({ key: 'Enter', preventDefault: () => { } } as any);
+        });
+
+        await waitFor(() => {
+            const last = result.current.terminal.history.slice(-1)[0];
+            expect(last?.command).toBe('echo recovered');
+            expect(last?.output.join(' ')).toContain('recovered');
+        });
+
+        // Still logged in as the original user — the cancelled su did not switch users.
+        expect(result.current.terminal.activeTerminalUser).toBe('user');
+    });
 });
