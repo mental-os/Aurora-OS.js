@@ -1,8 +1,10 @@
-// Lightweight safe localStorage parser + sanitizer
+import { memory } from './memory';
+
+// Lightweight safe memory (was localStorage) parser + sanitizer
 // Prevents basic prototype pollution by stripping dangerous keys
 export function safeParseLocal<T = any>(key: string): T | null {
-    if (typeof localStorage === 'undefined') return null;
-    const raw = localStorage.getItem(key);
+    // We don't need to check window/localStorage here as memory handles its own state
+    const raw = memory.getItem(key);
     if (!raw) return null;
     try {
         const parsed = JSON.parse(raw);

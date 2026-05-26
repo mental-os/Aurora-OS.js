@@ -32,7 +32,7 @@ export function useAppNotifications() {
   return ctx;
 }
 
-import { STORAGE_KEYS } from '@/utils/memory';
+import { memory, STORAGE_KEYS } from '@/utils/memory';
 
 function storageKeyFor(user: string) {
   return `${STORAGE_KEYS.APP_DATA_PREFIX}notifications-${user}`;
@@ -70,7 +70,7 @@ export function AppNotificationsProvider({ children, onOpenApp }: { children: Re
 
   useEffect(() => {
     try {
-      localStorage.setItem(storageKeyFor(activeUser), JSON.stringify(notifications));
+      memory.setItem(storageKeyFor(activeUser), JSON.stringify(notifications));
     } catch {
       // Ignore storage errors
     }

@@ -1,6 +1,6 @@
 # Aurora OS.js - Hacking simulator game
 
-[![Version](https://img.shields.io/badge/Version-v0.8.5-c4b5fd?style=flat-square&logo=git&logoColor=white)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Progress](<https://img.shields.io/badge/Progress-Stage%200%20(Foundation%20%26%20Usability)-f0abfc?style=flat-square&logo=steam&logoColor=white>) [![Discord](https://img.shields.io/discord/1455762640595980452?label=Discord&logo=discord&logoColor=white&color=67e8f9&style=flat-square)](https://discord.gg/G4WktdX7eE) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github&logoColor=white&style=flat-square&color=86efac>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/deploy.yml?label=GitHub%20Pages&logo=github&logoColor=white&style=flat-square&color=86efac)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
+[![Version](https://img.shields.io/badge/Version-v0.8.6-c4b5fd?style=flat-square&logo=git&logoColor=white)](https://github.com/mental-os/Aurora-OS.js) ![Roadmap Progress](<https://img.shields.io/badge/Progress-Stage%200%20(Foundation%20%26%20Usability)-f0abfc?style=flat-square&logo=steam&logoColor=white>) [![Discord](https://img.shields.io/discord/1455762640595980452?label=Discord&logo=discord&logoColor=white&color=67e8f9&style=flat-square)](https://discord.gg/G4WktdX7eE) [![Build (Main)](<https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/ci.yml?branch=main&label=Build%20(Main)&logo=github&logoColor=white&style=flat-square&color=86efac>)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/ci.yml) [![GitHub Pages](https://img.shields.io/github/actions/workflow/status/mental-os/Aurora-OS.js/deploy.yml?label=GitHub%20Pages&logo=github&logoColor=white&style=flat-square&color=86efac)](https://github.com/mental-os/Aurora-OS.js/actions/workflows/deploy.yml)
 
 ![Social media image for Aurora OS.js hacking simulator game project](.github/openGraph.png)
 
@@ -62,7 +62,7 @@ I’m deeply inspired by hacking and programming‑driven games:
 - [Bitburner](https://github.com/bitburner-official/bitburner-src) - elegant JavaScript sandboxing
 - [else Heart.break()](https://store.steampowered.com/app/400110/Else_HeartBreak/) - unmatched atmosphere and immersion
 
-Each of them nailed something important - and each of them also felt like they stopped just short of broader reach or replayability.  
+Each of them nailed something important - and each of them also felt like they stopped just short of broader reach or replayability.
 
 When I discovered [OS.js](https://github.com/os-js/OS.js) back in 2020, a thought clicked instantly:
 
@@ -126,7 +126,7 @@ If you want to run it locally:
 > Node.js 24.0.0+ is required.  
 > Chromium-based browsers (Chrome, Edge, Brave, etc.)
 
-After a ```npm install``` you can run the in-browser live-version with:
+After a `npm install` you can run the in-browser live-version with:
 
 ```bash
 npm run dev
@@ -144,7 +144,7 @@ or build it for your native OS (as intended):
 npm run electron:build
 ```
 
-## ⱤɆⱠEASɆ NØ₮ɆS (v0.8.5)
+## ⱤɆⱠEASɆ NØ₮ɆS (v0.8.6)
 
 ### [View full version history](HISTORY.md)
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { STORAGE_KEYS } from '@/utils/memory';
+import { STORAGE_KEYS, memory } from '@/utils/memory';
 import { safeParseLocal } from '@/utils/safeStorage';
 import { SUPPORTED_LOCALES } from '@/i18n/translations';
 import { BRAND, DEFAULT_SYSTEM_MEMORY_GB } from '@/config/systemConfig';
@@ -139,7 +139,7 @@ function getBestSupportedLocale(candidate: string | undefined): AppLocale {
 function detectDefaultLocale(): AppLocale {
   try {
     // Check for saved language (e.g. from Onboarding recovery)
-    const saved = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
+    const saved = memory.getItem(STORAGE_KEYS.LANGUAGE);
     if (saved) return getBestSupportedLocale(saved);
 
     const navLang = typeof navigator !== 'undefined' ? navigator.language : undefined;
@@ -149,7 +149,7 @@ function detectDefaultLocale(): AppLocale {
   }
 }
 
-const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
+export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   devMode: false,
   exposeRoot: false,
   totalMemoryGB: DEFAULT_SYSTEM_MEMORY_GB,
@@ -224,7 +224,14 @@ function loadSystemConfig(): SystemConfig {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   // activeUser determines which "slot" we are reading/writing to.
-  const [activeUser, setActiveUser] = useState('root');
+  // We initialize from session memory to ensure immediate synchronization on refresh
+  const [activeUser, setActiveUser] = useState(() => {
+    try {
+      return memory.getItem(STORAGE_KEYS.CURRENT_USER) || 'root';
+    } catch {
+      return 'root';
+    }
+  });
   // Lock state
   const [isLocked, setIsLocked] = useState(false);
 
@@ -254,7 +261,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const key = getUserKey(activeUser);
     try {
-      localStorage.setItem(key, JSON.stringify(preferences));
+      memory.setItem(key, JSON.stringify(preferences));
     } catch (e) {
       console.warn('Failed to save preferences:', e);
     }
@@ -263,9 +270,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Persistence: System Config
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.SYSTEM_CONFIG, JSON.stringify(systemConfig));
-    } catch (e) {
-      console.warn('Failed to save system config:', e);
+      memory.setItem(STORAGE_KEYS.SYSTEM_CONFIG, JSON.stringify(systemConfig));
+    } catch {
+      console.warn('Failed to save system config');
     }
   }, [systemConfig]);
 
@@ -313,7 +320,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const resetSystemConfig = useCallback((overrides?: Partial<SystemConfig>) => {
     setSystemConfig({ ...DEFAULT_SYSTEM_CONFIG, ...overrides });
-    localStorage.removeItem(STORAGE_KEYS.SYSTEM_CONFIG);
+    memory.removeItem(STORAGE_KEYS.SYSTEM_CONFIG);
     // Also clear all user preferences by resetting active user to root and clearing keys
     // Implementation detail: The GameRoot handles hard FS reset, here we just handle config
   }, []);
@@ -323,7 +330,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const syncElectronLocale = async () => {
       if (window.electron?.getLocale) {
         try {
-          const storedLocale = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
+          const storedLocale = memory.getItem(STORAGE_KEYS.LANGUAGE);
           if (!storedLocale) {
             const systemLocale = await window.electron.getLocale();
             if (systemLocale) {

@@ -11,9 +11,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { notify } from '@/services/notifications';
 import { feedback } from '@/services/soundFeedback';
 import { MessagesService } from '@/services/MessagesService';
-import { getStorageStats, formatBytes, getWindowKey, STORAGE_KEYS } from '@/utils/memory';
+import { getStorageStats, formatBytes, getWindowKey, memory, STORAGE_KEYS } from '@/utils/memory';
 import { safeParseLocal } from '@/utils/safeStorage';
-import { calculateTotalRamUsage, RamUsageReport } from '@/utils/resourceMonitor';
+import { calculateTotalRamUsage, RamUsageReport } from '@/services/resourceMonitor';
 import { useFileSystem, FileNode } from '@/components/FileSystemContext';
 import { useAppContext } from '@/components/AppContext';
 import { useI18n } from '@/i18n/index';
@@ -199,7 +199,7 @@ export function DevCenter() {
         try {
             const db = safeParseLocal<{ accounts: Record<string, any>, messages: any[] }>(STORAGE_KEYS.MESSAGES_DB) || { accounts: {}, messages: [] };
             delete db.accounts[username];
-            localStorage.setItem(STORAGE_KEYS.MESSAGES_DB, JSON.stringify(db));
+            memory.setItem(STORAGE_KEYS.MESSAGES_DB, JSON.stringify(db));
             notify.system('success', 'Messages Debugger', t('devCenter.messages.registry.deleteSuccess', { username }));
             refreshMessagesDB();
         } catch {
@@ -269,7 +269,7 @@ export function DevCenter() {
 
     const handleClearStorage = () => {
         if (confirm(t('devCenter.storage.clearConfirm'))) {
-            localStorage.clear();
+            memory.clear();
             refreshStorage();
             notify.system('success', t('devCenter.storage.toastTitle'), t('devCenter.storage.clearSuccess'), t('notifications.subtitles.success'));
         }
@@ -277,7 +277,13 @@ export function DevCenter() {
 
     const handleExportStorage = () => {
         try {
-            const data = JSON.stringify(localStorage, null, 2);
+            // Export memory cache
+            const dump: Record<string, string> = {};
+            for(let i=0; i<memory.length; i++) {
+                const key = memory.key(i);
+                if(key) dump[key] = memory.getItem(key) || '';
+            }
+            const data = JSON.stringify(dump, null, 2);
             const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -301,9 +307,9 @@ export function DevCenter() {
         reader.onload = (event) => {
             try {
                 const json = JSON.parse(event.target?.result as string);
-                localStorage.clear();
+                memory.clear();
                 Object.keys(json).forEach(key => {
-                    localStorage.setItem(key, json[key]);
+                    memory.setItem(key, json[key]);
                 });
                 refreshStorage();
                 notify.system('success', t('devCenter.storage.toastTitle'), t('devCenter.storage.importSuccess'));
@@ -650,8 +656,9 @@ export function DevCenter() {
                         <h3 className="text-lg text-white mb-4">{t('devCenter.storage.localStorageKeys')}</h3>
                         <div className="flex-1 overflow-hidden bg-black/20 rounded-lg border border-white/10 flex flex-col">
                             <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                {Object.keys(localStorage).sort().map(key => {
-                                    const val = localStorage.getItem(key) || '';
+                                {Array.from({ length: memory.length }).map((_, i) => memory.key(i)).filter(Boolean).sort().map(key => {
+                                    if (!key) return null;
+                                    const val = memory.getItem(key) || '';
                                     const size = new Blob([val]).size;
                                     const isExpanded = expandedStorageKeys.has(key);
 

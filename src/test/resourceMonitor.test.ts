@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { calculateTotalRamUsage } from '../utils/resourceMonitor';
-import { getAppStateKey, getWindowKey } from '../utils/memory';
+import { calculateTotalRamUsage } from '@/services/resourceMonitor';
+import { getAppStateKey, getWindowKey, memory } from '../utils/memory';
 
 // Mock APP_REGISTRY by mocking the module
 vi.mock('../config/appRegistry', () => ({
@@ -17,11 +17,11 @@ vi.mock('../config/appRegistry', () => ({
 describe('resourceMonitor', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        localStorage.clear();
+        memory.clear();
     });
 
     afterEach(() => {
-        localStorage.clear();
+        memory.clear();
     });
 
     it('should calculate base RAM for active session only', () => {
@@ -36,7 +36,7 @@ describe('resourceMonitor', () => {
 
     it('should calculate base RAM for active + inactive sessions', () => {
         // Setup inactive session via windows key existence
-        localStorage.setItem(getWindowKey('user2'), '[]');
+        memory.setItem(getWindowKey('user2'), '[]');
         
         const report = calculateTotalRamUsage('user1');
         
@@ -57,7 +57,7 @@ describe('resourceMonitor', () => {
             { id: '1', type: 'finder', owner: 'user1' },
             { id: '2', type: 'notepad', owner: 'user1' }
         ];
-        localStorage.setItem(getWindowKey('user1'), JSON.stringify(windows));
+        memory.setItem(getWindowKey('user1'), JSON.stringify(windows));
 
         const report = calculateTotalRamUsage('user1');
         
@@ -73,7 +73,7 @@ describe('resourceMonitor', () => {
         const windows = [
             { id: '1', type: 'finder', owner: 'user2' }
         ];
-        localStorage.setItem(getWindowKey('user2'), JSON.stringify(windows));
+        memory.setItem(getWindowKey('user2'), JSON.stringify(windows));
 
         const report = calculateTotalRamUsage('user1');
         
@@ -90,7 +90,7 @@ describe('resourceMonitor', () => {
             { id: '1', type: 'finder', owner: 'user1' },
             { id: '2', type: 'finder', owner: 'user1' }
         ];
-        localStorage.setItem(getWindowKey('user1'), JSON.stringify(windows));
+        memory.setItem(getWindowKey('user1'), JSON.stringify(windows));
 
         const report = calculateTotalRamUsage('user1');
         
@@ -104,13 +104,13 @@ describe('resourceMonitor', () => {
     it('should count extra tabs for Notepad', () => {
         // User1 has Notepad window
         const windows = [{ id: '1', type: 'notepad', owner: 'user1' }];
-        localStorage.setItem(getWindowKey('user1'), JSON.stringify(windows));
+        memory.setItem(getWindowKey('user1'), JSON.stringify(windows));
         
         // Notepad has 3 tabs (1 main + 2 extra)
         const notepadState = {
             tabs: [{ id: '1' }, { id: '2' }, { id: '3' }]
         };
-        localStorage.setItem(getAppStateKey('notepad', 'user1'), JSON.stringify(notepadState));
+        memory.setItem(getAppStateKey('notepad', 'user1'), JSON.stringify(notepadState));
 
         const report = calculateTotalRamUsage('user1');
 

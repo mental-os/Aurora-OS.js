@@ -9,7 +9,7 @@ import { useI18n } from '@/i18n/index';
 import { useFullscreen } from '@/hooks/useFullscreen';
 import { useAppContext } from '@/components/AppContext';
 import { SUPPORTED_LOCALES } from '@/i18n/translations';
-import { factoryReset } from '@/utils/memory';
+import { factoryReset, softReset } from '@/utils/memory';
 
 interface SettingsModalProps {
     onClose: () => void;
@@ -178,17 +178,18 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         }
     };
 
-    const handleSoftReset = () => {
+    const handleSoftReset = async () => {
         if (confirm(t('game.bios.softResetConfirm'))) {
+            await softReset();
             window.location.reload();
         }
     };
 
-    const handleFactoryReset = () => {
+    const handleFactoryReset = async () => {
         if (confirm(t('game.bios.factoryResetConfirm'))) {
             feedback.click();
             // True Factory Reset: Wipe everything (incl. BIOS)
-            factoryReset();
+            await factoryReset();
             setTimeout(() => window.location.reload(), 500);
         }
     };

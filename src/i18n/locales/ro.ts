@@ -42,7 +42,21 @@ export const ro: TranslationDict = {
           "confirm": "Închide"
         }
       },
-      "credits": {}
+      "credits": {},
+      "external": {
+        "label": "Comunitate",
+        "discord": "Server Discord",
+        "github": "Repo GitHub",
+        "download": "Descarcare"
+      },
+      "devStatus": {
+        "buildStatus": "Status build: Experimental",
+        "title": "Versiune dezvoltator",
+        "description": "Aceasta este o versiune experimentală, încă în lucru. Sunt de așteptat bug-uri, sisteme incomplete și inconsistențe vizuale.",
+        "joinDiscord": "Alăturați-vă pe Discord",
+        "contribute": "Contribuiți",
+        "systemReady": "Sistem pregătit"
+      }
     },
     "bios": {
       "title": "Setări BIOS",
@@ -214,6 +228,8 @@ export const ro: TranslationDict = {
       "switchUser": "Schimbă Utilizator",
       "user": "Utilizator",
       "logOutAs": "Deconectare: {{username}}",
+      "restart": "Repornește...",
+      "restartDescription": "Repornește sistemul (Șterge sesiunea)",
       "viewSystemInfo": "Vezi informații sistem",
       "viewSystemSettings": "Vezi setări sistem",
       "returnToLoginWhile": "Înapoi la ecranul de autentificare păstrând",
@@ -498,6 +514,11 @@ export const ro: TranslationDict = {
       "history": {
         "description": "Afișează istoricul comenzilor din terminal",
         "usage": "history [-c] [n]"
+      }
+    },
+    "errors": {
+      "connect": {
+        "offline": "connect: network is unreachable"
       }
     }
   },

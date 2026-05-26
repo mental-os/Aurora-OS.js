@@ -10,7 +10,9 @@ import {
 import { TerminalCommand } from "@/utils/terminal/types";
 import { getColorShades } from "@/utils/colors";
 import { useI18n } from "@/i18n/index";
-import { STORAGE_KEYS } from "@/utils/memory";
+import { memory, STORAGE_KEYS } from "@/utils/memory";
+import { useWorldContext } from "@/components/WorldContext";
+import { useNetworkContext } from "@/components/NetworkContext";
 
 export interface CommandHistory {
   id: string;
@@ -20,6 +22,7 @@ export interface CommandHistory {
   path: string;
   accentColor?: string;
   user?: string;
+  hostname?: string;
 }
 
 const PATH = ["/bin", "/usr/bin"];
@@ -154,7 +157,7 @@ const processBufferToSteps = (tokens: string[]): CommandStep[] => {
 };
 
 export function useTerminalLogic(
-  onLaunchApp?: (appId: string, args: string[], owner?: string) => void,
+  onLaunchApp?: (appId: string, args: string[], owner?: string, remoteComputerId?: string) => void,
   initialUser?: string,
   onClose?: () => void
 ) {
@@ -194,13 +197,82 @@ export function useTerminalLogic(
 
   // Interactive Prompting
   const [promptState, setPromptState] = useState<{ message: string; type: 'text' | 'password'; callingHistoryId?: string } | null>(null);
-  const promptResolverRef = useRef<((value: string) => void) | null>(null);
+  const promptResolverRef = useRef<((value: string | null) => void) | null>(null);
   const [isSudoAuthorized, setIsSudoAuthorized] = useState(false);
 
-  const activeTerminalUser =
-    sessionStack.length > 0
+  // NPC session state — set when player runs `connect <ip>`
+  const [connectedTo, setConnectedTo] = useState<string | null>(null);
+  const [remoteSessionStack, setRemoteSessionStack] = useState<string[]>([]);
+  const worldContext = useWorldContext();
+  const networkContext = useNetworkContext();
+
+  const activeTerminalUser = useMemo(() => {
+    if (connectedTo) {
+      return remoteSessionStack.length > 0 
+        ? remoteSessionStack[remoteSessionStack.length - 1] 
+        : 'guest'; // Fallback for remote
+    }
+    return sessionStack.length > 0
       ? sessionStack[sessionStack.length - 1]
       : currentUser || "guest";
+  }, [connectedTo, remoteSessionStack, sessionStack, currentUser]);
+
+  // RESOLVED: Top-Level activeFs Abstraction
+  // This object mirrors FileSystemContextType and switches backend based on connection.
+  const activeFs = useMemo(() => {
+    const createScopedFileSystem = (asUser: string) => ({
+      currentUser: asUser,
+      users,
+      groups,
+      homePath,
+      resetFileSystem,
+      login,
+      logout,
+      resolvePath: (p: string) => contextResolvePath(p, asUser),
+      listDirectory: (p: string) => listDirectory(p, asUser),
+      getNodeAtPath: (p: string) => getNodeAtPath(p, asUser),
+      createFile: (p: string, n: string, c?: string) => createFile(p, n, c, asUser),
+      createDirectory: (p: string, n: string) => createDirectory(p, n, asUser),
+      moveToTrash: (p: string) => moveToTrash(p, asUser),
+      readFile: (p: string) => readFile(p, asUser),
+      moveNode: (from: string, to: string) => moveNode(from, to, asUser),
+      writeFile: (p: string, c: string) => writeFile(p, c, asUser),
+      chmod: (p: string, m: string) => chmod(p, m, asUser),
+      chown: (p: string, o: string, g?: string) => chown(p, o, g, asUser),
+      verifyPassword,
+      as: (user: string) => createScopedFileSystem(user),
+    });
+
+    const localFs = createScopedFileSystem(activeTerminalUser);
+    
+    if (connectedTo) {
+      const npcApi = worldContext.getNpcApi(connectedTo);
+      if (npcApi) return npcApi.as(activeTerminalUser);
+    }
+    
+    return localFs;
+  }, [connectedTo, activeTerminalUser, worldContext, users, groups, homePath, resetFileSystem, login, logout, contextResolvePath, listDirectory, getNodeAtPath, createFile, createDirectory, moveToTrash, readFile, moveNode, writeFile, chmod, chown, verifyPassword]);
+
+  const activeHostname = useMemo(() => {
+    try {
+      // Use the unified activeFs
+      const content = activeFs.readFile("/etc/hostname");
+      if (content?.trim()) {
+        return content.trim();
+      }
+    } catch {
+      // Fallback if file read fails
+    }
+
+    // 3. Fallback logic
+    if (connectedTo) {
+      const npc = worldContext.resolveNpcTarget(connectedTo);
+      return npc?.currentHostname ?? "aurora";
+    }
+
+    // Player default: username-machine
+    return `${activeTerminalUser}-machine`;
+  }, [connectedTo, worldContext, activeFs, activeTerminalUser]);
 
   // Determine the user scope for persistence
   const historyKey = `${STORAGE_KEYS.TERM_HISTORY_PREFIX}${activeTerminalUser}`;
@@ -209,7 +281,7 @@ export function useTerminalLogic(
   // Helper to load history
   const loadHistory = (key: string): CommandHistory[] => {
     try {
-      const saved = localStorage.getItem(key);
+      const saved = memory.getItem(key);
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -218,7 +290,7 @@ export function useTerminalLogic(
 
   const loadInputHistory = (key: string): string[] => {
     try {
-      const saved = localStorage.getItem(key);
+      const saved = memory.getItem(key);
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -274,14 +346,14 @@ export function useTerminalLogic(
         ...h,
         output: h.output.map(serializeOutput),
       }));
-      localStorage.setItem(historyKey, JSON.stringify(safeHistory));
+      memory.setItem(historyKey, JSON.stringify(safeHistory));
     } catch (e) {
       console.error("Failed to save terminal history", e);
     }
   }, [history, historyKey]);
 
   useEffect(() => {
-    localStorage.setItem(inputKey, JSON.stringify(commandHistory));
+    memory.setItem(inputKey, JSON.stringify(commandHistory));
   }, [commandHistory, inputKey]);
 
   // Each Terminal instance has its own working directory
@@ -310,7 +382,7 @@ export function useTerminalLogic(
 
     // 2. Scan PATH for binaries
     for (const dir of PATH) {
-      const files = listDirectory(dir, activeTerminalUser);
+      const files = activeFs.listDirectory(dir, activeTerminalUser);
       if (files) {
         files.forEach((f) => {
           if (f.type === "file" && f.content) {
@@ -330,7 +402,7 @@ export function useTerminalLogic(
                   description: "Application",
                   execute: async (ctx) => {
                     if (ctx.onLaunchApp) {
-                      ctx.onLaunchApp(appId, ctx.args, ctx.terminalUser);
+                      ctx.onLaunchApp(appId, ctx.args, ctx.terminalUser, connectedTo ?? undefined);
                       return {
                         output: [`Launched ${appId} as ${ctx.terminalUser}`],
                       };
@@ -346,7 +418,7 @@ export function useTerminalLogic(
       }
     }
     return available.sort((a, b) => a.name.localeCompare(b.name));
-  }, [activeTerminalUser, listDirectory]);
+  }, [activeFs, connectedTo, activeTerminalUser]);
 
   const closeSession = useCallback(() => {
     setSessionStack((prev) => {
@@ -412,7 +484,7 @@ export function useTerminalLogic(
 
     // 3. Filesystem Commands (binaries)
     for (const dir of PATH) {
-      const files = listDirectory(dir, activeTerminalUser);
+      const files = activeFs.listDirectory(dir, activeTerminalUser);
       if (files) {
         files.forEach(f => {
           if (f.type === 'file') {
@@ -426,7 +498,7 @@ export function useTerminalLogic(
     }
 
     return cmds;
-  }, [activeTerminalUser, listDirectory]);
+  }, [activeFs, activeTerminalUser]);
 
   // Autocomplete
   const getAutocompleteCandidates = useCallback(
@@ -442,9 +514,9 @@ export function useTerminalLogic(
           const dirPart =
             lastSlash === 0 ? "/" : partial.substring(0, lastSlash);
           searchPrefix = partial.substring(lastSlash + 1);
-          searchDir = resolvePath(dirPart);
+          searchDir = activeFs.resolvePath(dirPart, activeTerminalUser);
         }
-        const files = listDirectory(searchDir, activeTerminalUser);
+        const files = activeFs.listDirectory(searchDir, activeTerminalUser);
         if (files) {
           files.forEach((f) => {
             if (f.name.startsWith(searchPrefix)) {
@@ -455,7 +527,7 @@ export function useTerminalLogic(
       }
       return Array.from(new Set(candidates)).sort();
     },
-    [activeTerminalUser, currentPath, listDirectory, resolvePath, availableCommands]
+    [activeFs, currentPath, availableCommands, activeTerminalUser]
   );
 
   // Ghost Text
@@ -517,6 +589,7 @@ export function useTerminalLogic(
           error: false,
           path: currentPath,
           user: activeTerminalUser,
+          hostname: activeHostname,
           accentColor: termAccent,
         },
       ]);
@@ -532,7 +605,7 @@ export function useTerminalLogic(
       message: string,
       type: "text" | "password" = "text",
       callingHistoryId?: string
-    ): Promise<string> => {
+    ): Promise<string | null> => {
       setPromptState({ message, type, callingHistoryId });
       return new Promise((resolve) => {
         promptResolverRef.current = resolve;
@@ -540,6 +613,33 @@ export function useTerminalLogic(
     },
     []
   );
+
+  // Cancel an in-flight interactive prompt (e.g. a sudo/su password request).
+  // Resolves the pending promise with `null` so the awaiting command can abort
+  // cleanly, and tears down the prompt UI state so the terminal isn't stuck.
+  const cancelPrompt = useCallback(() => {
+    const resolver = promptResolverRef.current;
+    if (!resolver) return false;
+    const callingHistoryId = promptState?.callingHistoryId;
+    const message = promptState?.message ?? "";
+    promptResolverRef.current = null;
+    setPromptState(null);
+    if (callingHistoryId) {
+      setHistory((prev) => {
+        const newHistory = [...prev];
+        const idx = newHistory.findIndex((h) => h.id === callingHistoryId);
+        if (idx !== -1) {
+          newHistory[idx] = {
+            ...newHistory[idx],
+            output: [...newHistory[idx].output, `${message}^C`],
+          };
+        }
+        return newHistory;
+      });
+    }
+    resolver(null);
+    return true;
+  }, [promptState]);
 
   const getCommandHistoryFn = useCallback(() => {
     return commandHistory;
@@ -594,6 +694,7 @@ export function useTerminalLogic(
         path: currentPath,
         accentColor: termAccent,
         user: activeTerminalUser,
+        hostname: activeHostname,
       },
     ]);
     setInput("");
@@ -640,141 +741,158 @@ export function useTerminalLogic(
       const args: string[] = [];
       step.args.forEach((arg) => {
         if (arg.includes("*")) {
+          // RESOLVED: expandGlob using activeFs
           args.push(...expandGlob(arg));
         } else {
           args.push(arg);
         }
       });
 
-      // RESOLVED: Define FileSystem Scope here (from nightly)
-      const createScopedFileSystem = (asUser: string) => ({
-        currentUser: asUser,
-        users,
-        groups,
-        homePath,
-        resetFileSystem,
-        login,
-        logout,
-        resolvePath: contextResolvePath,
-        listDirectory: (p: string) => listDirectory(p, asUser),
-        getNodeAtPath: (p: string) => getNodeAtPath(p, asUser),
-        createFile: (p: string, n: string, c?: string) => createFile(p, n, c, asUser),
-        createDirectory: (p: string, n: string) => createDirectory(p, n, asUser),
-        moveToTrash: (p: string) => moveToTrash(p, asUser),
-        readFile: (p: string) => readFile(p, asUser),
-        moveNode: (from: string, to: string) => moveNode(from, to, asUser),
-        writeFile: (p: string, c: string) => writeFile(p, c, asUser),
-        chmod: (p: string, m: string) => chmod(p, m, asUser),
-        chown: (p: string, o: string, g?: string) => chown(p, o, g, asUser),
-        as: (user: string) => createScopedFileSystem(user),
-      });
-
-      const availableCmds = getAvailableCommands();
-      let cmdToRun = getCommand(command);
+      let cmdToRun: TerminalCommand | undefined = undefined;
       let isAppLaunch = false;
       let launchAppId = '';
 
-      if (!cmdToRun) {
-        let binPath: string | null = null;
+      let binPath: string | null = null;
 
-        if (command.includes('/')) {
-          const resolved = resolvePath(command);
-          const node = getNodeAtPath(resolved, activeTerminalUser);
-          if (node && node.type === 'file') {
-            const actingUserObj = users.find(u => u.username === activeTerminalUser);
-            if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
-              binPath = resolved;
-            } else {
-              return { output: [`zsh: permission denied: ${command}`], error: true, exitCode: 126 };
-            }
+      if (command.includes('/')) {
+        const resolved = activeFs.resolvePath(command);
+        const node = activeFs.getNodeAtPath(resolved);
+        if (node && node.type === 'file') {
+          const actingUserObj = activeFs.users.find(u => u.username === activeTerminalUser);
+          if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
+            binPath = resolved;
+          } else {
+            return { output: [`zsh: permission denied: ${command}`], error: true, exitCode: 126 };
           }
-        } else {
-          for (const dir of PATH) {
-            const check = (dir === '/' ? '' : dir) + '/' + command;
-            const node = getNodeAtPath(check, activeTerminalUser);
-            if (node && node.type === 'file') {
-              const actingUserObj = users.find(u => u.username === activeTerminalUser);
-              if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
-                binPath = check;
-                break;
-              }
+        }
+      } else {
+        for (const dir of PATH) {
+          const check = (dir === '/' ? '' : dir) + '/' + command;
+          const node = activeFs.getNodeAtPath(check);
+          if (node && node.type === 'file') {
+            const actingUserObj = activeFs.users.find(u => u.username === activeTerminalUser);
+            if (actingUserObj && checkPermissions(node, actingUserObj, 'execute')) {
+              binPath = check;
+              break;
             }
           }
         }
+      }
 
-        if (binPath) {
-          const content = readFile(binPath, activeTerminalUser);
-          if (content) {
-            if (content.startsWith('#!app ')) {
-              isAppLaunch = true;
-              launchAppId = content.replace('#!app ', '').trim();
-            } else {
-              const match = content.match(/#command\s+([a-zA-Z0-9_-]+)/);
-              if (match) cmdToRun = getCommand(match[1]);
-            }
+      if (binPath) {
+        const content = activeFs.readFile(binPath);
+        if (content) {
+          if (content.startsWith('#!app ')) {
+            isAppLaunch = true;
+            launchAppId = content.replace('#!app ', '').trim();
+          } else {
+            const match = content.match(/#command\s+([a-zA-Z0-9_-]+)/);
+            if (match) cmdToRun = getCommand(match[1]);
           }
         }
       }
 
       if (isAppLaunch) {
         if (onLaunchApp) {
-          onLaunchApp(launchAppId, args, activeTerminalUser);
+          onLaunchApp(launchAppId, args, activeTerminalUser, connectedTo ?? undefined);
           return { output: [`Launched ${launchAppId} as ${activeTerminalUser}`], error: false, exitCode: 0 };
         }
         return { output: [`Cannot launch ${launchAppId}`], error: true, exitCode: 1 };
       }
 
       if (cmdToRun) {
-        // RESOLVED: Merge main and nightly props
-        // Using nightly's execute signature (stdin, return objects)
-        // But injecting main's capabilities (closeWindow, isRootSession)
+        const spawnSession = (username: string) => {
+          if (connectedTo) {
+            setRemoteSessionStack(prev => [...prev, username]);
+          } else {
+            pushSession(username);
+          }
+        };
+
+        const closeSessionContext = () => {
+          if (connectedTo) {
+            setRemoteSessionStack(prev => prev.length > 1 ? prev.slice(0, -1) : prev);
+          } else {
+            closeSession();
+          }
+        };
+
         const result = await cmdToRun.execute({
           args,
           stdin: stdinData,
-          fileSystem: createScopedFileSystem(activeTerminalUser) as any,
+          fileSystem: activeFs as any,
           currentPath,
           setCurrentPath,
-          resolvePath,
-          allCommands: availableCmds,
+          resolvePath: (p) => activeFs.resolvePath(p),
+          allCommands: getAvailableCommands(),
           terminalUser: activeTerminalUser,
-          spawnSession: pushSession,
-          closeSession,
+          spawnSession: spawnSession,
+          closeSession: closeSessionContext,
           onLaunchApp,
-          getNodeAtPath,
-          readFile,
+          getNodeAtPath: (p, u) => activeFs.getNodeAtPath(p, u),
+          readFile: (p, u) => activeFs.readFile(p, u),
           prompt: (m, t) => prompt(m, t, historyId),
           print: appendOutput,
           isSudoAuthorized,
           setIsSudoAuthorized,
-          verifyPassword,
+          verifyPassword: (u, p) => activeFs.verifyPassword(u, p),
           t,
           getCommandHistory: getCommandHistoryFn,
           clearCommandHistory: clearCommandHistoryFn,
-          // Injected from Main:
           closeWindow: onClose,
           isRootSession: isRootSession,
+          connectedTo,
+          connect: (ip: string) => {
+            if (!networkContext.wifiEnabled || !networkContext.currentNetwork) {
+              appendOutput([`connect: network is unreachable`]);
+              return;
+            }
+            const target = worldContext.resolveNpcTarget(ip);
+            if (!target) {
+              appendOutput([`connect: ${ip}: Host not found or not reachable`]);
+              return;
+            }
+            setConnectedTo(target.currentIP);
+            // New machine, new user → drop any cached sudo authorization so the
+            // remote session re-prompts for the NPC's own password.
+            setIsSudoAuthorized(false);
+            const npcUser = target.users.find(u => u.uid === 1000)?.username ?? 'guest';
+            setRemoteSessionStack([npcUser]);
+            appendOutput([`Connected to ${target.currentHostname} (${target.currentIP}) as ${npcUser}`]);
+            setCurrentPath(`/home/${npcUser}`);
+          },
+          disconnect: () => {
+            if (connectedTo) {
+              const target = worldContext.resolveNpcTarget(connectedTo);
+              appendOutput([`Connection to ${target?.currentHostname ?? connectedTo} closed.`]);
+            }
+            setConnectedTo(null);
+            setRemoteSessionStack([]);
+            // Returning to the local machine must not inherit the NPC's sudo grant.
+            setIsSudoAuthorized(false);
+            // Reset CWD back to local home
+            setCurrentPath(homePath);
+          },
         });
 
         if (result.shouldClear) shouldClearScreen = true;
 
-        let finalOutput = result.output;
+        // Handle Redirection (if any)
         if (redirectOp && redirectPath) {
-          const textContent = finalOutput
-            .map(o => typeof o === 'string' ? o : '')
-            .filter(s => s !== '')
-            .join('\n');
-
-          const absPath = resolvePath(redirectPath);
-          const success = writeFile(absPath, textContent, activeTerminalUser);
-
-          if (!success) {
-            return { output: [`zsh: permission denied: ${redirectPath}`], error: true, exitCode: 1 };
+          const fullOutputPath = activeFs.resolvePath(redirectPath);
+          const outputString = result.output.map(o => typeof o === 'string' ? o : '[React Component]').join('\n');
+          
+          if (redirectOp === '>') {
+            activeFs.writeFile(fullOutputPath, outputString);
+          } else if (redirectOp === '>>') {
+            const existing = activeFs.readFile(fullOutputPath) || '';
+            activeFs.writeFile(fullOutputPath, existing + (existing ? '\n' : '') + outputString);
           }
-          finalOutput = [];
+          return { output: [], error: result.error ?? false, exitCode: result.error ? 1 : 0, newCwd: result.newCwd };
         }
 
         return {
-          output: finalOutput,
+          output: result.output,
           error: !!result.error,
           exitCode: result.error ? 1 : 0,
           newCwd: result.newCwd
@@ -831,6 +949,9 @@ export function useTerminalLogic(
         case "c":
           e.preventDefault();
           setInput("");
+          // If an interactive prompt (e.g. sudo/su password) is awaiting input,
+          // cancel it instead of leaving the terminal stuck waiting forever.
+          if (cancelPrompt()) return;
           setHistory((prev) => [
             ...prev,
             {
@@ -840,6 +961,7 @@ export function useTerminalLogic(
               error: false,
               path: currentPath,
               user: activeTerminalUser,
+              hostname: activeHostname,
               accentColor: termAccent,
             },
           ]);
@@ -926,5 +1048,7 @@ export function useTerminalLogic(
     clearHistory: () => setHistory([]),
     isSudoAuthorized,
     setIsSudoAuthorized,
+    connectedTo,
+    activeHostname,
   };
 }

@@ -1,5 +1,5 @@
 import { Howl, Howler } from 'howler';
-import { STORAGE_KEYS } from '@/utils/memory';
+import { memory, STORAGE_KEYS } from '@/utils/memory';
 
 // Sound constants
 import successSound from '@/assets/sounds/success.opus';
@@ -102,7 +102,7 @@ class SoundManager {
 
     private loadSettings(): VolumeState {
         try {
-            const stored = localStorage.getItem(STORAGE_KEY);
+            const stored = memory.getItem(STORAGE_KEY);
             if (stored) {
                 return { ...DEFAULT_VOLUMES, ...JSON.parse(stored) };
             }
@@ -114,7 +114,7 @@ class SoundManager {
 
     private saveSettings() {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(this.volumes));
+            memory.setItem(STORAGE_KEY, JSON.stringify(this.volumes));
         } catch (e) {
             console.warn('Failed to save sound settings:', e);
         }

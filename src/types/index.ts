@@ -58,4 +58,4 @@ export interface BatteryManager extends EventTarget {
     level: number;
     addEventListener(type: 'chargingchange' | 'chargingtimechange' | 'dischargingtimechange' | 'levelchange', listener: () => void): void;
     removeEventListener(type: 'chargingchange' | 'chargingtimechange' | 'dischargingtimechange' | 'levelchange', listener: () => void): void;
-}
+}export * from './save';

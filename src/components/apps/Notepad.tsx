@@ -54,6 +54,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useAppStorage } from '@/hooks/useAppStorage';
 import { AppTemplate } from "@/components/apps/AppTemplate";
 import { useFileSystem } from "@/components/FileSystemContext";
 import { FilePicker } from "@/components/ui/FilePicker";
@@ -81,10 +82,7 @@ interface Tab {
 import { useAppContext } from "@/components/AppContext";
 import { useWindow } from "@/components/WindowContext";
 import { useThemeColors } from "@/hooks/useThemeColors";
-import { getAppStateKey } from "@/utils/memory";
 import { useI18n } from "@/i18n/index";
-import { safeParseLocal } from "@/utils/safeStorage";
-import { useDebounce } from "@/hooks/useDebounce";
 
 // ... interface
 
@@ -434,46 +432,38 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
     [t]
   );
 
-  // State
-  const [tabs, setTabs] = useState<Tab[]>(() => {
-    // Initializer for lazy state loading
-    try {
-      if (!activeUser) return [];
-      const key = getAppStateKey("notepad", activeUser);
-      const parsed = safeParseLocal<{ tabs: Tab[] }>(key);
-      if (parsed && Array.isArray(parsed.tabs)) {
-        return parsed.tabs;
-      }
-    } catch (e) {
-      console.warn(e);
-    }
-    return [];
-  });
+  // appState manages BOTH tabs and activeTabId in a single namespaced atomic object
+  // useAppStorage handles namespacing by activeUser, debouncing (500ms), 
+  // and re-syncing during user transitions automatically.
+  const [appState, setAppState] = useAppStorage<{ tabs: Tab[]; activeTabId: string | null }>(
+    "notepad",
+    { tabs: [], activeTabId: null },
+    owner
+  );
 
-  // We also need to restore activeTabId
-  const [activeTabId, setActiveTabId] = useState<string | null>(() => {
-    try {
-      if (!activeUser) return null;
-      const key = getAppStateKey("notepad", activeUser);
-      const parsed = safeParseLocal<{ activeTabId: string }>(key);
-      if (parsed) {
-        return parsed.activeTabId || null;
-      }
-    } catch {
-      return null;
-    }
-    return null;
-  });
+  const tabs = appState.tabs;
+  const activeTabId = appState.activeTabId;
 
-  // Persist State Effect
-  const stateToPersist = useMemo(() => ({ tabs, activeTabId }), [tabs, activeTabId]);
-  const debouncedState = useDebounce(stateToPersist, 500);
+  // Wrapped setters for compatibility with existing code
+  const setTabs = useCallback(
+    (newTabsOrFn: Tab[] | ((prev: Tab[]) => Tab[])) => {
+      setAppState((prev) => {
+        const nextTabs =
+          typeof newTabsOrFn === "function"
+            ? newTabsOrFn(prev.tabs)
+            : newTabsOrFn;
+        return { ...prev, tabs: nextTabs };
+      });
+    },
+    [setAppState]
+  );
 
-  useEffect(() => {
-    if (!activeUser) return;
-    const key = getAppStateKey("notepad", activeUser);
-    localStorage.setItem(key, JSON.stringify(debouncedState));
-  }, [debouncedState, activeUser]);
+  const setActiveTabId = useCallback(
+    (id: string | null) => {
+      setAppState((prev) => ({ ...prev, activeTabId: id }));
+    },
+    [setAppState]
+  );
 
   const [filePickerMode, setFilePickerMode] = useState<"open" | "save" | null>(
     null
@@ -510,7 +500,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
 
     windowContext.setBeforeClose(() => checkUnsaved);
     return () => windowContext.setBeforeClose(null);
-  }, [windowContext]); // checkUnsaved is stable, tabsRef is stable.
+  }, [windowContext, setActiveTabId]); // checkUnsaved is stable, tabsRef is stable.
 
   // -- Window Data / Initial Path Interception (File Opening) --
   const tabsRefForOpening = useRef(tabs);
@@ -547,7 +537,18 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
           const newId = node.id;
 
           // Read content with user context
-          const content = readFile(path, activeUser) || "";
+          const content = readFile(path, activeUser);
+          
+          if (content === null) {
+              notify.system(
+                  "error",
+                  "Notepad",
+                  t("notepad.toasts.failedToReadFile"),
+                  t("notifications.subtitles.error")
+              );
+              return;
+          }
+
           const extension = name.split(".").pop()?.toLowerCase() || "";
           const context = extensionToLanguage(extension);
 
@@ -580,7 +581,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
         }
       }
     }
-  }, [windowContext?.data, initialPath, activeUser, readFile, getNodeAtPath]);
+  }, [windowContext?.data, initialPath, activeUser, readFile, getNodeAtPath, setActiveTabId, setTabs, t]);
 
   // -- Tab Management --
   const handleNewTab = useCallback(() => {
@@ -598,7 +599,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
       },
     ]);
     setActiveTabId(newId);
-  }, [tabs.length, getUntitledTabName]);
+  }, [setActiveTabId, setTabs, tabs.length, getUntitledTabName]);
 
   const forceCloseTab = useCallback(
     (id: string) => {
@@ -640,7 +641,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
         )
       );
     },
-    [activeTabId]
+    [activeTabId, setTabs]
   );
 
   // -- File I/O --
@@ -768,7 +769,7 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
       setFilePickerMode("save");
       return false; // FilePicker will handle the actual save
     }
-  }, [activeTab, activeTabId, activeUser, t, writeFile, setFilePickerMode]);
+  }, [activeTab, activeTabId, activeUser, t, writeFile, setFilePickerMode, setTabs]);
 
   const handleDiscardChanges = () => {
     if (pendingCloseTabId) {

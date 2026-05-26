@@ -30,7 +30,12 @@ export const su: TerminalCommand = {
 
         // Prompt for password if not root and not provided in args
         if (terminalUser !== 'root' && !password) {
-            password = await prompt('Password: ', 'password');
+            const entered = await prompt('Password: ', 'password');
+            // Prompt cancelled (Ctrl+C): abort the switch cleanly.
+            if (entered === null) {
+                return { output: [], error: true };
+            }
+            password = entered;
         }
 
         // Verify Password

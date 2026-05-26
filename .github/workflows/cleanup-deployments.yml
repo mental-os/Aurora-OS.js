@@ -16,6 +16,8 @@ permissions:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040"
     steps:
       - name: Delete old deployments
         uses: actions/github-script@v7

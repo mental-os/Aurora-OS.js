@@ -1,6 +1,6 @@
 import { Email } from "@/components/apps/Mail";
 import { encodePassword, decodePassword } from "@/utils/authUtils";
-import { STORAGE_KEYS } from "@/utils/memory";
+import { memory, STORAGE_KEYS } from "@/utils/memory";
 
 const DB_KEY = `${STORAGE_KEYS.APP_DATA_PREFIX}mail-server-db`;
 
@@ -21,7 +21,7 @@ class MailServiceImpl {
   private getDB(): MailDatabase {
     if (typeof window === "undefined") return { accounts: {} };
 
-    const stored = localStorage.getItem(DB_KEY);
+    const stored = memory.getItem(DB_KEY);
     if (!stored) {
       return { accounts: {} };
     }
@@ -36,7 +36,7 @@ class MailServiceImpl {
 
   private saveDB(db: MailDatabase) {
     if (typeof window === "undefined") return;
-    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    memory.setItem(DB_KEY, JSON.stringify(db));
   }
 
   // Generate a random recovery secret (simulated 4-word phrase or code)

@@ -42,7 +42,21 @@ export const pt: TranslationDict = {
           "confirm": "Desligar"
         }
       },
-      "credits": {}
+      "credits": {},
+      "external": {
+        "label": "Comunidade",
+        "discord": "Servidor do Discord",
+        "github": "Repositório GitHub",
+        "download": "Baixar"
+      },
+      "devStatus": {
+        "buildStatus": "Status da compilação: Experimental",
+        "title": "Versão de desenvolvedor",
+        "description": "Esta é uma versão experimental, ainda em progresso. Bugs, sistemas incompletos e inconsistências visuais são esperados.",
+        "joinDiscord": "Entrar no Discord",
+        "contribute": "Contribuir",
+        "systemReady": "Sistema pronto"
+      }
     },
     "bios": {
       "title": "Configurações da BIOS",
@@ -214,6 +228,8 @@ export const pt: TranslationDict = {
       "switchUser": "Trocar Usuário",
       "user": "Usuário",
       "logOutAs": "Sair como: {{username}}",
+      "restart": "Reiniciar...",
+      "restartDescription": "Reiniciar o sistema (Limpar sessão)",
       "viewSystemInfo": "Ver informações do sistema",
       "viewSystemSettings": "Ver ajustes do sistema",
       "returnToLoginWhile": "Retornar à tela de login enquanto",
@@ -498,6 +514,11 @@ export const pt: TranslationDict = {
       "history": {
         "description": "Mostrar histórico de comandos do terminal",
         "usage": "history [-c] [n]"
+      }
+    },
+    "errors": {
+      "connect": {
+        "offline": "connect: network is unreachable"
       }
     }
   },

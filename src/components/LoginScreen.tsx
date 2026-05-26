@@ -10,7 +10,7 @@ import { useAppContext } from '@/components/AppContext';
 import { useI18n } from '@/i18n/index';
 
 export function LoginScreen() {
-    const { users, login, currentUser, logout, resetFileSystem } = useFileSystem();
+    const { users, login, currentUser, logout } = useFileSystem();
     const { exposeRoot, accentColor, isLocked, setIsLocked } = useAppContext();
     const { t } = useI18n();
 
@@ -123,8 +123,8 @@ export function LoginScreen() {
             footerActions={
                 <>
                     <button
-                        onClick={() => {
-                            softReset();
+                        onClick={async () => {
+                            await softReset();
                             window.location.reload();
                         }}
                         className="hover:text-white transition-colors"
@@ -135,8 +135,12 @@ export function LoginScreen() {
                     <button
                         onClick={() => {
                             if (window.confirm(t('login.hardResetConfirm'))) {
-                                resetFileSystem();
-                                window.location.reload();
+                                // Hard Reset: Wipe OS/HDD + Session (Keep BIOS)
+                                import('@/utils/memory').then(async ({ hardReset }) => {
+                                    await hardReset();
+                                    // Reload to force fresh state (FS, etc)
+                                    window.location.reload();
+                                });
                             }
                         }}
                         className="hover:text-red-400 transition-colors"

@@ -16,6 +16,7 @@ export function Terminal({ id, onLaunchApp, owner, onClose }: TerminalProps) {
     setInput,
     history,
     activeTerminalUser,
+    activeHostname,
     currentPath,
     ghostText,
     termAccent,
@@ -88,7 +89,7 @@ export function Terminal({ id, onLaunchApp, owner, onClose }: TerminalProps) {
       <span className="whitespace-nowrap mr-2">
         <span style={{ color: termAccent }}>{activeTerminalUser}</span>
         <span style={{ color: '#94a3b8' }}>@</span>
-        <span style={{ color: termAccent }}>aurora</span>
+        <span style={{ color: termAccent }}>{activeHostname}</span>
         <span style={{ color: '#94a3b8' }}>:</span>
         <span style={{ color: '#60a5fa' }}>{displayPath}</span>
         <span style={{ color: termAccent }}>{activeTerminalUser === 'root' ? '#' : '$'}</span>
@@ -204,6 +205,7 @@ interface TerminalHistoryItemProps {
     output: ReactNode[];
     path: string;
     user?: string;
+    hostname?: string;
     error?: boolean;
     accentColor?: string;
   };
@@ -223,7 +225,7 @@ const TerminalHistoryItem = memo(function TerminalHistoryItem({ item, homePath, 
           <span className="text-white">{item.user}</span>
         ) : (
           <span>
-            {user}@{`aurora:${displayPath}${promptSymbol}`}
+            {user}@{`${item.hostname || 'aurora'}:${displayPath}${promptSymbol}`}
           </span>
         )}
         <span className="text-gray-100">{item.command}</span>

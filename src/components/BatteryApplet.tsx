@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/components/ui/utils';
 import { useI18n } from '@/i18n';
 
-import { STORAGE_KEYS } from '@/utils/memory';
+import { memory, STORAGE_KEYS } from '@/utils/memory';
 
 import { useFileSystem } from '@/components/FileSystemContext';
 
@@ -38,7 +38,7 @@ export function BatteryApplet() {
     // Local State for settings - default to false
     const [showPercentage, setShowPercentage] = useState(() => {
         try {
-            const stored = localStorage.getItem(storageKey);
+            const stored = memory.getItem(storageKey);
             if (stored) {
                 const data = JSON.parse(stored);
                 return data.showPercentage ?? false;
@@ -52,7 +52,7 @@ export function BatteryApplet() {
     const handleTogglePercentage = (checked: boolean) => {
         setShowPercentage(checked);
         try {
-            localStorage.setItem(storageKey, JSON.stringify({ showPercentage: checked }));
+            memory.setItem(storageKey, JSON.stringify({ showPercentage: checked }));
         } catch (e) {
             console.warn('Failed to save battery settings:', e);
         }

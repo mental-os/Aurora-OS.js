@@ -1,9 +1,9 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useTerminalLogic } from '../hooks/useTerminalLogic';
-import { FileSystemProvider, useFileSystem } from '../components/FileSystemContext';
-import { AppProvider } from '../components/AppContext';
-import { STORAGE_KEYS } from '../utils/memory';
+import { useTerminalLogic } from '@/hooks/useTerminalLogic';
+import { FileSystemProvider, useFileSystem } from '@/components/FileSystemContext';
+import { AppProvider } from '@/components/AppContext';
+import { STORAGE_KEYS, memory } from '@/utils/memory';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -21,6 +21,22 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 // Mock colors
 vi.mock('../utils/colors', () => ({
     getColorShades: () => ({ bg: '', border: '', text: '' }),
+}));
+
+// Mock WorldContext
+vi.mock('../components/WorldContext', () => ({
+    useWorldContext: () => ({
+        resolveNpcTarget: vi.fn(),
+        getNpcApi: vi.fn(),
+    })
+}));
+
+// Mock NetworkContext
+vi.mock('../components/NetworkContext', () => ({
+    useNetworkContext: () => ({
+        wifiEnabled: true,
+        currentNetwork: 'Aurora_Net',
+    })
 }));
 
 describe('useTerminalLogic', () => {
@@ -64,9 +80,9 @@ describe('useTerminalLogic', () => {
         });
 
         await act(async () => {
-            // Explicitly pass 'user' to ensure proper ownership immediately
-            // Note: owner defaults to currentUser if not provided, but we are logged in as user now.
             result.current.fs.createFile('/home/user', 'note.txt', 'content');
+        });
+        await act(async () => {
             result.current.fs.createFile('/home/user', 'log.txt', 'log');
         });
 
@@ -155,7 +171,7 @@ describe('useTerminalLogic', () => {
             expect(last?.output.join(' ')).toContain('a+b.txt');
         });
     });
-    it('persists history to localStorage', async () => {
+    it('persists history to memory', async () => {
         const { result } = renderHook(() => {
             const fs = useFileSystem();
             const terminal = useTerminalLogic(undefined, 'user');
@@ -168,8 +184,7 @@ describe('useTerminalLogic', () => {
         await act(async () => { result.current.fs.addUser('user', 'User', '1234'); });
         await act(async () => { result.current.fs.login('user', '1234'); });
 
-        // Calculate initial call count to account for internal state updates
-        // const initialSetItemCalls = vi.mocked(localStorage.setItem).mock.calls.length;
+        const setItemSpy = vi.spyOn(memory, 'setItem');
 
         // Execute command
         await act(async () => {
@@ -179,12 +194,65 @@ describe('useTerminalLogic', () => {
             result.current.terminal.handleKeyDown({ key: 'Enter', preventDefault: () => { } } as any);
         });
 
-        // Verify localStorage was updated with the new key format
+        // Verify memory was updated with the new key format
         await waitFor(() => {
-            expect(localStorage.setItem).toHaveBeenCalledWith(
+            expect(setItemSpy).toHaveBeenCalledWith(
                 `${STORAGE_KEYS.TERM_HISTORY_PREFIX}user`,
                 expect.stringContaining('persistence_test')
             );
         });
+    });
+
+    // Regression for issue #181: cancelling a password prompt (Ctrl+C) used to
+    // leave the terminal stuck waiting, so the next command was silently eaten
+    // as the password. Ctrl+C must tear down the prompt and recover the session.
+    it('cancels an interactive password prompt with Ctrl+C and recovers', async () => {
+        const { result } = renderHook(() => {
+            const fs = useFileSystem();
+            const terminal = useTerminalLogic(undefined, 'user');
+            return { fs, terminal };
+        }, { wrapper });
+
+        await waitFor(() => expect(result.current.fs.users.length).toBeGreaterThan(0));
+        await act(async () => { result.current.fs.login('root', 'admin'); });
+        await act(async () => { result.current.fs.addUser('user', 'User', '1234'); });
+        await act(async () => { result.current.fs.login('user', '1234'); });
+
+        // `su` (no args) targets root and, as a non-root user, triggers a password prompt.
+        await act(async () => { result.current.terminal.setInput('su'); });
+        await act(async () => {
+            result.current.terminal.handleKeyDown({ key: 'Enter', preventDefault: () => { } } as any);
+        });
+
+        // The terminal is now awaiting a password.
+        await waitFor(() => {
+            expect(result.current.terminal.promptState).not.toBeNull();
+            expect(result.current.terminal.promptState?.type).toBe('password');
+        });
+
+        // Press Ctrl+C to cancel the prompt.
+        await act(async () => {
+            result.current.terminal.handleKeyDown({ ctrlKey: true, key: 'c', preventDefault: () => { } } as any);
+        });
+
+        // Prompt state is cleared — terminal is no longer stuck.
+        await waitFor(() => {
+            expect(result.current.terminal.promptState).toBeNull();
+        });
+
+        // The next command must execute normally rather than being consumed as a password.
+        await act(async () => { result.current.terminal.setInput('echo recovered'); });
+        await act(async () => {
+            result.current.terminal.handleKeyDown({ key: 'Enter', preventDefault: () => { } } as any);
+        });
+
+        await waitFor(() => {
+            const last = result.current.terminal.history.slice(-1)[0];
+            expect(last?.command).toBe('echo recovered');
+            expect(last?.output.join(' ')).toContain('recovered');
+        });
+
+        // Still logged in as the original user — the cancelled su did not switch users.
+        expect(result.current.terminal.activeTerminalUser).toBe('user');
     });
 });

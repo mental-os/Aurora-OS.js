@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings, Power, Play, Disc } from 'lucide-react';
+import { Settings, Power, Play, Disc, Github, MessageSquare } from 'lucide-react';
 import { cn } from '@/components/ui/utils';
+import { useFullscreen } from '@/hooks/useFullscreen';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import pkg from '@/../package.json';
 import { feedback } from '@/services/soundFeedback';
 import { GameScreenLayout } from '@/components/Game/GameScreenLayout';
 import { SettingsModal } from '@/components/Game/SettingsModal';
@@ -34,7 +37,9 @@ export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) 
     const [showExitConfirm, setShowExitConfirm] = useState(false);
     const [exitSelection, setExitSelection] = useState(0); // 0: Cancel, 1: Confirm
     const [showCredits, setShowCredits] = useState(false);
+    const [isLinksOpen, setIsLinksOpen] = useState(false);
     const { saveFileSystem } = useFileSystem();
+    const { isElectron } = useFullscreen();
 
     const menuItems = useMemo<MenuItem[]>(() => [
         {
@@ -255,13 +260,78 @@ export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="fixed bottom-6 right-6 z-50 hidden sm:block" // Hidden on mobile, valid for desktop design
+                    className="fixed bottom-6 right-6 z-50 hidden sm:block flex flex-col items-end gap-3 w-48"
                 >
+                    {!isElectron && (
+                        <Collapsible open={isLinksOpen} onOpenChange={setIsLinksOpen} className="flex flex-col items-end gap-2 w-full">
+                            <CollapsibleContent className="w-full">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex flex-col gap-1 bg-black border border-white/20 p-1 font-mono w-full shadow-[4px_4px_0_0_rgba(0,0,0,0.5)] mb-1"
+                                >
+                                    <a
+                                        href="https://discord.gg/AtAVfRDYhG"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        onClick={() => feedback.click()}
+                                        className="flex items-center gap-2 px-4 py-2 hover:bg-white hover:text-black transition-colors text-[11px] text-white/60 hover:text-black group/link"
+                                    >
+                                        <MessageSquare className="w-3 h-3" />
+                                        <span>{t('game.mainMenu.external.discord')}</span>
+                                    </a>
+                                    <a
+                                        href={pkg.homepage}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        onClick={() => feedback.click()}
+                                        className="flex items-center gap-2 px-4 py-2 hover:bg-white hover:text-black transition-colors text-[11px] text-white/60 hover:text-black group/link"
+                                    >
+                                        <Github className="w-3 h-3" />
+                                        <span>{t('game.mainMenu.external.github')}</span>
+                                    </a>
+                                </motion.div>
+                            </CollapsibleContent>
+                            <CollapsibleTrigger asChild>
+                                <button
+                                    onClick={() => feedback.click()}
+                                    className="group flex items-center justify-center gap-2 bg-black border border-white/20 hover:border-white font-mono text-white/40 hover:text-white uppercase tracking-widest transition-colors w-full"
+                                    style={{
+                                        padding: '10px 0',
+                                        fontSize: '12px'
+                                    }}
+                                >
+                                    <span>[</span>
+                                    <span>{t('game.mainMenu.external.label')}</span>
+                                    <span>]</span>
+                                </button>
+                            </CollapsibleTrigger>
+                        </Collapsible>
+                    )}
+
+                    {!isElectron && (
+                        <a
+                            href={`https://mental-os.itch.io/aurora-osjs`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={() => feedback.click()}
+                            className="group flex items-center justify-center gap-2 bg-white/40 text-black hover:bg-white hover:text-black transition-all border-2 border-transparent font-mono uppercase tracking-widest w-48 shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
+                            style={{
+                                padding: '10px 0',
+                                fontSize: '12px'
+                            }}
+                        >
+                            <span>[</span>
+                            <span>{t('game.mainMenu.external.download')}</span>
+                            <span>]</span>
+                        </a>
+                    )}
+
                     <button
                         onClick={() => { feedback.click(); setShowCredits(true); }}
-                        className="group flex items-center gap-2 bg-black border border-white/20 hover:border-white font-mono text-white/40 hover:text-white uppercase tracking-widest transition-colors"
+                        className="group flex items-center justify-center gap-2 bg-black border border-white/20 hover:border-white font-mono text-white/40 hover:text-white uppercase tracking-widest transition-colors w-full"
                         style={{
-                            padding: '10px 24px',
+                            padding: '10px 0',
                             fontSize: '12px'
                         }}
                     >

@@ -3,11 +3,12 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   FileSystemProvider,
   useFileSystem,
-} from "../components/FileSystemContext";
+} from "@/components/FileSystemContext";
+import { memory } from "@/utils/memory";
 
 describe("FileSystemContext", () => {
   beforeEach(() => {
-    localStorage.clear();
+    memory.clear();
     vi.clearAllMocks();
   });
 
@@ -193,25 +194,38 @@ describe("FileSystemContext", () => {
       const desktop = "/home/user/Desktop";
 
       // Create two files
+      let create1 = false;
+      let create2 = false;
       await act(async () => {
-        result.current.createFile(desktop, "file.txt");
-        result.current.createFile(desktop, "file_1.txt"); // placeholder to ensure distinct creation
+        create1 = result.current.createFile(desktop, "file.txt");
+      });
+      await act(async () => {
+        create2 = result.current.createFile(desktop, "file_1.txt"); // placeholder to ensure distinct creation
       });
 
       // Move first one
+      let s1 = false;
       await act(async () => {
-        result.current.moveToTrash(`${desktop}/file.txt`);
+        s1 = result.current.moveToTrash(`${desktop}/file.txt`);
       });
 
       // Re-create file.txt at source
+      let s2 = false;
       await act(async () => {
-        result.current.createFile(desktop, "file.txt");
+        s2 = result.current.createFile(desktop, "file.txt");
       });
 
       // Move second one
+      let s3 = false;
       await act(async () => {
-        result.current.moveToTrash(`${desktop}/file.txt`);
+        s3 = result.current.moveToTrash(`${desktop}/file.txt`);
       });
+
+      expect(create1).toBe(true);
+      expect(create2).toBe(true);
+      expect(s1).toBe(true);
+      expect(s2).toBe(true);
+      expect(s3).toBe(true);
 
       expect(
         result.current.getNodeAtPath("/home/user/.Trash/file.txt")

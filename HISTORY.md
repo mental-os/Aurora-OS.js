@@ -1,3 +1,42 @@
+## 0.8.6
+
+### Added
+
+- **NPC computers**: The first NPC computer has been added to the game as `soupik` reachable at `10.0.4.22`. The NPC has a password `654321` and a special file in its /root directory. This is the first implementation of the NPC system and should act exactly as the player's computer, without the Desktop interface. APP's can be installed, launched, and used on NPC computers using the same mechanism as on the player's computer. The NPC's memory is isolated from the player's memory.
+- **Contextual Command Unification**: Terminal and applications now seamlessly switch context between local and remote (NPC) filesystems based on the active connection. Remote session states are persisted correctly.
+- **Command Execution Realism**: "Files-First" philosophy rigorously enforced. Terminal commands (like `cd`, `exit`, `help`, `connect`) now require physical binaries in `/bin`. Deleting a binary removes the command functionality globally, both on player and NPC machines.
+- **Tiered Storage Architecture**: Implemented a new 3-tier storage model (`memory.ts`) separating **BIOS** (System Config), **HDD** (Files/Users), and **RAM** (Session State).
+- **Universal Snapshotting**: Refactored `SnapshotEngine` to dynamically capture all application state (Notepad tabs, Finder navigation) without hardcoded key lists.
+- **Emergency Protection**: Added a synchronous `emergencySave` buffer (localStorage) triggered on `beforeunload` to prevent data loss during refreshes and crashes.
+- **Physical I/O Indicators**: Redesigned the "Hard Drive" indicator to reflect actual disk/IndexedDB activity instead of in-memory access.
+- **Session Persistence:** Added "Crash Proof" session handling. Windows and Terminal history now survive reloads via auto-save.
+- **Compression:** Added GZIP compression for Electron save files to reduce disk usage and obfuscate data.
+- **Restart Action:** Added "Restart" option to System Menu (performs a Soft Reset).
+- **Web-only Main Menu Extensions**: Added a "Community" collapsible menu and a direct "Download" button to the Main Menu footer for web environments.
+- **Dev Status Window Localization**: Fully internationalized the floating developer information window (`DevStatusWindow.tsx`).
+- **Translations:** Added missing `restart`, `restartDescription`, `external`, and `devStatus` keys for all 13 supported locales.
+
+### Improved
+
+- **Refactor:** Replaced all direct `localStorage` usage with the new `memory` API for better state management and testing.
+- **Locked-Pair Pattern**: Implemented atomic state-key management in `useAppStorage` and `useSessionStorage` to eliminate race conditions during rapid user switching.
+- **I/O Efficiency**: Added "Dirty Checking" to `memory.setItem` to bypass redundant disk writes if data hasn't changed.
+- **Save Latency**: Reduced global auto-save debounce to 100ms for near-instant persistence.
+- **Session Continuity**: Improved `GameRoot.tsx` to restore active sessions after refreshes, bypassing the full intro sequence.
+- **Project Structure:** Moved build scripts to `.scripts/` and consolidated types into `src/types/index.ts`.
+- **Resource Monitor:** Moved `resourceMonitor.ts` to `src/services/` for better architectural alignment.
+- **User Switching:** improved "Switch User" flow to correctly preserve the previous user's session state in background memory.
+- **Main Menu Layout**: Synchronized footer button alignment and sizing for improved visual consistency across the "Community", "Download", and "Credits" sections.
+- **Localization Parity**: Replaced English placeholders with authentic translations across all 13 supported locales for new UI components.
+
+### Fixed
+
+- **App Store:** Fixed a bug where app installation checks were failing due to incorrect permissions logic.
+- **Stale Data Overwrites**: Resolved a critical bug where slow debounced saves could overwrite valid user data with stale state from a previous session.
+- **Dynamic State Leak**: Fixed a gap where non-system storage keys (dynamic app data) were being ignored during the serialization process.
+- **Tests:** Resolved regressions in `App.test.tsx` and `FileSystemContext.test.tsx` caused by the storage refactor.
+- **Locale Sync:** Fixed missing translation keys in non-English locales (`de`, `es`, `fr`, `pt`, `ro`, `zh`, `ru`, `ja`, `pl`, `ko`, `tr`, `hi`).
+
 ## 0.8.5
 
 ### Added

@@ -8,13 +8,13 @@ import {
   FileNode,
 } from "../../utils/fileSystemUtils";
 import { verifyUserPassword } from "../../utils/authUtils";
-import {
-  checkMigrationNeeded,
-  migrateUsers,
-  migrateGroups,
-} from "../../utils/migrations";
 import { notify } from "../../services/notifications";
-import { STORAGE_KEYS, clearSession } from "../../utils/memory";
+import {
+  memory,
+  STORAGE_KEYS,
+  clearSession,
+  checkMigrationNeeded,
+} from "../../utils/memory";
 
 const USERS_STORAGE_KEY = STORAGE_KEYS.USERS;
 const GROUPS_STORAGE_KEY = STORAGE_KEYS.GROUPS;
@@ -50,12 +50,26 @@ const DEFAULT_GROUPS: Group[] = [
 
 function loadUsers(): User[] {
   try {
-    const stored = localStorage.getItem(USERS_STORAGE_KEY);
+    const stored = memory.getItem(USERS_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        if (checkMigrationNeeded()) {
-          return migrateUsers(parsed, DEFAULT_USERS);
+      if (checkMigrationNeeded()) {
+          // Inline Healing migration for Users
+          const migrated = [...parsed];
+          for (const defUser of DEFAULT_USERS) {
+              const existingIndex = migrated.findIndex(u => u.username === defUser.username);
+              if (existingIndex === -1) migrated.push(defUser);
+              else {
+                  const existing = migrated[existingIndex];
+                  if (!existing.password && defUser.password) migrated[existingIndex] = { ...existing, password: defUser.password };
+                  if (defUser.username === 'root') {
+                      if (existing.uid !== 0) migrated[existingIndex].uid = 0;
+                      if (existing.gid !== 0) migrated[existingIndex].gid = 0;
+                  }
+              }
+          }
+          return migrated;
         }
         return parsed;
       }
@@ -68,11 +82,20 @@ function loadUsers(): User[] {
 
 function loadGroups(): Group[] {
   try {
-    const stored = localStorage.getItem(GROUPS_STORAGE_KEY);
+    const stored = memory.getItem(GROUPS_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       if (checkMigrationNeeded()) {
-        return migrateGroups(parsed, DEFAULT_GROUPS);
+        // Inline Healing migration for Groups
+        const migrated = [...parsed];
+        for (const defGroup of DEFAULT_GROUPS) {
+            const existingIndex = migrated.findIndex(g => g.groupName === defGroup.groupName);
+            if (existingIndex === -1) migrated.push(defGroup);
+            else if (defGroup.groupName === 'root' && migrated[existingIndex].gid !== 0) {
+                migrated[existingIndex].gid = 0;
+            }
+        }
+        return migrated;
       }
       return parsed;
     }
@@ -88,15 +111,21 @@ export function useAuth(
 ) {
   const [users, setUsers] = useState<User[]>(() => loadUsers());
   const [groups, setGroups] = useState<Group[]>(() => loadGroups());
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<string | null>(() => {
+    try {
+      return memory.getItem(STORAGE_KEYS.CURRENT_USER);
+    } catch {
+      return null;
+    }
+  });
 
   // Persist users & groups
   useEffect(() => {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    memory.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
   }, [users]);
 
   useEffect(() => {
-    localStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(groups));
+    memory.setItem(GROUPS_STORAGE_KEY, JSON.stringify(groups));
   }, [groups]);
 
   const getCurrentUser = useCallback(
@@ -135,6 +164,7 @@ export function useAuth(
 
       if (isValid) {
         setCurrentUser(username);
+        memory.setItem(STORAGE_KEYS.CURRENT_USER, username);
         notify.system("success", "Auth", `Logged in as ${username}`);
         return true;
       } else {
@@ -156,7 +186,7 @@ export function useAuth(
       clearSession(currentUser);
     }
     setCurrentUser(null);
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    memory.removeItem(STORAGE_KEYS.CURRENT_USER);
 
     notify.system("success", "System", "Logged out successfully");
   }, [currentUser]);
@@ -166,7 +196,7 @@ export function useAuth(
     // We do NOT call clearSession() here.
     // We just unset the current user so the Login Screen appears.
     setCurrentUser(null);
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    memory.removeItem(STORAGE_KEYS.CURRENT_USER);
     notify.system("success", "System", "Session suspended");
   }, []);
 

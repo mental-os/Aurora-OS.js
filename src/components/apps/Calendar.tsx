@@ -15,7 +15,7 @@ import { cn } from '@/components/ui/utils';
 import { AppTemplate } from '@/components/apps/AppTemplate';
 import { useAppContext } from '@/components/AppContext';
 import { useFileSystem } from '@/components/FileSystemContext';
-import { STORAGE_KEYS } from '@/utils/memory';
+import { memory, STORAGE_KEYS } from '@/utils/memory';
 import { notify } from '@/services/notifications';
 import { useI18n } from '@/i18n/index';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -127,7 +127,8 @@ const getMockEvents = (t: (key: string, vars?: Record<string, string | number>) 
     // Let's assume it's a raw string for date? 
     // Wait, STORAGE_KEYS.INSTALL_DATE is likely set via `new Date().toISOString()`.
     // Use raw localStorage for simple strings if determining they are safe (Dates are safe).
-    const installDateStr = localStorage.getItem(STORAGE_KEYS.INSTALL_DATE);
+    // UPDATE: Now using memory
+    const installDateStr = memory.getItem(STORAGE_KEYS.INSTALL_DATE);
     if (installDateStr) {
       startDate = new Date(installDateStr);
     } else {
@@ -403,7 +404,7 @@ export function Calendar({ owner }: CalendarProps) {
 
   // Save Soft State (UI Preferences)
   useEffect(() => {
-    localStorage.setItem(softStateKey, JSON.stringify({
+    memory.setItem(softStateKey, JSON.stringify({
       view,
       currentDate: currentDate.toISOString()
     }));
@@ -740,7 +741,7 @@ export function Calendar({ owner }: CalendarProps) {
             {format(visualCurrentDate, 'EEEE', { locale: dateFnsLocale })}
           </span>
           <div
-            className="text-3xl font-light w-10 h-10 flex items-center justify-center rounded-full mt-1"
+            className="text-2xl font-light w-10 h-10 flex items-center justify-center rounded-full mt-1"
             style={{
               backgroundColor: isSameDay(visualCurrentDate, visualToday) ? accentColor : 'transparent',
               color: isSameDay(visualCurrentDate, visualToday) ? 'white' : 'white'
@@ -915,25 +916,29 @@ export function Calendar({ owner }: CalendarProps) {
               <div style={{ "--accent-color": accentColor } as React.CSSProperties}>
                 <MiniCalendar
                   mode="single"
-                  selected={selectedDate}
+                  selected={selectedDate ? toDisplayDate(selectedDate) : undefined}
+                  month={toDisplayDate(currentDate)}
+                  onMonthChange={(date) => setCurrentDate(fromDisplayDate(date))}
                   onSelect={(date) => {
                     if (date) {
-                      setSelectedDate(date);
-                      setCurrentDate(date);
+                      const realDate = fromDisplayDate(date);
+                      setSelectedDate(realDate);
+                      setCurrentDate(realDate);
                     }
                   }}
+                  today={toDisplayDate(new Date())}
                   locale={dateFnsLocale}
                   showOutsideDays={false}
                   className="rounded-md p-1"
-                  modifiersStyles={{
-                    selected: { backgroundColor: 'var(--accent-color)' }
-                  }}
                   classNames={{
-                    head_cell: "text-white/50 rounded-md w-7 font-normal text-[0.8rem]",
-                    cell: "h-7 w-7 text-center text-sm p-0 m-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-white/5 [&:has([aria-selected])]:bg-white/5 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                    day: "h-7 w-7 p-0 font-normal aria-selected:opacity-100 text-white hover:bg-white/10 hover:text-white rounded-md transition-colors aria-selected:text-white",
-                    day_today: "text-[var(--accent-color)] font-bold ring-1 ring-white/20",
-                    day_selected: "bg-[var(--accent-color)] !text-white hover:bg-[var(--accent-color)] hover:text-white focus:bg-[var(--accent-color)] focus:text-white"
+                    weekday: "text-white/50 rounded-md w-7 font-normal text-[0.8rem]",
+                    day: "h-7 w-7 text-center text-sm p-0 m-0 relative [&:has([aria-selected].range_end)]:rounded-r-md [&:has([aria-selected].outside)]:bg-white/5 [&:has([aria-selected])]:bg-white/5 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                    day_button: cn(
+                      buttonVariants({ variant: "ghost" }),
+                      "h-7 w-7 p-0 font-normal aria-selected:opacity-100 text-white hover:bg-white/10 hover:text-white aria-selected:text-white"
+                    ),
+                    selected: "bg-[var(--accent-color)] !text-white hover:bg-[var(--accent-color)] hover:text-white focus:bg-[var(--accent-color)] focus:text-white rounded-full",
+                    today: "text-[var(--accent-color)] font-bold ring-1 ring-[var(--accent-color)]/30",
                   }}
                 />
               </div>
@@ -1043,15 +1048,23 @@ export function Calendar({ owner }: CalendarProps) {
               "flex items-center min-w-0 transition-all",
               isSmall ? "w-full justify-between gap-2" : "gap-4 justify-start"
             )}>
-              <div className="flex items-center bg-black/40 rounded-lg p-0.5 border border-white/10 backdrop-blur-sm shrink-0">
+              <div className="flex bg-white/5 rounded-md border border-white/10 p-0.5 pointer-events-auto">
                 <button
-                  onClick={() => setCurrentDate(view === 'day' ? subDays(currentDate, 1) : subMonths(currentDate, 1))}
+                  onClick={() => {
+                    const nextDate = view === 'day' ? subDays(currentDate, 1) : subMonths(currentDate, 1);
+                    setCurrentDate(nextDate);
+                    if (view === 'day') setSelectedDate(nextDate);
+                  }}
                   className="p-1.5 hover:bg-white/10 rounded-md text-white/70 hover:text-white transition-colors"
                 >
                   <ChevronLeft className={cn(isSmall ? "w-4 h-4" : "w-5 h-5")} />
                 </button>
                 <button
-                  onClick={() => setCurrentDate(new Date())} // Always resets to real "Now"
+                  onClick={() => {
+                    const now = new Date();
+                    setCurrentDate(now);
+                    setSelectedDate(now);
+                  }} // Always resets to real "Now"
                   className={cn(
                     "font-medium text-white/80 hover:text-white hover:bg-white/5 rounded-md transition-colors border-x border-white/5 mx-0.5",
                     isSmall ? "px-2 py-1 text-xs" : "px-3 py-1 text-sm"
@@ -1060,7 +1073,11 @@ export function Calendar({ owner }: CalendarProps) {
                   {t('calendar.toolbar.today')}
                 </button>
                 <button
-                  onClick={() => setCurrentDate(view === 'day' ? addDays(currentDate, 1) : addMonths(currentDate, 1))}
+                  onClick={() => {
+                    const nextDate = view === 'day' ? addDays(currentDate, 1) : addMonths(currentDate, 1);
+                    setCurrentDate(nextDate);
+                    if (view === 'day') setSelectedDate(nextDate);
+                  }}
                   className="p-1.5 hover:bg-white/10 rounded-md text-white/70 hover:text-white transition-colors"
                 >
                   <ChevronRight className={cn(isSmall ? "w-4 h-4" : "w-5 h-5")} />
@@ -1186,32 +1203,41 @@ export function Calendar({ owner }: CalendarProps) {
                     <div style={{ "--accent-color": accentColor } as React.CSSProperties}>
                       <MiniCalendar
                         mode="single"
-                        selected={editingEvent.start}
+                        selected={editingEvent.start ? toDisplayDate(editingEvent.start) : undefined}
+                        month={editingEvent.start ? toDisplayDate(editingEvent.start) : toDisplayDate(new Date())}
+                        onMonthChange={(date) => {
+                          const realDate = fromDisplayDate(date);
+                          if (editingEvent.start) {
+                              realDate.setDate(editingEvent.start.getDate());
+                              realDate.setHours(getHours(editingEvent.start));
+                              realDate.setMinutes(getMinutes(editingEvent.start));
+                          }
+                          setEditingEvent({ ...editingEvent, start: realDate });
+                        }}
                         onSelect={(date) => {
                           if (date) {
-                            const newDate = new Date(date);
+                            const realDate = fromDisplayDate(date);
                             if (editingEvent.start) {
-                              newDate.setHours(getHours(editingEvent.start));
-                              newDate.setMinutes(getMinutes(editingEvent.start));
+                              realDate.setHours(getHours(editingEvent.start));
+                              realDate.setMinutes(getMinutes(editingEvent.start));
                             } else {
-                              newDate.setHours(9, 0, 0, 0);
+                              realDate.setHours(9, 0, 0, 0);
                             }
-                            setEditingEvent({ ...editingEvent, start: newDate });
+                            setEditingEvent({ ...editingEvent, start: realDate });
                           }
                         }}
+                        today={toDisplayDate(new Date())}
                         locale={dateFnsLocale}
                         showOutsideDays={false}
                         initialFocus
-                        modifiersStyles={{
-                          selected: { backgroundColor: 'var(--accent-color)' }
-                        }}
+
                         classNames={{
-                          day: cn(
+                          day_button: cn(
                             buttonVariants({ variant: "ghost" }),
                             "h-9 w-9 p-0 font-normal aria-selected:opacity-100 text-white hover:bg-white/10 hover:text-white aria-selected:text-white"
                           ),
-                          day_today: "text-[var(--accent-color)] font-bold ring-1 ring-white/20",
-                          day_selected: "bg-[var(--accent-color)] !text-white hover:bg-[var(--accent-color)] hover:text-white focus:bg-[var(--accent-color)] focus:text-white"
+                          today: "text-[var(--accent-color)] font-bold ring-1 ring-[var(--accent-color)]/30 rounded-full",
+                          selected: "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-color)] hover:text-white focus:bg-[var(--accent-color)] focus:text-white rounded-full",
                         }}
                       />
                     </div>

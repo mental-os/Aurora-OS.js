@@ -1,6 +1,6 @@
 import { getApp } from '../config/appRegistry';
-import { STORAGE_KEYS, getAppStateKey, getWindowKey } from './memory';
-import { safeParseLocal } from './safeStorage';
+import { STORAGE_KEYS, getAppStateKey, getWindowKey, memory } from '@/utils/memory';
+import { safeParseLocal } from '@/utils/safeStorage';
 
 /**
  * Constants for Gamified RAM Calculation
@@ -61,8 +61,8 @@ export function calculateTotalRamUsage(activeUser: string): RamUsageReport {
     // Alternatively, `aurora-os-settings-{username}` implies existence, but not necessarily "running session".
     // We'll stick to windows key as "active GUI session".
 
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
+    for (let i = 0; i < memory.length; i++) {
+        const key = memory.key(i);
         if (key && key.startsWith(STORAGE_KEYS.WINDOWS_PREFIX)) {
             const username = key.replace(STORAGE_KEYS.WINDOWS_PREFIX, '');
             if (username) sessionUsers.add(username);

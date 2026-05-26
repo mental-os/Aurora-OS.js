@@ -1,46 +1,42 @@
 import { useEffect, useState } from 'react';
 import { HardDrive } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { STORAGE_EVENT, StorageOperation } from '@/utils/memory';
+import { PHYSICAL_IO_EVENT, PhysicalIOOp } from '@/utils/memory';
 
-interface StorageEventDetail {
+interface PhysicalIOEventDetail {
     detail: {
-        op: StorageOperation;
+        op: PhysicalIOOp;
+        active: boolean;
     };
 }
 
 export function StorageIndicator() {
-    const [active, setActive] = useState<StorageOperation | null>(null);
+    const [active, setActive] = useState<PhysicalIOOp | null>(null);
 
     useEffect(() => {
-        let timeout: NodeJS.Timeout;
+        const handleIO = (e: Event) => {
+            const customEvent = e as unknown as PhysicalIOEventDetail;
+            const { op, active: isIoActive } = customEvent.detail;
 
-        const handleStorage = (e: Event) => {
-            const customEvent = e as unknown as StorageEventDetail;
-            const op = customEvent.detail.op;
-
-            // Don't show indicator for 'clear' as it's rare/instant
-            if (op === 'clear') return;
-
-            setActive(op);
-
-            // Reset after delay
-            clearTimeout(timeout);
-            timeout = setTimeout(() => setActive(null), 500);
+            if (isIoActive) {
+                setActive(op);
+            } else {
+                // Short delay before hiding to prevent fast flickering on small writes
+                setTimeout(() => setActive(null), 300);
+            }
         };
 
-        window.addEventListener(STORAGE_EVENT, handleStorage);
+        window.addEventListener(PHYSICAL_IO_EVENT, handleIO);
 
         return () => {
-            window.removeEventListener(STORAGE_EVENT, handleStorage);
-            clearTimeout(timeout);
+            window.removeEventListener(PHYSICAL_IO_EVENT, handleIO);
         };
     }, []);
 
     return (
         <AnimatePresence>
             {active && (
-                <div className="fixed bottom-4 left-4 z-[99999] pointer-events-none">
+                <div className="fixed bottom-4 left-4 z-99999 pointer-events-none">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -48,10 +44,10 @@ export function StorageIndicator() {
                         className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/80 border border-white/10 backdrop-blur-md shadow-lg"
                     >
                         <HardDrive
-                            className={`w-3 h-3 ${active === 'write' ? 'text-red-400' : 'text-emerald-400'}`}
+                            className={`w-3 h-3 ${active === 'save' ? 'text-red-400' : 'text-emerald-400'}`}
                         />
-                        <span className={`text-[10px] font-mono font-medium uppercase ${active === 'write' ? 'text-red-400/80' : 'text-emerald-400/80'}`}>
-                            {active === 'write' ? 'SAVE' : 'LOAD'}
+                        <span className={`text-[10px] font-mono font-medium uppercase ${active === 'save' ? 'text-red-400/80' : 'text-emerald-400/80'}`}>
+                            {active === 'save' ? 'SAVE' : 'LOAD'}
                         </span>
                     </motion.div>
                 </div>

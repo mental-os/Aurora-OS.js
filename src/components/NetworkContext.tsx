@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAppContext } from '@/components/AppContext';
-import { resetSessionDataUsage, STORAGE_KEYS } from '@/utils/memory';
+import { memory, resetSessionDataUsage, STORAGE_KEYS } from '@/utils/memory';
 
 export interface Network {
   id: string;
@@ -114,7 +114,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   // Load known networks from storage
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.KNOWN_NETWORKS);
+      const stored = memory.getItem(STORAGE_KEYS.KNOWN_NETWORKS);
       if (stored) {
         setKnownNetworks(JSON.parse(stored));
       }
@@ -256,7 +256,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
             maxSpeed: net.maxSpeed
           }
         };
-        localStorage.setItem(STORAGE_KEYS.KNOWN_NETWORKS, JSON.stringify(next));
+        memory.setItem(STORAGE_KEYS.KNOWN_NETWORKS, JSON.stringify(next));
         return next;
       });
     }
